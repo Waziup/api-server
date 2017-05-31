@@ -1,0 +1,6 @@
+elasticsearch:
+  host: elasticsearch.waziup.io
+  port: 80
+  index: test-ws
+
+timezone: "+02:00"
