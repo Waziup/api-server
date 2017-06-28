@@ -36,28 +36,27 @@ const { AccessLevel, extractPermissions, protectByServicePath, protectByServiceP
 
 
 const router = express.Router();
-router.get('/search/:farmid', safeHandler(elasticsearch));
-
 app.use('/api/v1', router);
 
+router.get('/search/:farmid', safeHandler(elasticsearch));
 
 //Securing endpoints
 // http://.../test?sp=/FARM1
-app.get('/test', protectByServicePath(AccessLevel.VIEW, req => req.query.sp), function (req, res) {
+router.get('/test', protectByServicePath(AccessLevel.VIEW, req => req.query.sp), function (req, res) {
     res.json({
         result: 'OK'
     });
 });
 
 // http://.../orion/FARM1
-app.get('/orion/*', protectByServicePathParam(AccessLevel.VIEW), function (req, res) {
+router.get('/orion/*', protectByServicePathParam(AccessLevel.VIEW), function (req, res) {
     res.json({
         result: 'OK'
     });
 });
 
 // http://.../orion/FARM1
-app.post('/orion/*', protectByServicePathParam(AccessLevel.EDIT), function (req, res) {
+router.post('/orion/*', protectByServicePathParam(AccessLevel.EDIT), function (req, res) {
     res.json({
         result: 'OK'
     });
