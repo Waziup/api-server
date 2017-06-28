@@ -27,9 +27,10 @@ function safeHandler(handler) {
 async function search(req, res) {
     const msearch = [];
 
+   //config.get('elasticsearch.index')
     for (let sensorAttrib of ['SM1', 'SM2']) {
         msearch.push({
-            index: config.get('elasticsearch.index')
+            index: req.params.farmid
         });
 
         msearch.push({
@@ -101,7 +102,7 @@ async function search(req, res) {
 }
 
 const router = express.Router();
-router.get('/search', safeHandler(search));
+router.get('/search/:farmid', safeHandler(search));
 
 const app = express();
 var cors = require('cors')
@@ -110,13 +111,6 @@ var cors = require('cors')
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-
-/*app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});*/
 
 app.use('/api', router);
 
