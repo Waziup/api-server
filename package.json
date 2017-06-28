@@ -14,8 +14,10 @@
     "config": "^1.26.1",
     "cors": "^2.8.3",
     "elasticsearch": "^13.0.1",
-    "express": "^4.15.2",
     "js-yaml": "^3.8.4",
-    "webpack-hot-middleware": "^2.18.0"
+    "webpack-hot-middleware": "^2.18.0",
+    "express": "^4.15.3",
+    "express-session": "^1.15.3",
+    "keycloak-connect": "^3.1.0"
   }
 }

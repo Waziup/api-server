@@ -2,20 +2,12 @@
 
 const Promise = require('bluebird');
 const express = require('express');
-const path = require('path');
+//const path = require('path');
 const bodyParser = require('body-parser');
-const config = require('config');
-const elasticsearch = require('elasticsearch');
-const util = require('util');
-
-function dump(obj) {
-    console.log(util.inspect(obj, false, null));
-}
-
-const es = new elasticsearch.Client({
-    host: config.get('elasticsearch.host') + ':' + config.get('elasticsearch.port')
-    // , log: 'trace'
-});
+const session = require('express-session');
+const elasticsearch = require('./elasticsearch');
+const accessSetup = require('./authorization/lib/access');
+//const server = require('./lib/server');
 
 function safeHandler(handler) {
     return function(req, res) {
@@ -23,96 +15,53 @@ function safeHandler(handler) {
     };
 }
 
-
-async function search(req, res) {
-    const msearch = [];
-
-   //config.get('elasticsearch.index')
-    for (let sensorAttrib of ['SM1', 'SM2']) {
-        msearch.push({
-            index: req.params.farmid
-        });
-
-        msearch.push({
-            from: 0,
-            size: 0,
-            query: {
-                bool: {
-                    must: [
-                        {
-                            term: {
-                                attribute: sensorAttrib
-                            }
-                        },
-                        {
-                            range: {
-                                time: { gte: new Date().getTime() - 1000 * 60 * 60 * 24 * 7 }
-                            }
-                        }
-                    ]
-                }
-            },
-            aggs: {
-                buckets: {
-                    date_histogram: {
-                        field: 'time',
-                        interval: '6h',
-                        time_zone: config.get('timezone')
-                    },
-                    aggs: {
-                        value_avg: {
-                            avg: {
-                                field: 'value'
-                            }
-                        }
-                    }
-                }
-            },
-
-            sort: {time: 'asc'}
-        });
-    }
-
-    const searchResults = await es.msearch({
-        body: msearch
-    });
-
-    const dataMap={};
-
-    function addAggregations(index, fieldName) {
-        for (let agg of searchResults.responses[index].aggregations.buckets.buckets) {
-            const entry = dataMap[agg.key] || { t: agg.key };
-            entry[fieldName] = agg.value_avg.value;
-            dataMap[agg.key] = entry;
-        }
-    }
-
-    addAggregations(0, 'sm1');
-    addAggregations(1, 'sm2');
-
-    const dataKeys = Object.keys(dataMap);
-    dataKeys.sort();
-
-    const dataArray = [];
-    for (let key of dataKeys) {
-        dataArray.push(dataMap[key]);
-    }
-
-    res.json(dataArray);
-}
-
-const router = express.Router();
-router.get('/search/:farmid', safeHandler(search));
-
 const app = express();
-var cors = require('cors')
-// app.use(express.static(path.join(__dirname, 'public')));
+const memoryStore = new session.MemoryStore();
 
+app.use(session({
+    secret: 'mySecret',
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore
+}));
+
+// app.use(express.static(path.join(__dirname, 'public')));
+var cors = require('cors')
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use('/api', router);
+const access = accessSetup(app, memoryStore);
+const { AccessLevel, extractPermissions, protectByServicePath, protectByServicePathParam } = access;
+
+
+const router = express.Router();
+router.get('/search/:farmid', safeHandler(elasticsearch));
+
+app.use('/api/v1', router);
+
+
+//Securing endpoints
+// http://.../test?sp=/FARM1
+app.get('/test', protectByServicePath(AccessLevel.VIEW, req => req.query.sp), function (req, res) {
+    res.json({
+        result: 'OK'
+    });
+});
+
+// http://.../orion/FARM1
+app.get('/orion/*', protectByServicePathParam(AccessLevel.VIEW), function (req, res) {
+    res.json({
+        result: 'OK'
+    });
+});
+
+// http://.../orion/FARM1
+app.post('/orion/*', protectByServicePathParam(AccessLevel.EDIT), function (req, res) {
+    res.json({
+        result: 'OK'
+    });
+});
 
 async function run() {
     await new Promise(resolve => app.listen(4000, () => resolve()));
@@ -120,3 +69,7 @@ async function run() {
 }
 
 run();
+
+// app.listen(3000, function () {
+//     console.log("Listening at port 3000.");
+// });
