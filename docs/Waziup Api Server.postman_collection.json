@@ -1,0 +1,39 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Waziup Api Server",
+		"_postman_id": "6c22adca-9274-4b63-7e7f-40d7ded1257e",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:3000/api/v1/auth",
+			"request": {
+				"url": "localhost:3000/api/v1/auth",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:3000/api/v1/users",
+			"request": {
+				"url": "localhost:3000/api/v1/users",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ1M0cxOXg4U2YxWHlnb2RUYjdJbU91NDVsS1NRNUF0MV8yRXJvWVZOZlk4In0.eyJqdGkiOiIyZjg1NGY1My1jMWFkLTQ0YjYtOTgxYy1jNjVlOTc2YjdlY2QiLCJleHAiOjE0OTkwODg2NjMsIm5iZiI6MCwiaWF0IjoxNDk5MDg4NjAzLCJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvYXV0aC9yZWFsbXMvbWFzdGVyIiwiYXVkIjoiYWRtaW4tY2xpIiwic3ViIjoiYjlhZTBmMmYtNzgwMy00Zjk5LThiODAtMjBkOTFkNzVmNTYwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYWRtaW4tY2xpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiOGY3MTdkNjMtOWVkOC00NmU1LWJmOGYtYTc2N2I5M2E2ZTllIiwiYWNyIjoiMSIsImNsaWVudF9zZXNzaW9uIjoiMjExMzZiY2QtZDU3Ni00MDU0LTk0MzQtNWQxN2JhMzIwNmI1IiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImNyZWF0ZS1yZWFsbSIsImFkbWluIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsid2F6aXVwLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInZpZXctYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJ2aWV3LXJlYWxtIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwidmlldy1hdXRob3JpemF0aW9uIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiXX19LCJuYW1lIjoiIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWRtaW4ifQ.n56uk3lOE0sex8xmXXiMzxObdi6DjLtur5iXVi7R5StC6MJbUeVJboeHl9mTMByD7vi5KD8tVCf72IgzBqJKFKqGumP4S6iGoRrzbebZ7IPTD11aggXMjMAsmhj_n9T2AvhHyhYEQYsZUJ4cD5kSiXcCqmoZDfWdykSbvZGM_PfX4VbRCOQOPeo3pWaT8wc5krsgIZaMQ538qb8xBlRTUt_UKfOpzje77Xw5_cPTQV7wvi04Dgpvn4N0hrU4p-VzQTxZsVXBL94fzgqUVpsClMAImSlWX9a4teM00f_Q5K18n8vYIsooynzGqJJGlI8etkjqs3nbZvBjNabDL0vlCQ",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

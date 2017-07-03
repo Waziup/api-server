@@ -1,0 +1,96 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: waziup-api
+  description: Waziup Api Server
+basePath: /api/v1
+tags:
+  - name: Examples
+    description: Simple example endpoints
+  - name: Auth
+    description: Takes care of authentication with KeyCloak
+  - name: Users
+    description: Takes care of user management related operations with KeyCloak
+  - name: Specification
+    description: The swagger API specification
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+definitions:
+  ExampleBody:
+    type: object
+    title: example
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: The example name
+
+paths:
+  /examples:
+    get:
+      tags:
+        - Examples
+      description: Fetch all examples
+      responses:
+        200:
+          description: Returns all examples
+    post:
+      tags:
+        - Examples
+      description: Create a new example
+      parameters:
+        - name: example
+          in: body
+          description: number of items to skip
+          required: true
+          schema: 
+            $ref: "#/definitions/ExampleBody"
+      responses:
+        200:
+          description: Returns all examples
+
+  /examples/{id}:
+    get:
+      tags:
+        - Examples
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the entity to retrieve
+          type: integer
+      responses:
+        200:
+          description: Return the example with the specified id
+        404:
+          description: Example not 
+  /auth:
+    get:
+      tags:
+        - Auth
+      responses:
+        200:
+          description: Return the access token
+        404:
+          description: Something wrong happened
+  /users:
+    get:
+      tags:
+        - Users
+      responses:
+        200:
+          description: Return users
+        404:
+          description: Something wrong happened
+  /spec:
+    get:
+      tags:
+        - Specification
+      responses:
+        200:
+          description: Return the API specification

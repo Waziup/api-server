@@ -1,0 +1,28 @@
+{
+  "name": "waziup-api",
+  "version": "1.0.0",
+  "description": "Waziup Api Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd build && node main",
+    "compile": "node build.js && backpack build",
+    "dev": "node build.js && backpack dev | pino -o 'short'"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^2.0.0",
+    "express": "^4.15.3",
+    "pino": "^4.6.0",
+    "request": "^2.81.0",
+    "source-map-support": "^0.4.12",
+    "swagger-express-middleware": "^1.0.0-alpha.12"
+  },
+  "devDependencies": {
+    "babel-preset-es2017": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "backpack-core": "^0.2.1",
+    "shelljs": "^0.7.6"
+  },
+  "author": "Carmine DiMascio <cdimascio@gmail.com> (https://github.com/cdimascio)"
+}
