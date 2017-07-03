@@ -33,4 +33,6 @@ cf push waziup-api
 * Invoke the example REST endpoint `curl http://localhost:3000/api/v1/examples`
 * Interactive API doc at [http://localhost:3000/api-explorer](http://localhost:3000/api-explorer)
 
+THis api connect to a local keycloak server on localhost:8080. THis is hardcoded for now.
+
    
