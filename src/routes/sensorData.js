@@ -6,6 +6,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const config = require('config');
 const elasticsearch = require('elasticsearch');
+const safeHandler = require('../lib/handlers');
 //const util = require('util');
 
 // function dump(obj) {
@@ -94,4 +95,14 @@ async function search(req, res) {
     res.json(dataArray);
 }
 
-module.exports = search;
+const routerSearch = express.Router();
+//Once you’ve created a router object, you can add middleware and HTTP method routes 
+//(such as get, put, post, and so on) to it just like an application.
+//sensor data analysis: sensor provider
+routerSearch.get('/search/:farmid', safeHandler(search));
+
+//single sensor values: /FARM1/Sensor1 SM1, SM2
+//get this data from refer to docs: elasticsearch javascript API restrict the search limit
+//find the use case:
+
+module.exports = routerSearch;
