@@ -4,32 +4,33 @@ var request = require('request');
 var url = '/realms/master/protocol/openid-connect/token';
 var baseUrl = 'http://127.0.0.1:8080/auth';
 var config = {
-  username: 'admin',
-  password: 'admin',
-  grant_type: 'password',
-  client_id: 'admin-cli'
+    username: 'admin23',
+    password: 'admin23',
+    grant_type: 'password',
+    client_id: 'admin-cli'
 };
 
 export class AuthService {
-  getAccess(){
+    getAccess(credentials) {
 
+        config.username = credentials.username;
+        config.password = credentials.password;
+        console.log(config);
+        return new Promise(function(resolve, reject) {
+            request.post({ url: baseUrl + url, form: config }, function(err, resp, body) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
 
-return new Promise(function(resolve , reject ){
-  request.post({url: baseUrl + url, form: config}, function (err, resp, body) {
-  if (err) {
-    console.log(err);
-    return;
-  }
-
-  var jsonBody = JSON.parse(body);
-  var accessToken = jsonBody.access_token;
-  //console.log(accessToken);
-  if(accessToken)
-resolve(accessToken);
-else reject(jsonBody);
-});
-    });
-}
+                var jsonBody = JSON.parse(body);
+                //console.log(accessToken);
+                if (jsonBody)
+                    resolve(jsonBody);
+                else resolve("Wrong credentials, Please try again");
+            });
+        });
+    }
 
 }
 

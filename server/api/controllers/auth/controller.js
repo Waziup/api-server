@@ -3,7 +3,7 @@ export class Controller {
   getAccessToken(req, res) {
     console.log('hello auth');
     AuthService
-    .getAccess()
+    .getAccess(req.body)
     .then(r => res.json(r));
   }
 

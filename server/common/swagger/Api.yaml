@@ -29,6 +29,19 @@ definitions:
       name:
         type: string
         description: The example name
+  AuthBody:
+    type: object
+    title: credentials
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        description: Admin password
+      password:
+        type: string
+        description: Admin password
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -74,9 +87,24 @@ paths:
         404:
           description: Example not 
   /auth:
-    get:
+    post:
       tags:
         - Auth
+      consumes:
+        - application/json
+      parameters:
+        - username: credentials
+          in: body
+          description: Admin username
+          required: true
+          schema: 
+            $ref: "#/definitions/AuthBody"
+        - password: credentials
+          in: body
+          description: Admin password
+          required: true
+          schema: 
+            $ref: "#/definitions/AuthBody"
       responses:
         200:
           description: Return the access token
@@ -93,6 +121,40 @@ paths:
           description: Return users
         404:
           description: Something wrong happened
+    
+    put:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the entity to retrieve
+          type: string
+      responses:
+        200:
+          description: Return the user with the specified id
+        404:
+          description: Not found 
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the entity to retrieve
+          type: string
+      responses:
+        200:
+          description: Return the user with the specified id
+        404:
+          description: Not found 
   /spec:
     get:
       tags:
