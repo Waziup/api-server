@@ -1,20 +1,29 @@
 "use strict";
 
 const Keycloak = require('keycloak-connect');
+const config = require('config');
 
 const AccessLevel = {
     VIEW: 0,
     EDIT: 1
 };
 
-function setup(app, sessionStore) {
 
-    const keycloak = new Keycloak({ store: sessionStore });
+function setup(app) {
 
+    const keycloak = new Keycloak('../keycloak.json');
+
+    function getServicePathFromHeader(req) {
+        /*if (req.headers['fiware-service'] !== 'watersense') {
+            return;
+        }*/
+
+        return req.headers['fiware-servicepath'];
+    }
     /*
      This extracts the "permissions" field from the access token and transforms it in the following way:
 
-     "admin ; advisor : /FARM1;advisor:/FARM2 ; farmer : /FARM2"
+     "admin ; advisor : /FARM1;advisor:/FARM2 ; farmer : /FARM2;"
 
      =>
 
@@ -25,15 +34,12 @@ function setup(app, sessionStore) {
      }
      */
     function extractPermissions(req) {
-	
-        const permString = req.kauth.grant.access_token.content.permissionspermissions;
-        //check if permissions does not exist
-        if (permString === undefined)
-	        return {};
-	    //process.stdout.write(permString);
-        const permPairs = permString.split(/\s*;\s*/).map(permPair => permPair.split(/\s*:\s*/));
-
+        const permString = req.kauth.grant.access_token.content.permissions;
         const permissions = {};
+        
+        if(permString === undefined)
+            return permissions;
+        const permPairs = permString.split(/\s*;\s*/).map(permPair => permPair.split(/\s*:\s*/));
 
         for (const permPair of permPairs) {
             const key = permPair[0];
@@ -51,10 +57,9 @@ function setup(app, sessionStore) {
         return permissions;
     }
 
-    function _servicePathIncluded(permission, servicePath) {
-	//check sp permission.some.sp (/home/mehdi/git/it21/auth-example/lib/access.js:53:85)
-    //servicePath &&
-        return  permission && permission.some(sp => servicePath === sp || servicePath.startsWith(sp + '/'));
+    function _servicePathIncluded(permissions, reqServicePath) {
+        console.log("permissions: ", permissions, "reqServicePath: ", reqServicePath);
+        return permissions && permissions.some(sp => reqServicePath === sp || reqServicePath.startsWith(sp));
     }
 
     /*
@@ -63,35 +68,29 @@ function setup(app, sessionStore) {
 
      Parameter "getServicePath" is a function (request => servicePath) that extracts the service path from the request.
      */
-    function protectByServicePath(accessLevel, getServicePath) {
+    function servicePathProtection(accessLevel, getServicePath) {
         return keycloak.protect((token, req) => {
             const permissions = extractPermissions(req);
             const servicePath = getServicePath(req);
-
-            //should we put control here? to check permissions and servicePath or ..
-
+            console.log("te");
             const result =
-                !!permissions['admin'] ||
+                servicePath && (
 
-                (accessLevel === AccessLevel.EDIT &&
-                _servicePathIncluded(permissions['advisor'], servicePath)) ||
+                    !!permissions['admin'] ||
 
-                (accessLevel === AccessLevel.VIEW && (
-                    _servicePathIncluded(permissions['advisor'], servicePath) ||
-                    _servicePathIncluded(permissions['farmer'], servicePath)
-                ))
+                    (accessLevel === AccessLevel.EDIT &&
+                    _servicePathIncluded(permissions['advisor'], servicePath)) ||
+
+                    (accessLevel === AccessLevel.VIEW && (
+                        _servicePathIncluded(permissions['advisor'], servicePath) ||
+                        _servicePathIncluded(permissions['farmer'], servicePath)
+                    ))
+                )
             ;
 
             return result;
         });
     }
-
-
-    function protectByAuthentication() {
-        return keycloak.protect();
-    }
-
-    app.use(keycloak.middleware());
 
     app.use(keycloak.middleware({
         logout: '/logout',
@@ -102,10 +101,9 @@ function setup(app, sessionStore) {
         AccessLevel,
         keycloak,
         extractPermissions,
-        protectByAuthentication,
-        protectByServicePath    
+        servicePathProtection,
+        getServicePathFromHeader
     }
 }
 
 module.exports = setup;
-
