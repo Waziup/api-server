@@ -45,7 +45,7 @@ Debug
 
 In order to see the details of the token generated, do:
 ```
-echo $TOKEN | cut -d "." -f1 | base64 -d | jq "."
+echo $TOKEN | cut -d "." -f2 | base64 -d | jq "."
 ```
 The data inside the token should match the keycloak.json configuration precisely.
 
