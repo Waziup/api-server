@@ -1,6 +1,0 @@
-{
-    "realm": "waziup",
-    "auth-server-url": "${env.KEYCLOAK_REDIRECT_URL}",
-    "ssl-required": "none",
-    "resource": "waziup"
-}

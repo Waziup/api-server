@@ -10,23 +10,28 @@ const server = require('./lib/server');
 
 //importing individual routes
 const authzRoute = require('./routes/authorization');
-const adminRoute = require('./routes/keycloak/keycloak-admin');
 
 const app = server.app;
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
 const router = express.Router();
 
 //FIXME 
 router.use(function(req, res, next) {
-    console.log('%s URI: %s PATH: %s', req.method, req.url, req.path);
-    next();
+  console.log('%s URI: %s PATH: %s', req.method, req.url, req.path);
+  next();
 });
 
 //serve the client
-app.use(express.static("../../client/build"));
-
+app.use(express.static(path.join(__dirname, "../client/build")));
+ /* baseUrl: process.env.REACT_APP_KC_URL,
+  username: process.env.REACT_APP_ADMIN_USER,
+  password: process.env.REACT_APP_ADMIN_PASS,*/
+  
+app.get('/env/:var', (req, res) => res.send(process.env[req.params.var]))
+//production deployment
+//app.use(express.static("/opt/app/client"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use('/api/v1', router);
 
 //  .../permissions .../test
@@ -37,11 +42,9 @@ orionProxy.install(router, '/orion');
 
 keycloakProxy.install(router, '/keycloak');
 
-router.use('/admin', adminRoute);
-
 async function run() {
-    await new Promise(resolve => app.listen(80, () => resolve()));
-    console.log('Listening on port 80');
+    await new Promise(resolve => app.listen(4000, () => resolve()));
+    console.log('Listening on port 4000');
 }
 
 run();

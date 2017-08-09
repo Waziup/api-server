@@ -1,0 +1,7 @@
+{
+  "realm": "waziup",
+  "auth-server-url": "http://localhost:8080/auth",
+  "ssl-required": "none",
+  "resource": "waziup",
+  "public-client": true
+}

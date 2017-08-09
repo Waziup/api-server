@@ -1,5 +1,0 @@
-elasticsearch-url: elasticsearch.waziup.io:80
-orion-url: http://broker.waziup.io:80
-keycloak-url: http://am.waziup.io:80
-
-timezone: "+02:00"
