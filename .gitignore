@@ -1,0 +1,6 @@
+node_modules/
+/server.log
+/config/local.*
+/.idea
+node_modules
+npm-debug.log
