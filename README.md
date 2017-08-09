@@ -12,15 +12,29 @@ TBD.
 Test
 ----
 
-In order to test the API server, you need to retrieve an access token from keycloak.
-
+Start the server:
 ```
-RESULT=`curl --data "grant_type=password&client_id=waziup&username=waziup&password=waziup" http://localhost:8080/auth/realms/waziup/protocol/openid-connect/token`
+sudo node index.js
+```
 
-TOKEN=`echo $RESULT | sed 's/.*access_token":"//g' | sed 's/".*//g'`
+Start keycloak:
+```
+cd ..
+docker-compose up keycloak
+```
+
+In order to test the API server, you need to retrieve an access token from keycloak.
+Make sure that the user "waziup" exists in Keycloak and that he has the attributes "Service", "ServicePath" and "permissions" correctly set.
+Also make sure the client "waziup" exists and that it has mappers for the attributes above.
+Retrieve the token:
+```
+TOKEN=`curl --data "grant_type=password&client_id=waziup&username=waziup&password=waziup" http://localhost:8080/auth/realms/waziup/protocol/openid-connect/token | jq ".access_token" -r`
+
 ```
 
 Then, you can test each access point using curl commands:
 ```
-curl localhost:80/api/v1/orion/entities --header 'Fiware-Service:waziup' --header 'Fiware-ServicePath:/#' -H 'Authorization: Bearer $TOKEN' -L
+curl localhost:80/api/v1/orion/v2/entities -H 'Fiware-Service:waziup' -H 'Fiware-ServicePath:/#' -H "Authorization: Bearer $TOKEN" | jq ".[].id"
 ```
+The command above should yeld a list of sensor names.
+
