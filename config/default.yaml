@@ -1,13 +1,5 @@
-elasticsearch:
-  host: elasticsearch.waziup.io
-  port: 80
-
-orion:
-  host: http://broker.waziup.io
-  port: 80
-
-keycloak:
-  host: http://aam.waziup.io/auth
-  port: 80
+elasticsearchurl: elasticsearch.waziup.io:80
+orionurl: http://broker.waziup.io:80
+keycloakurl: http://aam.waziup.io:80
 
 timezone: "+02:00"
