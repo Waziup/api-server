@@ -1,5 +1,5 @@
+serverport: 80
+
 elasticsearchurl: elasticsearch.waziup.io:80
 orionurl: http://broker.waziup.io:80
 keycloakurl: http://aam.waziup.io:80
-
-timezone: "+02:00"

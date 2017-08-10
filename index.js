@@ -10,6 +10,7 @@ const server = require('./lib/server');
 
 //importing individual routes
 const authzRoute = require('./routes/authorization');
+const config = require('config');
 
 const app = server.app;
 
@@ -43,8 +44,8 @@ orionProxy.install(router, '/orion');
 keycloakProxy.install(router, '/keycloak');
 
 async function run() {
-    await new Promise(resolve => app.listen(4000, () => resolve()));
-    console.log('Listening on port 4000');
+    await new Promise(resolve => app.listen(config.serverport, () => resolve()));
+    console.log('Listening on port ', config.serverport);
 }
 
 run();

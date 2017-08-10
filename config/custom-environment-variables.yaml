@@ -1,5 +1,5 @@
-elasticsearch-url: ELASTICSEARCH_URL
-orion-url: ORION_URL
-keycloak-url: KEYCLOAK_URL
+serverport: SERVERPORT
 
-timezone: "+02:00"
+elasticsearchurl: ELASTICSEARCH_URL
+orionurl: ORION_URL
+keycloakurl: KEYCLOAK_URL
