@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const orionProxy = require('./lib/orion-proxy');
 const keycloakProxy = require('./lib/keycloak-proxy');
+const elasticsearchProxy = require('./lib/elasticsearch-proxy');
 const server = require('./lib/server');
 
 //importing individual routes
@@ -42,6 +43,9 @@ router.use('/authorization', authzRoute);
 orionProxy.install(router, '/orion');
 
 keycloakProxy.install(router, '/keycloak');
+
+elasticsearchProxy.install(router, '/elasticsearch');
+
 
 async function run() {
     await new Promise(resolve => app.listen(config.serverport, () => resolve()));
