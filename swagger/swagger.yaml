@@ -1,0 +1,69 @@
+swagger: '2.0'
+info:
+  title: WAZIUP API
+  description: Applications API
+  version: 1.0.0
+host: 'www.waziup.io:30333'
+schemes:
+  - https
+basePath: /api/v1
+produces:
+  - application/json
+paths:
+  /sensors:
+    post:
+      summary: Create sensors
+      description: |
+        Endpoint   to   createsensing  devices.
+      tags:
+        - Sensors
+      responses:
+        '201':
+          description: Sensor created succesfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /history:
+    get:
+      summary: Historical  data
+      description: |
+        Query domain historical  data  .    
+      tags:
+        - Historical  data
+      responses:
+        '200':
+          description: Array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Sensor:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id   is  the  name  of  the  sensor.
+      location:
+        $ref: '#/definitions/Location'
+  Location:
+    type: object
+    description: >-
+      location is  a  pair  [latitude,  longitude]  with  the  coordinates  on 
+      earth  in  decimal  notation  (e.g. • [40.418889,  35.89389]).  .
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

@@ -1,4 +1,4 @@
-serverport: 80
+serverport: 8080
 
 elasticsearchurl: elasticsearch.waziup.io:80
 orionurl: http://broker.waziup.io:80
