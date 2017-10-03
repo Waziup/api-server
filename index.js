@@ -9,11 +9,13 @@ const keycloakProxy = require('./lib/keycloak-proxy');
 const elasticsearchProxy = require('./lib/elasticsearch-proxy');
 const server = require('./lib/server');
 
+var cors = require('cors');
 
 
 
 //importing individual routes
 const authzRoute = require('./routes/authorization');
+const usersRoute = require('./routes/users/user.route');
 const config = require('config');
 
 const app = server.app;
@@ -41,7 +43,7 @@ app.use('/api/v1', router);
 
 //  .../permissions .../test
 router.use('/authorization', authzRoute);
-
+router.use('/users', usersRoute);
 ///removed entities to support other services such as subscriptions
 orionProxy.install(router, '/orion');
 
