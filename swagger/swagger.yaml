@@ -9,35 +9,8 @@ schemes:
 basePath: /api/v1
 produces:
   - application/json
-paths:
-  /sensors:
-    post:
-      summary: Create sensors
-      description: |
-        Endpoint   to   createsensing  devices.
-      tags:
-        - Sensors
-      responses:
-        '201':
-          description: Sensor created succesfully
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /history:
-    get:
-      summary: Historical  data
-      description: |
-        Query domain historical  data  .    
-      tags:
-        - Historical  data
-      responses:
-        '200':
-          description: Array
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+consumes:
+  - application/json
 definitions:
   Sensor:
     type: object
@@ -67,3 +40,153 @@ definitions:
         type: string
       fields:
         type: string
+  AuthBody:
+    type: object
+    title: credentials
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        description: Admin username
+      password:
+        type: string
+        description: Admin password
+  UserUpdateBody:
+    type: object
+    title: userupdate
+    required:
+      - firstName
+      - lastName
+    properties:
+      firstName:
+        type: string
+        description: User's First Name
+      lastName:
+        type: string
+        description: User's Last Name
+      id:
+        type: string
+        description: User id
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+paths:
+  /sensors:
+    post:
+      summary: Create sensors
+      description: |
+        Endpoint   to   createsensing  devices.
+      tags:
+        - Sensors
+      responses:
+        '201':
+          description: Sensor created succesfully
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /history:
+    get:
+      summary: Historical  data
+      description: |
+        Query domain historical  data  .    
+      tags:
+        - Historical  data
+      responses:
+        '200':
+          description: Array
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /users/auth:
+    post:
+      tags:
+        - Users
+      summary: Auth
+      parameters:
+        - name: credentials
+          in: body
+          description: auth credentials
+          required: true
+          schema:
+            $ref: '#/definitions/AuthBody'
+      responses:
+        '200':
+          description: Return the access token
+        '404':
+          description: Something wrong happened
+  '/users/search/:realm':
+    get:
+      tags:
+        - Users
+      summary: Search users with specific criteria
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: return filtered users
+        '404':
+          description: Something wrong happened
+  '/users/:realm':
+    get:
+      tags:
+        - Users
+      summary: Get all users in a realm
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: return users
+        '404':
+          description: Something wrong happened
+  '/users/:realm/{userid}':
+    get:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: The id of the entity to retrieve
+          type: string
+      responses:
+        '200':
+          description: Return the user with the specified id
+        '404':
+          description: Not found
+    put:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: The id of the entity to retrieve
+          type: string
+        - name: data
+          in: body
+          description: user data to update
+          required: true
+          schema:
+            $ref: '#/definitions/UserUpdateBody'
+      responses:
+        '200':
+          description: Return the user with the specified id
+        '404':
+          description: Not found
+  /spec:
+    get:
+      tags:
+        - Specification
+      responses:
+        '200':
+          description: Return the API specification
