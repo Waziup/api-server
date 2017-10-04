@@ -19,7 +19,7 @@ const usersRoute = require('./routes/users/user.route');
 const config = require('config');
 
 const app = server.app;
-
+app.use(cors());
 const router = express.Router();
 
 //FIXME 
@@ -51,15 +51,20 @@ keycloakProxy.install(router, '/keycloak');
 
 elasticsearchProxy.install(router, '/elasticsearch');
 
-//Swagger configuration
-var swaggerTools = require('swagger-tools');
-var YAML = require('yamljs');
-var swaggerDoc = YAML.load('./swagger/swagger.yaml');
-//Initialize Swagger
-swaggerTools.initializeMiddleware(swaggerDoc, function(middleware) {
-    // Serve the Swagger documents and Swagger UI
-    app.use(middleware.swaggerUi());
-});
+// //Swagger configuration
+// var swaggerTools = require('swagger-tools');
+// var YAML = require('yamljs');
+// var swaggerDoc = YAML.load('./swagger/swagger.yaml');
+// //Initialize Swagger
+// swaggerTools.initializeMiddleware(swaggerDoc, function(middleware) {
+//     // Serve the Swagger documents and Swagger UI
+//     app.use(middleware.swaggerUi());
+// });
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger/swagger.yaml');
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 async function run() {
     await new Promise(resolve => app.listen(config.serverport, () => resolve()));

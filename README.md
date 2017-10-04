@@ -63,3 +63,10 @@ And create the token using this alias:
 TOKEN=`curl --data "grant_type=password&client_id=waziup&username=waziup&password=waziup" http://keycloak:8080/auth/realms/waziup/protocol/openid-connect/token | jq ".access_token" -r`
 ```
 Otherwise the token will have the wrong ISS.
+
+Swagger Configuration
+-------
+In order to make the right calls in swagger, you need to specify the host in swagger.yaml
+```
+host: '127.0.0.1:9090'
+```

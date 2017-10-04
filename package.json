@@ -26,7 +26,7 @@
         "request": "^2.81.0",
         "swagger-node-express": "~2.0",
         "swagger-tools": "^0.10.1",
-        "swagger-ui-express": "^2.0.8",
+        "swagger-ui-express": "latest",
         "util": "^0.10.3",
         "webpack-hot-middleware": "^2.18.0",
         "winston": "^2.3.1",
