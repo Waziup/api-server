@@ -11,8 +11,8 @@ function authenticate(settings) {
     console.log(settings);
     return getToken(settings.baseUrl, settings)
         .then((token) => {
-            console.log(token);
-            return token;
+            var newToken = { accesstoken: token };
+            return newToken;
         });
 }
 

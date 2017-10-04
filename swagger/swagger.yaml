@@ -3,9 +3,9 @@ info:
   title: WAZIUP API
   description: Applications API
   version: 1.0.0
-host: 'www.waziup.io:30333'
+host: '127.0.0.1:80'
 schemes:
-  - https
+  - http
 basePath: /api/v1
 produces:
   - application/json
@@ -107,7 +107,7 @@ paths:
     post:
       tags:
         - Users
-      summary: Auth
+      summary: Get the access token for subsequent calls
       parameters:
         - name: credentials
           in: body
@@ -120,37 +120,54 @@ paths:
           description: Return the access token
         '404':
           description: Something wrong happened
-  '/users/search/:realm':
+  '/users/search/{realm}':
     get:
       tags:
         - Users
       summary: Search users with specific criteria
       security:
         - Bearer: []
+      parameters:
+        - name: realm
+          in: path
+          required: true
+          description: The domain to retrieve the users from
+          type: string
       responses:
         '200':
           description: return filtered users
         '404':
           description: Something wrong happened
-  '/users/:realm':
+  '/users/{realm}':
     get:
       tags:
         - Users
       summary: Get all users in a realm
       security:
         - Bearer: []
+      parameters:
+        - name: realm
+          in: path
+          required: true
+          description: The domain to retrieve the users from
+          type: string
       responses:
         '200':
           description: return users
         '404':
           description: Something wrong happened
-  '/users/:realm/{userid}':
+  '/users/{realm}/{userid}':
     get:
       tags:
         - Users
       security:
         - Bearer: []
       parameters:
+        - name: realm
+          in: path
+          required: true
+          description: The domain to retrieve the user from
+          type: string
         - name: userid
           in: path
           required: true
@@ -167,6 +184,11 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - name: realm
+          in: path
+          required: true
+          description: The domain to retrieve the user from
+          type: string
         - name: userid
           in: path
           required: true

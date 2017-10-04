@@ -9,26 +9,28 @@ adminRouter.post('/auth', function(req, res) {
     console.log(req.body);
     settings.username = req.body.username;
     settings.password = req.body.password;
-    auth(settings).then(r => res.json(r));
+    auth(settings).then(r => res.json(r)).catch(r => res.json(r));
 });
 adminRouter.post('/search/:realm', function(req, res) {
+    console.log(req.body);
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm, req.body).then(r => res.json(r));
+    users.find(token, req.params.realm, req.body).then(r => res.json(r)).catch(r => res.json(r));
 });
 adminRouter.get('/:realm', function(req, res) {
-    console.log(req.body);
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm).then(r => res.json(r));
+    users.find(token, req.params.realm).then(r => res.json(r)).catch(r => res.json(r));
 });
 adminRouter.get('/:realm/:userid', function(req, res) {
-    console.log(req.body);
+    console.log(req.params);
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm, { userId: userid }).then(r => res.json(r));
+    users.find(token, req.params.realm, { userId: req.params.userid }).then(r => res.json(r)).catch(r => res.json(r));
 });
-adminRouter.put('/:realm', function(req, res) {
+adminRouter.put('/:realm/:userid', function(req, res) {
     console.log(req.body);
     var token = req.get("Authorization").split(" ").pop();
-    users.update(token, req.params.realm, req.body).then(r => res.json(r));
+    if (req.params.userid === req.body.id)
+        users.update(token, req.params.realm, req.body).then(r => res.json(r)).catch(r => res.json(r));
+    else res.status(400).end();
 });
 
 
