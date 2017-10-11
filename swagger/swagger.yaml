@@ -3,7 +3,7 @@ info:
   title: WAZIUP API
   description: Applications API
   version: 1.0.0
-host: '127.0.0.1:80'
+host: '127.0.0.1:8000'
 schemes:
   - http
 basePath: /api/v1
@@ -17,19 +17,75 @@ definitions:
     properties:
       id:
         type: string
-        description: id   is  the  name  of  the  sensor.
+        description: UUID of the sensor
+        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      gateway_id:
+        type: string
+        description: UUID of the gateway
+        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      name:
+        type: string
+        description: name of the sensor
+        example: "Sensor1"
+      owner:
+        type: string
+        description: name of the sensor
+        example: "cdupont"
+      sensor-kind:
+        type: string
+        description: kind of the sensor
+        example: "Soil temperature sensor"
+      measurements:
+        type: array
+        $ref: '#/definitions/Measurement'
       location:
         $ref: '#/definitions/Location'
   Location:
     type: object
-    description: >-
-      location is  a  pair  [latitude,  longitude]  with  the  coordinates  on 
-      earth  in  decimal  notation  (e.g. • [40.418889,  35.89389]).  .
+    description: location is a pair [latitude, longitude] with the coordinates on earth in decimal notation (e.g. [40.418889, 35.89389]).
     properties:
       latitude:
         type: number
+        example: 5.3600
       longitude:
         type: number
+        example: 4.0083
+  Measurement:
+    type: object
+    properties:
+      id:
+        type: string
+        description: UUID of the measurement 
+        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      name:
+        type: string
+        description: name of the measurement
+        example: "TC1"
+      dimension:
+        type: string
+        description: physical dimension of the measurement
+        example: "temperature"
+      unit:
+        type: string
+        description: unit of the measurement
+        example: "Degree C"
+      values:
+        type: array
+        items:
+          $ref: '#/definitions/MeasurementValue'
+  MeasurementValue:
+    type: object
+    properties:
+      value:
+        type: "number"
+        format: "float"
+        description: value of the measurement 
+        example: "25.6"
+      timestamp:
+        type: "string"
+        format: "dateTime"
+        description: time of the measurement
+        example: "2016-06-08T18:20:27.873Z"
   Error:
     type: object
     properties:
@@ -74,14 +130,37 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+
+
+
 paths:
   /sensors:
+    get:
+      summary: Sensor data
+      description:    
+      tags:
+        - Sensors
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: 
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Sensor"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
     post:
       summary: Create sensors
       description: |
-        Endpoint   to   createsensing  devices.
+        Endpoint to create sensing devices.
       tags:
         - Sensors
+      schema:
+        $ref: '#/definitions/Sensor'
       responses:
         '201':
           description: Sensor created succesfully
