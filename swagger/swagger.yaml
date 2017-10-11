@@ -86,6 +86,19 @@ definitions:
         format: "dateTime"
         description: time of the measurement
         example: "2016-06-08T18:20:27.873Z"
+  HistoricalValue:
+    type: object
+    properties:
+      id:
+        type: string
+        description: UUID of the sensor
+        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      attribute_id:
+        type: string
+        description: UUID of the measurement
+        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      datapoint:
+        $ref: '#/definitions/MeasurementValue'
   Error:
     type: object
     properties:
@@ -134,7 +147,7 @@ securityDefinitions:
 
 
 paths:
-  /sensors:
+  /domains/{domain}/sensors:
     get:
       summary: Sensor data
       description:    
@@ -142,6 +155,11 @@ paths:
         - Sensors
       produces:
       - "application/json"
+      parameters:
+      - name: "domain"
+        in: "path"
+        required: false 
+        type: "string"
       responses:
         '200':
           description: 
@@ -155,12 +173,23 @@ paths:
             $ref: '#/definitions/Error'
     post:
       summary: Create sensors
-      description: |
-        Endpoint to create sensing devices.
+      description: Endpoint to create sensing devices.
       tags:
         - Sensors
-      schema:
-        $ref: '#/definitions/Sensor'
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Sensor"
+      - name: "domain"
+        in: "path"
+        required: false 
+        type: "string"
       responses:
         '201':
           description: Sensor created succesfully
@@ -171,13 +200,14 @@ paths:
   /history:
     get:
       summary: Historical  data
-      description: |
-        Query domain historical  data  .    
+      description: Query domain historical data
       tags:
-        - Historical  data
+        - Historical data
       responses:
         '200':
           description: Array
+          schema:
+            $ref: '#/definitions/HistoricalValue'
         default:
           description: Unexpected error
           schema:
