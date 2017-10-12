@@ -16,7 +16,7 @@ Test
 
 Start the server:
 ```
-sudo node index.js
+sudo node src/index.js
 ```
 
 Start keycloak:

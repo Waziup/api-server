@@ -43,7 +43,7 @@ const keycloak = new Keycloak({
 //app.get('/env/:var', (req, res) => res.send(process.env[req.params.var]))
 app.use('/api/v1', router);
 router.use('/users', usersRoute);
-orionProxy.install(router, '/domains/waziup/sensors', keycloak);
+orionProxy.install(router, keycloak);
 
 // var swaggerTools = require('swagger-tools');
 // var YAML = require('yamljs');

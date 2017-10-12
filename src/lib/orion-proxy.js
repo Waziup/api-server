@@ -43,25 +43,27 @@ function proxyOrion(method, path, req, res) {
     request(options).pipe(res);       
 }
 
-function install(router, baseUrl, keycloak) {
-    for (const method in methodAccess) {
-        const accessLevel = methodAccess[method];
+function install(router, keycloak) {
 
-        //router[method.toLowerCase()](baseUrl, servicePathProtection(accessLevel, getServicePathFromHeader, keycloak), (req, res) => {
-        //    proxyOrion(method, '', req, res)
-        //});
+  router.get('/domains/:domain/sensors', getSensors);
 
-        //router[method.toLowerCase()](baseUrl + '/*', servicePathProtection(accessLevel, getServicePathFromHeader, keycloak), (req, res) => {
-        //    proxyOrion(method, '/' + req.params[0], req, res)
-        //});
-        router[method.toLowerCase()](baseUrl, (req, res) => {
-            proxyOrion(method, '', req, res)
-        });
+}
 
-        router[method.toLowerCase()](baseUrl + '/*', (req, res) => {
-            proxyOrion(method, '/' + req.params[0], req, res)
-        });
-    }
+function getSensors(req, res) {
+
+  const orionHost = config.orionUrl;
+
+    const options = {
+        method: 'GET',
+        url: orionHost + '/v2/entities',
+        headers: {
+            'Fiware-Service': 'waziup',
+            'Fiware-ServicePath': '/#'
+        }
+    };
+
+    request(options).pipe(res);
+
 }
 
 module.exports = {
