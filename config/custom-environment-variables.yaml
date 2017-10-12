@@ -1,5 +1,0 @@
-serverport: SERVERPORT
-
-elasticsearchurl: ELASTICSEARCH_URL
-orionurl: ORION_URL
-keycloakurl: KEYCLOAK_URL

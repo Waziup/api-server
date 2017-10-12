@@ -1,12 +1,10 @@
 "use strict";
 
-const server = require('./server');
-const app = server.app;
-const { AccessLevel, servicePathProtection, getServicePathFromHeader } = server.access;
+const access = require('./access.js');
+const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const url = require('url');
-const config = require('../lib/config.js');
-const defaultConfig = require('config');
+const config = require('../config.js');
 
 const methodAccess = {
     GET: AccessLevel.VIEW,
@@ -17,14 +15,14 @@ const methodAccess = {
 
 function proxyOrion(method, path, req, res) {
     const reqUrl = url.parse(req.url);
-    const orionURL = defaultConfig.orionurl;
+    const orionHost = config.orionUrl;
     //v2/entities
-    const proxyUrl = `${orionURL}${path}${reqUrl.search || ''}`; 
-    console.log('orion:', orionURL);
+    const proxyUrl = `${orionHost}${path}${reqUrl.search || ''}`; 
     console.log('path:', path);
     console.log('method:', method);
     console.log('req.body:', req.body);
     console.log('proxyUrl:', proxyUrl);
+    console.log('fiware-servicePath in Orion request:' + req.headers['fiware-servicepath']);
 
     const options = {
         method,
@@ -45,15 +43,22 @@ function proxyOrion(method, path, req, res) {
     request(options).pipe(res);       
 }
 
-function install(router, baseUrl) {
+function install(router, baseUrl, keycloak) {
     for (const method in methodAccess) {
         const accessLevel = methodAccess[method];
 
-        router[method.toLowerCase()](baseUrl, servicePathProtection(accessLevel, getServicePathFromHeader), (req, res) => {
+        //router[method.toLowerCase()](baseUrl, servicePathProtection(accessLevel, getServicePathFromHeader, keycloak), (req, res) => {
+        //    proxyOrion(method, '', req, res)
+        //});
+
+        //router[method.toLowerCase()](baseUrl + '/*', servicePathProtection(accessLevel, getServicePathFromHeader, keycloak), (req, res) => {
+        //    proxyOrion(method, '/' + req.params[0], req, res)
+        //});
+        router[method.toLowerCase()](baseUrl, (req, res) => {
             proxyOrion(method, '', req, res)
         });
 
-        router[method.toLowerCase()](baseUrl + '/*', servicePathProtection(accessLevel, getServicePathFromHeader), (req, res) => {
+        router[method.toLowerCase()](baseUrl + '/*', (req, res) => {
             proxyOrion(method, '/' + req.params[0], req, res)
         });
     }
