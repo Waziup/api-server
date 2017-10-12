@@ -110,6 +110,7 @@ async function postSensor(req, res) {
     var res2 = await axios.post('http://broker.waziup.io/v2/entities',
                                  entity,
                                 {headers: {'Fiware-Service': 'cdupont'}});
+    res.status(res2.status);
     res.send(res2.data);
   
   } catch(err) {
