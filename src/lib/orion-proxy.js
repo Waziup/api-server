@@ -3,6 +3,7 @@
 const access = require('./access.js');
 const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
+const http = require('http');
 const url = require('url');
 const config = require('../config.js');
 
@@ -40,7 +41,7 @@ function proxyOrion(method, path, req, res) {
         options.json = true;
     }
     
-    request(options).pipe(res);       
+    request(options).on('response', getSensors).pipe(res);       
 }
 
 function install(router, keycloak) {
@@ -51,19 +52,66 @@ function install(router, keycloak) {
 
 function getSensors(req, res) {
 
+  //console.log(req)
   const orionHost = config.orionUrl;
 
     const options = {
         method: 'GET',
-        url: orionHost + '/v2/entities',
+        host: 'broker.waziup.io',
+        port: 80,
+        path: '/v2/entities',
         headers: {
             'Fiware-Service': 'waziup',
             'Fiware-ServicePath': '/#'
-        }
+        },
+        json: true
     };
 
-    request(options).pipe(res);
+  var newReq = http.request(options, function(newRes) {
 
+   var body = '';
+   newRes.on('data', function(chunk) {
+     body += chunk;
+   });
+   newRes.on('end', function() {
+     console.log('body: ' + body);
+
+     var newBody = entitiesToSensors(JSON.parse(body));
+
+     console.log("new body = " + newBody);
+     res.write(String(JSON.stringify(newBody))); 
+   });
+  }).on('error', function(err) {
+    res.statusCode = 500;
+    res.end();
+  
+  });
+
+  req.pipe(newReq).pipe(res);
+
+}
+
+function entitiesToSensors(entities) {
+
+  console.log(entities);
+
+  var sensors = entities.map(entityToSensor);
+  console.log("sensors:" + JSON.stringify(sensors));
+  return sensors;
+ 
+}
+
+function entityToSensor(entity) {
+
+  var sensor = {
+    id: entity.id
+  }
+  if (entity.location && entity.location.value && entity.location.value.coordinates) {
+    sensor.location = {latitude: entity.location.value.coordinates[1],
+                       longitude: entity.location.value.coordinates[0]};
+  }
+
+  return sensor;
 }
 
 module.exports = {
