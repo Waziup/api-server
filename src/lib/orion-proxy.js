@@ -46,22 +46,22 @@ function proxyOrion(method, path, req, res) {
 
 function install(router, keycloak) {
 
-  router.get('/domains/:domain/sensors', getSensors);
+  router.get( '/domains/:domain/sensors', getSensors);
+  router.post('/domains/:domain/sensors', postSensor);
 
 }
 
 function getSensors(req, res) {
 
-  //console.log(req)
   const orionHost = config.orionUrl;
 
-    const options = {
+  const options = {
         method: 'GET',
         host: 'broker.waziup.io',
         port: 80,
         path: '/v2/entities',
         headers: {
-            'Fiware-Service': 'waziup',
+            'Fiware-Service': 'cdupont',
             'Fiware-ServicePath': '/#'
         },
         json: true
@@ -106,13 +106,63 @@ function entityToSensor(entity) {
   var sensor = {
     id: entity.id
   }
+  if (entity.gateway_id) {
+    sensor.gateway_id = entity.gateway_id.value;
+  }
+  if (entity.name) {
+    sensor.name = entity.name.value;
+  }
+  if (entity.owner) {
+    sensor.owner = entity.owner.value;
+  }
+  if (entity.sensorKind) {
+    sensor.sensorKind = entity.sensorKind.value;
+  }
   if (entity.location && entity.location.value && entity.location.value.coordinates) {
-    sensor.location = {latitude: entity.location.value.coordinates[1],
+    sensor.location = {latitude:  entity.location.value.coordinates[1],
                        longitude: entity.location.value.coordinates[0]};
   }
+  //getMeasurements(entity);
 
   return sensor;
 }
+
+function postSensor(req, res) {
+
+  console.log("req:" + req.body);
+  var entity = sensorToEntity(req.body);
+  const orionHost = config.orionUrl;
+
+  const options = {
+        method: 'POST',
+        host: 'broker.waziup.io',
+        port: 80,
+        path: '/v2/entities',
+        headers: {
+            'Fiware-Service': 'cdupont',
+            'Fiware-ServicePath': '/',
+            'content-type': 'application/json'
+        },
+        json: true
+    };
+
+  var newReq = http.request(options)
+  newReq.write(String(JSON.stringify(entity)));
+  newReq.end();
+
+  req.pipe(newReq).pipe(res);
+
+}
+
+function sensorToEntity(sensor) {
+
+  var entity = {
+    id: sensor.id
+  }
+
+  return entity;
+}
+
 
 module.exports = {
     install

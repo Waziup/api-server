@@ -14,7 +14,7 @@ consumes:
 definitions:
   Sensor:
     type: object
-    required: ["id", "gateway_id"]
+    required: ["id"]
     properties:
       id:
         type: string
