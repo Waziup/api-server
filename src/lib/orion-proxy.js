@@ -6,6 +6,8 @@ const request = require('request');
 const http = require('http');
 const url = require('url');
 const config = require('../config.js');
+const axios = require('axios');
+
 
 const methodAccess = {
     GET: AccessLevel.VIEW,
@@ -51,43 +53,17 @@ function install(router, keycloak) {
 
 }
 
-function getSensors(req, res) {
+async function getSensors(req, res) {
 
-  const orionHost = config.orionUrl;
-
-  const options = {
-        method: 'GET',
-        host: 'broker.waziup.io',
-        port: 80,
-        path: '/v2/entities',
-        headers: {
-            'Fiware-Service': 'cdupont',
-            'Fiware-ServicePath': '/#'
-        },
-        json: true
-    };
-
-  var newReq = http.request(options, function(newRes) {
-
-   var body = '';
-   newRes.on('data', function(chunk) {
-     body += chunk;
-   });
-   newRes.on('end', function() {
-     console.log('body: ' + body);
-
-     var newBody = entitiesToSensors(JSON.parse(body));
-
-     console.log("new body = " + newBody);
-     res.write(String(JSON.stringify(newBody))); 
-   });
-  }).on('error', function(err) {
-    res.statusCode = 500;
-    res.end();
+  try{
+    var entities = await axios.get('http://broker.waziup.io/v2/entities',
+                                 {headers: {'Fiware-Service': 'cdupont'}});
+    var sensors = entitiesToSensors(entities.data);
+    res.send(sensors);
   
-  });
-
-  req.pipe(newReq).pipe(res);
+  } catch(err) {
+    console.log('error ' + err);
+  }
 
 }
 
@@ -127,31 +103,19 @@ function entityToSensor(entity) {
   return sensor;
 }
 
-function postSensor(req, res) {
-
-  console.log("req:" + req.body);
+async function postSensor(req, res) {
+  
   var entity = sensorToEntity(req.body);
-  const orionHost = config.orionUrl;
-
-  const options = {
-        method: 'POST',
-        host: 'broker.waziup.io',
-        port: 80,
-        path: '/v2/entities',
-        headers: {
-            'Fiware-Service': 'cdupont',
-            'Fiware-ServicePath': '/',
-            'content-type': 'application/json'
-        },
-        json: true
-    };
-
-  var newReq = http.request(options)
-  newReq.write(String(JSON.stringify(entity)));
-  newReq.end();
-
-  req.pipe(newReq).pipe(res);
-
+  try {
+    var res2 = await axios.post('http://broker.waziup.io/v2/entities',
+                                 entity,
+                                {headers: {'Fiware-Service': 'cdupont'}});
+    res.send(res2.data);
+  
+  } catch(err) {
+    res.status(err.response.status);
+    res.send(err.response.data); 
+  }
 }
 
 function sensorToEntity(sensor) {
