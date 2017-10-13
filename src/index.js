@@ -10,6 +10,7 @@ const config = require('./config');
 const Keycloak = require('keycloak-connect');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const url = require('url');
 
 //importing individual routes
 const usersRoute = require('./routes/users/user.route');
@@ -53,9 +54,12 @@ orionProxy.install(router, keycloak);
 //     // Serve the Swagger documents and Swagger UI
 //     app.use(middleware.swaggerUi());
 // });
-const swaggerDocument = YAML.load('./swagger/swagger.yaml');
+var swaggerDocument = YAML.load('./swagger/swagger.yaml');
+const host = url.parse(config.serverUrl).host;
+swaggerDocument.host = host; 
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 
 async function run() {
     await new Promise(resolve => app.listen(config.port, () => resolve()));

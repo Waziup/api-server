@@ -56,7 +56,7 @@ function install(router, keycloak) {
 async function getSensors(req, res) {
 
   try{
-    var entities = await axios.get('http://broker.waziup.io/v2/entities',
+    var entities = await axios.get(config.orionUrl + '/v2/entities',
                                  {headers: {'Fiware-Service': 'cdupont'}});
     var sensors = entitiesToSensors(entities.data);
     res.send(sensors);
@@ -107,7 +107,7 @@ async function postSensor(req, res) {
   
   var entity = sensorToEntity(req.body);
   try {
-    var res2 = await axios.post('http://broker.waziup.io/v2/entities',
+    var res2 = await axios.post(config.orionUrl + '/v2/entities',
                                  entity,
                                 {headers: {'Fiware-Service': 'cdupont'}});
     res.status(res2.status);

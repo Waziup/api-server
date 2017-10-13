@@ -1,19 +1,15 @@
 
 module.exports = {
+
   // Node.js app
-  port: process.env.PORT || 8000,
+  port: process.env.SERVER_PORT || 3000,
 
-  // API Gateway
-  api: {
-    // API URL to be used in the server-side code
-    serverUrl:
-      process.env.API_SERVER_URL ||
-      `http://localhost:${process.env.PORT || 3000}`,
-  },
+  // API URL to be used in the server-side code
+  serverUrl: process.env.SERVER_URL || `http://localhost:${process.env.SERVER_PORT || 3000}`,
 
-  keycloakUrl: 'http://aam.waziup.io/auth',
+  keycloakUrl: process.env.KEYCLOAK_URL || 'http://aam.waziup.io/auth',
   realm: 'waziup',
   clientId: 'api-server',
-  orionUrl: 'http://broker.waziup.io',
-  elasticsearchUrl: 'http://elasticsearch.waziup.io'
+  orionUrl: process.env.ORION_URL || 'http://broker.waziup.io',
+  elasticsearchUrl: process.env.ELASTICSEARCH_URL || 'http://elasticsearch.waziup.io'
 };

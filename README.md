@@ -25,6 +25,12 @@ cd ..
 docker-compose up keycloak
 ```
 
+You can view the API by starting your browser:
+```
+firefox localhost:8000/docs
+```
+
+
 In order to test the API server, you need to retrieve an access token from keycloak.
 Make sure that the user "waziup" exists in Keycloak and that he has the attributes "Service", "ServicePath" and "permissions" correctly set.
 Also make sure the client "waziup" exists and that it has mappers for the attributes above.
