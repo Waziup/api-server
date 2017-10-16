@@ -50,36 +50,75 @@ function install(router, keycloak) {
 
   router.get( '/domains/:domain/sensors', getSensors);
   router.post('/domains/:domain/sensors', postSensor);
+  router.get( '/domains/:domain/sensors/:sensorID', getSensor);
+  router.delete( '/domains/:domain/sensors/:sensorID', deleteSensor);
 
 }
 
 async function getSensors(req, res) {
 
+  sendRequest('/v2/entities', 'GET', null, entitiesToSensors, req, res);
+}
+
+async function postSensor(req, res) {
+  
+  sendRequest('/v2/entities', 'POST', sensorToEntity, null, req, res);
+}
+
+function getSensor(req, res) {
+
+  sendRequest('/v2/entities/' + req.params.sensorID, 'GET', null, entityToSensor, req, res);
+}
+
+function deleteSensor(req, res) {
+
+  sendRequest('/v2/entities/' + req.params.sensorID, 'DELETE', null, null, req, res);
+}
+
+async function sendRequest(orionPath, method, prePro, postPro, req, res) {
+ 
   try {
-    var entities = await axios.get(config.orionUrl + '/v2/entities',
-                                  {headers: {'Fiware-Service': 'cdupont'},
-                                   params:  { 'limit': 100 }});
-    var sensors = entitiesToSensors(entities.data);
-    res.send(sensors);
+    var url = 'http://broker.waziup.io' + orionPath;
+    var service = req.params.domain.split("-")[0];
+    var headers = {'Fiware-Service': service};
+    //pre-process the data from Waziup to Orion format
+    var data = prePro? prePro(req.body) : null;
+    var axiosConf = {method: method,
+                     url: url,
+                     data: data,
+                     headers: headers,
+                     params: {limit: 100}}
+    console.log("Orion request: " + method + " on: " + url + "\n with headers: " + JSON.stringify(headers));
+    
+    //perform request to Orion
+    var orionResp = await axios(axiosConf);
+    //pro-process the data from Orion to Waziup format
+    var waziupResp = postPro? postPro(orionResp.data): orionResp.data;
+    //send the result back to the user
+    res.send(waziupResp);
   
   } catch (err) {
-    console.log('getSensors error: ' + err.stack);
+    if (err.response) {
+      // The request was made and the server responded with a status code
+      // We forward it to the user
+      res.status(err.response.status);
+      res.send(err.response.data); 
+    } else if (err.request) {
+      // The request was made but no response was received
+      console.log(err.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', err.stack);
+    }
   }
-
 }
 
 function entitiesToSensors(entities) {
-
-  console.log(entities);
-
-  var sensors = entities.map(entityToSensor);
-  console.log("sensors:" + JSON.stringify(sensors));
-  return sensors;
- 
+  return entities.map(entityToSensor);
 }
-
 function entityToSensor(entity) {
 
+  console.log(JSON.stringify(entity));
   var sensor = {
     id: entity.id
   }
@@ -111,10 +150,7 @@ function getMeasurements(entity) {
   for (var attrID in entity) {
     const attr = entity[attrID];
 
-    console.log('attr : ' + JSON.stringify(attr))
     if (attr.type == 'Measurement') {
-      
-      console.log('found Measurement');
       measurements.push(getMeasurement(attr, attrID));
     }
   }
@@ -140,23 +176,6 @@ function getMeasurement(attr, attrID) {
     meas.unit = metadata.unit.value;
   }        
   return meas;
-}
-
-async function postSensor(req, res) {
-  
-  var entity = sensorToEntity(req.body);
-  console.log('Post sensor: ' + JSON.stringify(entity));
-  try {
-    var res2 = await axios.post(config.orionUrl + '/v2/entities',
-                                 entity,
-                                {headers: {'Fiware-Service': 'cdupont'}});
-    res.status(res2.status);
-    res.send(res2.data);
-  
-  } catch(err) {
-    res.status(err.response.status);
-    res.send(err.response.data); 
-  }
 }
 
 function sensorToEntity(sensor) {
@@ -204,7 +223,6 @@ function getEntityLocation(loc) {
 }
 
 function getMeasAttrs(measurement) {
-  console.log('getMeasAttrs:' + JSON.stringify(measurement));
   var attr = {
     type: 'Measurement',
     metadata: {}

@@ -162,7 +162,7 @@ paths:
         in: "path"
         required: false 
         type: "string"
-        example: "waziup"
+        example: "cdupont"
       responses:
         '200':
           description: 
@@ -191,10 +191,12 @@ paths:
         in: "path"
         required: false 
         type: "string"
-        example: "waziup"
+        example: "cdupont"
       responses:
         '201':
           description: Sensor created succesfully
+        '422':
+          description: Unprocessable entity 
         default:
           description: Unexpected error
           schema:
@@ -213,7 +215,7 @@ paths:
         in: "path"
         required: false 
         type: "string"
-        example: "waziup"
+        example: "cdupont"
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -224,6 +226,10 @@ paths:
           description: 
           schema:
             $ref: "#/definitions/Sensor"
+        '400':
+          description: Bad request
+        '404':
+          description: Not Found
         '422':
           description: Unprocessable entity 
         default:
@@ -248,7 +254,9 @@ paths:
         example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
       responses:
         '200':
-          description: deleted 
+          description: Deleted
+        '404':
+          description: Not found
         default:
           description: Unexpected error
           schema:
