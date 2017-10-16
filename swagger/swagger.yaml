@@ -32,7 +32,7 @@ definitions:
         type: string
         description: name of the sensor
         example: "cdupont"
-      sensor-kind:
+      sensor_kind:
         type: string
         description: kind of the sensor
         example: "Soil temperature sensor"
@@ -224,6 +224,8 @@ paths:
           description: 
           schema:
             $ref: "#/definitions/Sensor"
+        '422':
+          description: Unprocessable entity 
         default:
           description: Unexpected error
           schema:
