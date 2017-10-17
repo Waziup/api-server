@@ -48,56 +48,25 @@ function proxyOrion(method, path, req, res) {
 
 function install(router, keycloak) {
 
-  router.get( '/domains/:domain/sensors', getSensors);
-  router.post('/domains/:domain/sensors', postSensor);
-  router.get( '/domains/:domain/sensors/:sensorID', getSensor);
-  router.delete( '/domains/:domain/sensors/:sensorID', deleteSensor);
-  router.put( '/domains/:domain/sensors/:sensorID/owner', putOwner);
-  router.put( '/domains/:domain/sensors/:sensorID/location', putLocation);
-  router.put( '/domains/:domain/sensors/:sensorID/name', putName);
-  router.put( '/domains/:domain/sensors/:sensorID/sensor_kind', putSensorKind);
+  router.get(    '/domains/:domain/sensors',                       getSensors);
+  router.post(   '/domains/:domain/sensors',                       postSensor);
+  router.get(    '/domains/:domain/sensors/:sensorID',             getSensor);
+  router.delete( '/domains/:domain/sensors/:sensorID',             deleteSensor);
+  router.put(    '/domains/:domain/sensors/:sensorID/owner',       putOwner);
+  router.put(    '/domains/:domain/sensors/:sensorID/location',    putLocation);
+  router.put(    '/domains/:domain/sensors/:sensorID/name',        putName);
+  router.put(    '/domains/:domain/sensors/:sensorID/sensor_kind', putSensorKind);
 
 }
 
-async function getSensors(req, res) {
-
-  orionRequest('/v2/entities', 'GET', null, entitiesToSensors, req, res);
-}
-
-async function postSensor(req, res) {
-  
-  orionRequest('/v2/entities', 'POST', sensorToEntity, null, req, res);
-}
-
-function getSensor(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID, 'GET', null, entityToSensor, req, res);
-}
-
-function deleteSensor(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID, 'DELETE', null, null, req, res);
-}
-
-function putOwner(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/owner', 'PUT', getStringAttr, null, req, res);
-}
-
-function putLocation(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/location', 'PUT', getEntityLocation, null, req, res);
-}
-
-function putName(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/name', 'PUT', getStringAttr, null, req, res);
-}
-
-function putSensorKind(req, res) {
-
-  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/sensor_kind', 'PUT', getStringAttr, null, req, res);
-}
+const getSensors    = async (req, res) => orionRequest('/v2/entities'                                              , 'GET'   , null             , entitiesToSensors, req, res);
+const postSensor    = async (req, res) => orionRequest('/v2/entities'                                              , 'POST'  , sensorToEntity   , null             , req, res);
+const getSensor     = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID                       , 'GET'   , null             , entityToSensor   , req, res);
+const deleteSensor  = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID                       , 'DELETE', null             , null             , req, res);
+const putOwner      = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/owner'      , 'PUT'   , getStringAttr    , null             , req, res);
+const putLocation   = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/location'   , 'PUT'   , getEntityLocation, null             , req, res);
+const putName       = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/name'       , 'PUT'   , getStringAttr    , null             , req, res);
+const putSensorKind = async (req, res) => orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/sensor_kind', 'PUT'   , getStringAttr    , null             , req, res);
 
 async function orionRequest(orionPath, method, prePro, postPro, req, res) {
  
