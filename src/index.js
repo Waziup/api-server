@@ -21,6 +21,7 @@ const router = express.Router();
 
 //use body parser (to decode the body in the request)
 app.use(bodyParser.json());
+app.use(bodyParser.text());
 //Include cors headers responses 
 app.use(cors());
 
