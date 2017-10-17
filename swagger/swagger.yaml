@@ -11,6 +11,13 @@ produces:
   - application/json
 consumes:
   - application/json
+parameters:
+  domainParam:
+    name: "domain"
+    in: "path"
+    required: false 
+    type: "string"
+    example: "cdupont"
 definitions:
   Sensor:
     type: object
@@ -158,11 +165,7 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "cdupont"
+      - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: 
@@ -187,11 +190,7 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/Sensor"
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "cdupont"
+      - $ref: '#/parameters/domainParam'
       responses:
         '201':
           description: Sensor created succesfully
@@ -211,11 +210,7 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "cdupont"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -242,11 +237,7 @@ paths:
       tags:
         - Sensors
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -270,11 +261,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -284,9 +271,18 @@ paths:
         name: "body"
         required: true
         schema:
-          type: string
+          type: "string"
           description: the owner of the sensor
-          example: cdupont
+          example: "cdupont"
+      responses:
+        '200':
+          description: Updated 
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/sensors/{sensor_id}/location:
     put: 
       summary: insert location 
@@ -295,11 +291,7 @@ paths:
       consumes:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -318,11 +310,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -343,11 +331,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -368,11 +352,7 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -396,11 +376,7 @@ paths:
       consumes:
       - "application/json²"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -419,11 +395,7 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -449,11 +421,7 @@ paths:
       tags:
         - Sensors
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -479,11 +447,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -516,11 +480,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -553,11 +513,7 @@ paths:
       consumes:
       - "application/text"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -590,11 +546,7 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
@@ -623,11 +575,7 @@ paths:
       consumes:
       - "application/json"
       parameters:
-      - name: "domain"
-        in: "path"
-        required: false 
-        type: "string"
-        example: "waziup"
+      - $ref: '#/parameters/domainParam'
       - name: "sensor_id"
         in: "path"
         required: true 
