@@ -18,6 +18,18 @@ parameters:
     required: false 
     type: "string"
     example: "cdupont"
+  sensorId:
+    name: "sensor_id"
+    in: "path"
+    required: true 
+    type: "string"
+    example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+  measurementId:
+    name: "measurement_id"
+    in: "path"
+    required: true 
+    type: "string"
+    example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
 definitions:
   Sensor:
     type: object
@@ -211,11 +223,7 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       responses:
         '200':
           description: 
@@ -238,11 +246,7 @@ paths:
         - Sensors
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       responses:
         '200':
           description: Deleted
@@ -259,24 +263,22 @@ paths:
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - in: "body"
         name: "body"
         required: true
         schema:
-          type: "string"
+          type: string
           description: the owner of the sensor
-          example: "cdupont"
+          example: cdupont
       responses:
         '200':
           description: Updated 
+        '400':
+          description: Bad request
         '404':
           description: Not found
         default:
@@ -292,30 +294,33 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - in: "body"
         name: "body"
         required: true
         schema:
           $ref: '#/definitions/Location'
+      responses:
+        '200':
+          description: Updated 
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/sensors/{sensor_id}/name:
     put: 
       summary: insert name
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - in: "body"
         name: "body"
         required: true
@@ -323,20 +328,27 @@ paths:
           type: string
           description: the owner of the sensor
           example: Sensor1
+      responses:
+        '200':
+          description: Updated 
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/sensors/{sensor_id}/sensor_kind:
     put: 
       summary: insert sensor kind
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - in: "body"
         name: "body"
         required: true
@@ -344,6 +356,17 @@ paths:
           type: string
           description: the sensor kind
           example: "Soil moisture sensor"
+      responses:
+        '200':
+          description: Updated 
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/sensors/{sensor_id}/measurements:
     get: 
       summary: get measurements
@@ -353,11 +376,7 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       responses:
         '200':
           description: 
@@ -377,11 +396,7 @@ paths:
       - "application/json²"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - in: "body"
         name: "body"
         required: true
@@ -396,11 +411,7 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
       - name: "measurement_id"
         in: "path"
         required: true 
@@ -422,16 +433,8 @@ paths:
         - Sensors
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       responses:
         '200':
           description: deleted 
@@ -448,16 +451,8 @@ paths:
       - "application/text"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       - name: "body"
         in: "body"
         required: true 
@@ -481,16 +476,8 @@ paths:
       - "application/text"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       - name: "body"
         in: "body"
         required: true 
@@ -514,16 +501,8 @@ paths:
       - "application/text"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       - name: "body"
         in: "body"
         required: true 
@@ -547,16 +526,8 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       responses:
         '200':
           description: 
@@ -576,16 +547,8 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
-      - name: "sensor_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+      - $ref: '#/parameters/sensorId'
+      - $ref: '#/parameters/measurementId'
       - in: "body"
         name: "body"
         required: true

@@ -52,30 +52,54 @@ function install(router, keycloak) {
   router.post('/domains/:domain/sensors', postSensor);
   router.get( '/domains/:domain/sensors/:sensorID', getSensor);
   router.delete( '/domains/:domain/sensors/:sensorID', deleteSensor);
+  router.put( '/domains/:domain/sensors/:sensorID/owner', putOwner);
+  router.put( '/domains/:domain/sensors/:sensorID/location', putLocation);
+  router.put( '/domains/:domain/sensors/:sensorID/name', putName);
+  router.put( '/domains/:domain/sensors/:sensorID/sensor_kind', putSensorKind);
 
 }
 
 async function getSensors(req, res) {
 
-  sendRequest('/v2/entities', 'GET', null, entitiesToSensors, req, res);
+  orionRequest('/v2/entities', 'GET', null, entitiesToSensors, req, res);
 }
 
 async function postSensor(req, res) {
   
-  sendRequest('/v2/entities', 'POST', sensorToEntity, null, req, res);
+  orionRequest('/v2/entities', 'POST', sensorToEntity, null, req, res);
 }
 
 function getSensor(req, res) {
 
-  sendRequest('/v2/entities/' + req.params.sensorID, 'GET', null, entityToSensor, req, res);
+  orionRequest('/v2/entities/' + req.params.sensorID, 'GET', null, entityToSensor, req, res);
 }
 
 function deleteSensor(req, res) {
 
-  sendRequest('/v2/entities/' + req.params.sensorID, 'DELETE', null, null, req, res);
+  orionRequest('/v2/entities/' + req.params.sensorID, 'DELETE', null, null, req, res);
 }
 
-async function sendRequest(orionPath, method, prePro, postPro, req, res) {
+function putOwner(req, res) {
+
+  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/owner', 'PUT', getStringAttr, null, req, res);
+}
+
+function putLocation(req, res) {
+
+  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/location', 'PUT', getEntityLocation, null, req, res);
+}
+
+function putName(req, res) {
+
+  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/name', 'PUT', getStringAttr, null, req, res);
+}
+
+function putSensorKind(req, res) {
+
+  orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/sensor_kind', 'PUT', getStringAttr, null, req, res);
+}
+
+async function orionRequest(orionPath, method, prePro, postPro, req, res) {
  
   try {
     var url = 'http://broker.waziup.io' + orionPath;
@@ -88,7 +112,9 @@ async function sendRequest(orionPath, method, prePro, postPro, req, res) {
                      data: data,
                      headers: headers,
                      params: {limit: 100}}
-    console.log("Orion request: " + method + " on: " + url + "\n with headers: " + JSON.stringify(headers));
+    console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
+    console.log(" data: " + JSON.stringify(req.body));
+    console.log(" data: " + JSON.stringify(data));
     
     //perform request to Orion
     var orionResp = await axios(axiosConf);
@@ -113,9 +139,18 @@ async function sendRequest(orionPath, method, prePro, postPro, req, res) {
   }
 }
 
+function getStringAttr(attr) {
+  
+  return {
+    type: 'String',
+    value: attr
+  }
+}
+
 function entitiesToSensors(entities) {
   return entities.map(entityToSensor);
 }
+
 function entityToSensor(entity) {
 
   console.log(JSON.stringify(entity));
@@ -190,7 +225,7 @@ function sensorToEntity(sensor) {
   if (sensor.name) {
     entity.name = {type: 'String', value: sensor.name};
   }
-  if (sensor.gateway_id) {
+  if (sensor.owner) {
     entity.owner = {type: 'String', value: sensor.owner};
   }
   if (sensor.sensor_kind) {
