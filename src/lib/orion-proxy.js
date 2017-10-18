@@ -78,34 +78,11 @@ const getSensorMeasurements    = async (req, res) => orionProxy('/v2/entities/' 
 const postSensorMeasurement    = async (req, res) => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs', 'POST'   , getMeasAttr, null, req, res);
 const getSensorMeasurement     = async (req, res) => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'GET'   , null  , getMeasurement.bind(null, req.params.measID), req, res);
 const deleteSensorMeasurement  = async (req, res) => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'DELETE'   , null  , null, req, res);
-const putSensorMeasurementName = async (req, res) => orionProxyMetadata('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, req, res);
+const putSensorMeasurementName = async (req, res) => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'PUT', getMetadata.bind(null, 'name', req), null, req, res);
 //;async (req, res) => updateMetadataName(req, res);
 
-async function orionProxyMetadata(path, req, res) {
-
-  var getPut = async (path, method, service, data) => {
-    var orionResp = await orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'GET', service, null);
-   
-    var attr = orionResp.data;
-    attr.metadata.name = {
-      type: "String",
-      value: data
-    }
-    console.log('put attr:' + JSON.stringify(attr.data))
-    var orionResp2 = await orionRequest('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'PUT', service, attr);
-  }   
-
-  return orionProxy2(path, '', getPut, null, null, req, res);
-
-}
 
 async function orionProxy(path, method, preProc, postProc, req, res) {
-
-  //get data from Orion
-  return orionProxy2(path, method, orionRequest, preProc, postProc, req, res)
-
-}
-async function orionProxy2(path, method, orionProc, preProc, postProc, req, res) {
 
   try {
     var service = req.params.domain.split("-")[0];
@@ -113,7 +90,7 @@ async function orionProxy2(path, method, orionProc, preProc, postProc, req, res)
     var data = preProc? await preProc(req.body) : null;
     
     //get data from Orion
-    var orionResp = await orionProc(path, method, service, data)
+    var orionResp = await orionRequest(path, method, service, data)
 
     //pro-process the data from Orion to Waziup format
     var waziupResp = postProc? await postProc(orionResp.data): orionResp.data;
@@ -151,10 +128,15 @@ async function orionRequest(path, method, service, data) {
     return axios(axiosConf);
 }
 
-async function updateMetadataName(req, res) {
+async function getMetadata(metadataField, req) {
 
-  var attr = await getSensorMeasurement(req, res);
-  console.log('attr1: ' + JSON.stringify(attr));
+  var path = '/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID;
+  var service = req.params.domain.split("-")[0];
+  var orionResp = await orionRequest(path, 'GET', service, null);
+  
+  var attr = orionResp.data;
+  attr.metadata[metadataField] = getStringAttr(req.body);
+  return attr;
 }
 
 function getStringAttr(attr) {
