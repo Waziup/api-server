@@ -393,7 +393,7 @@ paths:
       tags: 
       - Sensors
       consumes:
-      - "application/json²"
+      - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
       - $ref: '#/parameters/sensorId'
@@ -402,6 +402,15 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/Measurement'
+      responses:
+        '200':
+          description: Measurement created/updated succesfully
+        '422':
+          description: Unprocessable entity 
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}:
     get: 
       summary: get measurement
