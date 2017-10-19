@@ -457,7 +457,7 @@ paths:
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
       - $ref: '#/parameters/sensorId'
@@ -482,7 +482,7 @@ paths:
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
       - $ref: '#/parameters/sensorId'
@@ -507,7 +507,7 @@ paths:
       tags: 
       - Sensors
       consumes:
-      - "application/text"
+      - "text/plain"
       parameters:
       - $ref: '#/parameters/domainParam'
       - $ref: '#/parameters/sensorId'
