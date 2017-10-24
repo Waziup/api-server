@@ -51,11 +51,12 @@ async function orionProxy(path, method, preProc, postProc, req, res) {
 
   try {
     var service = req.params.domain.split("-")[0];
+    var servicePath = '/' + req.params.domain.split("-").slice(1).join('/');
     //pre-process the data from Waziup to Orion format
     var data = preProc? await preProc(req.body) : null;
     
     //get data from Orion
-    var orionResp = await orionRequest(path, method, service, data)
+    var orionResp = await orionRequest(path, method, service, servicePath, data)
 
     //pro-process the data from Orion to Waziup format
     var waziupResp = postProc? await postProc(orionResp.data): orionResp.data;
@@ -79,10 +80,11 @@ async function orionProxy(path, method, preProc, postProc, req, res) {
 }
 
 // Perform a request to Orion
-async function orionRequest(path, method, service, data) {
+async function orionRequest(path, method, service, servicePath, data) {
  
     var url = 'http://broker.waziup.io' + path;
-    var headers = {'Fiware-Service': service};
+    var headers = {'Fiware-Service': service,
+                   'Fiware-ServicePath': servicePath};
     var axiosConf = {method: method,
                      url: url,
                      data: data,
@@ -100,7 +102,8 @@ async function getMetadata(metadataField, req) {
 
   var path = '/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID;
   var service = req.params.domain.split("-")[0];
-  var orionResp = await orionRequest(path, 'GET', service, null);
+  var servicePath = req.params.domain.split("-").shift().replace('-', '/');
+  var orionResp = await orionRequest(path, 'GET', service, servicePath, null);
   
   var attr = orionResp.data;
   attr.metadata[metadataField] = getStringAttr(req.body);
