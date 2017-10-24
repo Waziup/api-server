@@ -12,4 +12,5 @@ module.exports = {
   clientId: 'api-server',
   orionUrl: process.env.ORION_URL || 'http://broker.waziup.io',
   elasticsearchUrl: process.env.ELASTICSEARCH_URL || 'http://elasticsearch.waziup.io'
+  mongoDBUrl: process.env.MONGODB_URL || 'mongodb://localhost:27017/waziup_history'
 };
