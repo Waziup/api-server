@@ -185,6 +185,8 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Sensor"
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -384,6 +386,8 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Measurement"
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -405,6 +409,8 @@ paths:
       responses:
         '200':
           description: Measurement created/updated succesfully
+        '404':
+          description: Not Found
         '422':
           description: Unprocessable entity 
         default:
@@ -447,6 +453,8 @@ paths:
       responses:
         '200':
           description: deleted 
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -472,6 +480,8 @@ paths:
       responses:
         '200':
           description: Replaced 
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -497,6 +507,8 @@ paths:
       responses:
         '200':
           description: Replaced 
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -522,6 +534,8 @@ paths:
       responses:
         '200':
           description: Replaced 
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -544,6 +558,8 @@ paths:
             type: array
             items:
               $ref: "#/definitions/MeasurementValue"
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -566,6 +582,8 @@ paths:
       responses:
         '201':
           description: Datapoint created succesfully
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
@@ -582,6 +600,8 @@ paths:
           description: Array
           schema:
             $ref: '#/definitions/HistoricalValue'
+        '404':
+          description: Not Found
         default:
           description: Unexpected error
           schema:
