@@ -13,7 +13,7 @@ var url = 'mongodb://localhost:27017/waziup_history';
 
 function install(router, keycloak) {
 
-  router.get(    '/domains/:domain/history',    getHistory);
+//  router.get(    '/domains/:domain/history',    getHistory);
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(readMongoValues(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
   router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(insertMongoValue(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
 
@@ -24,10 +24,8 @@ async function insertMongoValue(domain, sensorID, measID, data) {
   const db = await MongoClient.connect('mongodb://localhost:27017/waziup_history');
 
   var data2 = getMeasAttrValue(sensorID, measID, data);
-  // Get the documents collection
-  var collection = db.collection('domain');
-  // Insert some documents
-  await collection.insert(data2);
+  // insert the document
+  db.collection(domain).insert(data2);
 
   db.close();
 }
@@ -36,13 +34,13 @@ async function readMongoValues(domain, sensorID, measID) {
 
   const db = await MongoClient.connect(config.mongoDBUrl);
 
-  var collection = db.collection(domain);
   // Get the documents collection
-  var docs = await collection.find().toArray();
+  var docs = await db.collection(domain).find({entityID: sensorID, attributeID: measID}).toArray();
 
   db.close();
+  
+  return docs.map(getMeasurement)
 
-  return docs;
 }
 
 
@@ -50,7 +48,7 @@ async function readMongoValues(domain, sensorID, measID) {
 async function mongoProxy(mongoReq, req, res) {
 
   try {
-    // get processed data from ELS
+    // get processed data from Mongo
     var waziupResp = await mongoReq
     
     //send the result back to the user
@@ -72,29 +70,23 @@ async function mongoProxy(mongoReq, req, res) {
   }
 }
 
+function getMeasurements(docs) {
 
-//Perform a request to els and handle data transformation to/from waziup format
-async function elsProxy2(path, query, method, preProc, postProc, data) {
-
-  //pre-process the data from Waziup to els format
-  var data2 = preProc? await preProc(data) : null;
-  
-  //get data from els
-  var elsResp = await elsRequest(path, method, query, data2)
- 
-  console.log("ELS response: " + JSON.stringify(elsResp.data));
-
-  //pro-process the data from els to Waziup format
-  var waziupResp = postProc? await postProc(elsResp.data): elsResp.data;
-
-  return waziupResp;
+   return docs.map(getMeasurement);
 }
 
+function getMeasurement(doc) {
+
+  return {
+     timestamp: doc.timestamp,
+     value: doc.value
+   }
+}
 
 function getMeasAttrValue(sensorID, measID, datapoint) {
 
   return {
-    sensorID: sensorID,
+    entityID: sensorID,
     attributeID: measID,
     timestamp: datapoint.timestamp,
     value: datapoint.value
