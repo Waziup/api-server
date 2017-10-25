@@ -13,13 +13,13 @@ var url = 'mongodb://localhost:27017/waziup_history';
 
 function install(router, keycloak) {
 
-//  router.get(    '/domains/:domain/history',    getHistory);
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(readMongoValues(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(insertMongoValue(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
+  router.get(    '/domains/:domain/history',                                       (req, res) => mongoProxy(getDatapoints(req.params.domain), req, res));
+  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
+  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(insertMongoDatapoint(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
 
 }
 
-async function insertMongoValue(domain, sensorID, measID, data) {
+async function insertMongoDatapoint(domain, sensorID, measID, data) {
 
   const db = await MongoClient.connect('mongodb://localhost:27017/waziup_history');
 
@@ -30,7 +30,7 @@ async function insertMongoValue(domain, sensorID, measID, data) {
   db.close();
 }
 
-async function readMongoValues(domain, sensorID, measID) {
+async function getSensorMeasurementValues(domain, sensorID, measID) {
 
   const db = await MongoClient.connect(config.mongoDBUrl);
 
@@ -43,6 +43,18 @@ async function readMongoValues(domain, sensorID, measID) {
 
 }
 
+async function getDatapoints(domain) {
+
+  const db = await MongoClient.connect(config.mongoDBUrl);
+
+  // Get the documents collection
+  var docs = await db.collection(domain).find().toArray();
+
+  db.close();
+  
+  return docs
+
+}
 
 
 async function mongoProxy(mongoReq, req, res) {
@@ -95,5 +107,6 @@ function getMeasAttrValue(sensorID, measID, datapoint) {
 
 
 module.exports = {
-    install
+   install,
+   getSensorMeasurementValues
 };
