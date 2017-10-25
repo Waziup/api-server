@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const orionProxy = require('./lib/orion-proxy');
 const elsProxy = require('./lib/els-proxy');
+const mongoProxy = require('./lib/mongo-proxy');
 const cors = require('cors');
 const config = require('./config');
 const Keycloak = require('keycloak-connect');
@@ -47,7 +48,8 @@ const keycloak = new Keycloak({
 app.use('/api/v1', router);
 router.use(usersRoute);
 orionProxy.install(router, keycloak);
-elsProxy.install(router, keycloak);
+//elsProxy.install(router, keycloak);
+mongoProxy.install(router, keycloak);
 
 // var swaggerTools = require('swagger-tools');
 // var YAML = require('yamljs');

@@ -586,12 +586,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /history:
+  
+  /domains/{domain}/history:
     get:
-      summary: Historical  data
+      summary: Historical data
       description: Query domain historical data
       tags:
         - Historical data
+      produces:
+      - "application/json"
+      parameters:
+      - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: Array
