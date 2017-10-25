@@ -13,48 +13,49 @@ consumes:
   - application/json
 parameters:
   domainParam:
-    name: "domain"
-    in: "path"
-    required: false 
-    type: "string"
-    example: "cdupont"
+    name: domain
+    in: path
+    required: false
+    type: string
+    example: cdupont
   sensorId:
-    name: "sensor_id"
-    in: "path"
-    required: true 
-    type: "string"
-    example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+    name: sensor_id
+    in: path
+    required: true
+    type: string
+    example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
   measurementId:
-    name: "measurement_id"
-    in: "path"
-    required: true 
-    type: "string"
-    example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+    name: measurement_id
+    in: path
+    required: true
+    type: string
+    example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
 definitions:
   Sensor:
     type: object
-    required: ["id"]
+    required:
+      - id
     properties:
       id:
         type: string
         description: UUID of the sensor
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
       gateway_id:
         type: string
         description: UUID of the gateway
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
       name:
         type: string
         description: name of the sensor
-        example: "Sensor1"
+        example: Sensor1
       owner:
         type: string
         description: name of the sensor
-        example: "cdupont"
+        example: cdupont
       sensor_kind:
         type: string
         description: kind of the sensor
-        example: "Soil temperature sensor"
+        example: Soil temperature sensor
       measurements:
         type: array
         items:
@@ -63,11 +64,13 @@ definitions:
         $ref: '#/definitions/Location'
   Location:
     type: object
-    description: location is a pair [latitude, longitude] with the coordinates on earth in decimal notation (e.g. [40.418889, 35.89389]).
+    description: >-
+      location is a pair [latitude, longitude] with the coordinates on earth in
+      decimal notation (e.g. [40.418889, 35.89389]).
     properties:
       latitude:
         type: number
-        example: 5.3600
+        example: 5.36
       longitude:
         type: number
         example: 4.0083
@@ -76,20 +79,20 @@ definitions:
     properties:
       id:
         type: string
-        description: UUID of the measurement 
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+        description: UUID of the measurement
+        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
       name:
         type: string
         description: name of the measurement
-        example: "TC1"
+        example: TC1
       dimension:
         type: string
         description: physical dimension of the measurement
-        example: "temperature"
+        example: temperature
       unit:
         type: string
         description: unit of the measurement
-        example: "Degree C"
+        example: Degree C
       values:
         type: array
         items:
@@ -98,26 +101,26 @@ definitions:
     type: object
     properties:
       value:
-        type: "number"
-        format: "float"
-        description: value of the measurement 
-        example: "25.6"
+        type: number
+        format: float
+        description: value of the measurement
+        example: '25.6'
       timestamp:
-        type: "string"
-        format: "dateTime"
+        type: string
+        format: dateTime
         description: time of the measurement
-        example: "2016-06-08T18:20:27.873Z"
+        example: '2016-06-08T18:20:27.873Z'
   HistoricalValue:
     type: object
     properties:
       id:
         type: string
         description: UUID of the sensor
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
       attribute_id:
         type: string
         description: UUID of the measurement
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
+        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
       datapoint:
         $ref: '#/definitions/MeasurementValue'
   Error:
@@ -164,27 +167,24 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
-
-
-
 paths:
-  /domains/{domain}/sensors:
+  '/domains/{domain}/sensors':
     get:
       summary: Sensor data
-      description:    
+      description: ''
       tags:
         - Sensors
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/domainParam'
       responses:
         '200':
-          description: 
+          description: ''
           schema:
-            type: "array"
+            type: array
             items:
-              $ref: "#/definitions/Sensor"
+              $ref: '#/definitions/Sensor'
         '404':
           description: Not Found
         default:
@@ -197,58 +197,57 @@ paths:
       tags:
         - Sensors
       consumes:
-      - "application/json"
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          $ref: "#/definitions/Sensor"
-      - $ref: '#/parameters/domainParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Sensor'
+        - $ref: '#/parameters/domainParam'
       responses:
         '201':
           description: Sensor created succesfully
         '422':
-          description: Unprocessable entity 
+          description: Unprocessable entity
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  
-  /domains/{domain}/sensors/{sensor_id}:
+  '/domains/{domain}/sensors/{sensor_id}':
     get:
       summary: get sensor
-      description:    
+      description: ''
       tags:
         - Sensors
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
       responses:
         '200':
-          description: 
+          description: ''
           schema:
-            $ref: "#/definitions/Sensor"
+            $ref: '#/definitions/Sensor'
         '400':
           description: Bad request
         '404':
           description: Not Found
         '422':
-          description: Unprocessable entity 
+          description: Unprocessable entity
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
     delete:
       summary: Delete sensor
-      description:    
+      description: ''
       tags:
         - Sensors
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
       responses:
         '200':
           description: Deleted
@@ -258,306 +257,133 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  
-  /domains/{domain}/sensors/{sensor_id}/owner:
-    put: 
-      summary: insert owner 
-      tags: 
-      - Sensors
-      consumes:
-      - "text/plain"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          type: string
-          description: the owner of the sensor
-          example: cdupont
-      responses:
-        '200':
-          description: Updated 
-        '400':
-          description: Bad request
-        '404':
-          description: Not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/location:
-    put: 
-      summary: insert location 
-      tags: 
-      - Sensors
-      consumes:
-      - "application/json"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          $ref: '#/definitions/Location'
-      responses:
-        '200':
-          description: Updated 
-        '400':
-          description: Bad request
-        '404':
-          description: Not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/name:
-    put: 
-      summary: insert name
-      tags: 
-      - Sensors
-      consumes:
-      - "text/plain"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          type: string
-          description: the owner of the sensor
-          example: Sensor1
-      responses:
-        '200':
-          description: Updated 
-        '400':
-          description: Bad request
-        '404':
-          description: Not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/sensor_kind:
-    put: 
-      summary: insert sensor kind
-      tags: 
-      - Sensors
-      consumes:
-      - "text/plain"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          type: string
-          description: the sensor kind
-          example: "Soil moisture sensor"
-      responses:
-        '200':
-          description: Updated 
-        '400':
-          description: Bad request
-        '404':
-          description: Not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements:
-    get: 
-      summary: get measurements
-      tags: 
-      - Sensors
-      produces:
-      - "application/json"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      responses:
-        '200':
-          description: 
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Measurement"
-        '404':
-          description: Not Found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    post: 
-      summary: insert new measurement
-      tags: 
-      - Sensors
-      consumes:
-      - "application/json"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          $ref: '#/definitions/Measurement'
-      responses:
-        '200':
-          description: Measurement created/updated succesfully
-        '404':
-          description: Not Found
-        '422':
-          description: Unprocessable entity 
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}:
-    get: 
-      summary: get measurement
-      tags: 
-      - Sensors
-      produces:
-      - "application/json"
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - name: "measurement_id"
-        in: "path"
-        required: true 
-        type: "string"
-        example: "0d710b12-27e8-433d-ab3a-e05b7127eeaa"
-      responses:
-        '200':
-          description: 
-          schema:
-            $ref: "#/definitions/Measurement"
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      summary: Delete measurement
-      description:    
+  '/domains/{domain}/sensors/{sensor_id}/owner':
+    put:
+      summary: insert owner
       tags:
         - Sensors
-      parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
-      responses:
-        '200':
-          description: deleted 
-        '404':
-          description: Not Found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/name:
-    put: 
-      summary: put measurement name
-      tags: 
-      - Sensors
       consumes:
-      - "text/plain"
+        - text/plain
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
-      - name: "body"
-        in: "body"
-        required: true 
-        schema:
-          type: string
-          description: the measurement name 
-          example: "TC1"
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: string
+            description: the owner of the sensor
+            example: cdupont
       responses:
         '200':
-          description: Replaced 
+          description: Updated
+        '400':
+          description: Bad request
         '404':
-          description: Not Found
+          description: Not found
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/dimension:
-    put: 
-      summary: put measurement dimension
-      tags: 
-      - Sensors
+  '/domains/{domain}/sensors/{sensor_id}/location':
+    put:
+      summary: insert location
+      tags:
+        - Sensors
       consumes:
-      - "text/plain"
+        - application/json
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
-      - name: "body"
-        in: "body"
-        required: true 
-        schema:
-          type: string
-          description: the measurement dimension
-          example: "temperature"
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Location'
       responses:
         '200':
-          description: Replaced 
+          description: Updated
+        '400':
+          description: Bad request
         '404':
-          description: Not Found
+          description: Not found
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/unit:
-    put: 
-      summary: put measurement unit
-      tags: 
-      - Sensors
+  '/domains/{domain}/sensors/{sensor_id}/name':
+    put:
+      summary: insert name
+      tags:
+        - Sensors
       consumes:
-      - "text/plain"
+        - text/plain
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
-      - name: "body"
-        in: "body"
-        required: true 
-        schema:
-          type: string
-          description: the measurement unit
-          example: "°C"
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: string
+            description: the owner of the sensor
+            example: Sensor1
       responses:
         '200':
-          description: Replaced 
+          description: Updated
+        '400':
+          description: Bad request
         '404':
-          description: Not Found
+          description: Not found
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/values:
-    get: 
-      summary: get measurement values
-      tags: 
-      - Sensors
+  '/domains/{domain}/sensors/{sensor_id}/sensor_kind':
+    put:
+      summary: insert sensor kind
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: string
+            description: the sensor kind
+            example: Soil moisture sensor
+      responses:
+        '200':
+          description: Updated
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements':
+    get:
+      summary: get measurements
+      tags:
+        - Sensors
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
       responses:
         '200':
-          description: 
+          description: ''
           schema:
             type: array
             items:
-              $ref: "#/definitions/MeasurementValue"
+              $ref: '#/definitions/Measurement'
         '404':
           description: Not Found
         default:
@@ -565,20 +391,192 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: Create new datapoint 
+      summary: insert new measurement
       tags:
         - Sensors
       consumes:
-      - "application/json"
+        - application/json
       parameters:
-      - $ref: '#/parameters/domainParam'
-      - $ref: '#/parameters/sensorId'
-      - $ref: '#/parameters/measurementId'
-      - in: "body"
-        name: "body"
-        required: true
-        schema:
-          $ref: "#/definitions/MeasurementValue"
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Measurement'
+      responses:
+        '200':
+          description: Measurement created/updated succesfully
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable entity
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}':
+    get:
+      summary: get measurement
+      tags:
+        - Sensors
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - name: measurement_id
+          in: path
+          required: true
+          type: string
+          example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Measurement'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete measurement
+      description: ''
+      tags:
+        - Sensors
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+      responses:
+        '200':
+          description: deleted
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/name':
+    put:
+      summary: put measurement name
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the measurement name
+            example: TC1
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/dimension':
+    put:
+      summary: put measurement dimension
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the measurement dimension
+            example: temperature
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/unit':
+    put:
+      summary: put measurement unit
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the measurement unit
+            example: °C
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/values':
+    get:
+      summary: get measurement values
+      tags:
+        - Sensors
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MeasurementValue'
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create new datapoint
+      tags:
+        - Sensors
+      consumes:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/measurementId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/MeasurementValue'
       responses:
         '201':
           description: Datapoint created succesfully
@@ -610,7 +608,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /users/auth:
+  /auth:
     post:
       tags:
         - Users
@@ -627,7 +625,7 @@ paths:
           description: Return the access token
         '404':
           description: Something wrong happened
-  '/users/search/{realm}':
+  '/domains/{domain}/users/search/':
     get:
       tags:
         - Users
@@ -635,17 +633,13 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: realm
-          in: path
-          required: true
-          description: The domain to retrieve the users from
-          type: string
+        - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: return filtered users
         '404':
           description: Something wrong happened
-  '/users/{realm}':
+  '/domains/{domain}/users/':
     get:
       tags:
         - Users
@@ -653,28 +647,20 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: realm
-          in: path
-          required: true
-          description: The domain to retrieve the users from
-          type: string
+        - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: return users
         '404':
           description: Something wrong happened
-  '/users/{realm}/{userid}':
+  '/domains/{domain}/users/{userid}':
     get:
       tags:
         - Users
       security:
         - Bearer: []
       parameters:
-        - name: realm
-          in: path
-          required: true
-          description: The domain to retrieve the user from
-          type: string
+        - $ref: '#/parameters/domainParam'
         - name: userid
           in: path
           required: true
@@ -691,11 +677,7 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: realm
-          in: path
-          required: true
-          description: The domain to retrieve the user from
-          type: string
+        - $ref: '#/parameters/domainParam'
         - name: userid
           in: path
           required: true
