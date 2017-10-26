@@ -4,9 +4,7 @@ const Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const orionProxy = require('./lib/orion-proxy');
-const elsProxy = require('./lib/els-proxy');
-const mongoProxy = require('./lib/mongo-proxy');
+const proxy = require('./lib/proxy');
 const cors = require('cors');
 const config = require('./config');
 const Keycloak = require('keycloak-connect');
@@ -44,12 +42,9 @@ const keycloak = new Keycloak({
 //app.use(keycloak.middleware();
 
 //install routes
-//app.get('/env/:var', (req, res) => res.send(process.env[req.params.var]))
 app.use('/api/v1', router);
 router.use('/users', usersRoute);
-orionProxy.install(router, keycloak);
-//elsProxy.install(router, keycloak);
-mongoProxy.install(router, keycloak);
+proxy.install(router, keycloak);
 
 // var swaggerTools = require('swagger-tools');
 // var YAML = require('yamljs');
