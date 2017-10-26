@@ -36,6 +36,12 @@ parameters:
     required: true
     type: string
     example: 0d710b12-27e8-433d-ab3a-e05b7127eeac
+  NotifId:
+    name: notif_id
+    in: path
+    required: true
+    type: string
+    example: 0d710b12-27e8-433d-ab3a-e05b7127eeac
 definitions:
   Sensor:
     type: object
@@ -190,6 +196,54 @@ definitions:
       message:
         type: string
         example: 'Test message'
+  Notification:
+    type: object
+    required:
+      - subject 
+      - notification
+    properties:
+      description:
+        type: String 
+        description: Description of the notification 
+        example: 'Send text message'
+      subject:
+        $ref: '#/definitions/NotificationSubject'
+      notification:
+        $ref: '#/definitions/SocialMessage'
+      expires:
+        type: dateTime
+      throttling:
+        type: number 
+  NotificationSubject:
+    type: object
+    required:
+      - entities 
+      - condition
+    properties:
+      entities:
+        $ref: '#/definitions/NotificationEntities'
+      condition:
+        $ref: '#/definitions/NotificationCondition'
+  NotificationEntities:
+    type: object
+    properties:
+      id:
+        type: String 
+      idPattern:
+        type: String 
+      type:
+        type: String 
+      typePattern:
+        type: String 
+  NotificationCondition:
+    type: object
+    properties:
+      attrs:
+        type: Array
+          items:
+            type: Array 
+      expression:
+        type: String
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -812,6 +866,88 @@ paths:
             $ref: '#/definitions/Error'
 
 
+  /domains/{domain}/notifications:
+    get:
+      summary: Get all notifications 
+      tags:
+        - Notifications
+      produces:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: Array
+          schema:
+            $ref: '#/definitions/SocialMessage'
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            type: Array
+            items:
+              $ref: '#/definitions/Error'
+    post:
+      summary: post a message to social networks
+      tags:
+        - Socials
+      consumes:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - name: data
+          in: body
+          description: social message
+          required: true
+          schema:
+            $ref: '#/definitions/SocialMessage'
+      responses:
+        '200':
+          description: message sent
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /domains/{domain}/notifications/{notif_id}:
+    get:
+      summary: Get one message
+      tags:
+        - Socials
+      produces:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/MsgId'
+      responses:
+        '200':
+          description: Array
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: delete a message to social networks
+      tags:
+        - Socials
+      consumes:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/MsgId'
+      responses:
+        '200':
+          description: message sent
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 
 
