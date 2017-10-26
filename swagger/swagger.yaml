@@ -29,7 +29,13 @@ parameters:
     in: path
     required: true
     type: string
-    example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
+    example: 0d710b12-27e8-433d-ab3a-e05b7127eeab
+  MsgId:
+    name: msg_id
+    in: path
+    required: true
+    type: string
+    example: 0d710b12-27e8-433d-ab3a-e05b7127eeac
 definitions:
   Sensor:
     type: object
@@ -162,11 +168,35 @@ definitions:
       id:
         type: string
         description: User id
+  SocialMessage:
+    type: object
+    required:
+      - userIds 
+      - channels
+      - message
+    properties:
+      userIds:
+        type: Array
+        description: ids of the destination users 
+        items:
+          type: string 
+        example: ['cdupont', 'arahim']
+      channels:
+        type: Array
+        description: channels where to send the messages 
+        items:
+          type: string 
+        example: ['facebook', 'sms']
+      message:
+        type: string
+        example: 'Test message'
 securityDefinitions:
   Bearer:
     type: apiKey
     name: Authorization
     in: header
+
+
 paths:
   '/domains/{domain}/sensors':
     get:
@@ -589,8 +619,7 @@ paths:
   
   /domains/{domain}/history:
     get:
-      summary: Historical data
-      description: Query domain historical data
+      summary: Get Historical data for analysis
       tags:
         - Historical data
       produces:
@@ -608,12 +637,15 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /auth:
+
+
+  /domains/{domain}/auth/:
     post:
+      summary: Get the access token for subsequent calls
       tags:
         - Users
-      summary: Get the access token for subsequent calls
       parameters:
+        - $ref: '#/parameters/domainParam'
         - name: credentials
           in: body
           description: auth credentials
@@ -625,7 +657,7 @@ paths:
           description: Return the access token
         '404':
           description: Something wrong happened
-  '/domains/{domain}/users/search/':
+  /domains/{domain}/users/search/:
     get:
       tags:
         - Users
@@ -639,7 +671,7 @@ paths:
           description: return filtered users
         '404':
           description: Something wrong happened
-  '/domains/{domain}/users/':
+  /domains/{domain}/users/:
     get:
       tags:
         - Users
@@ -653,7 +685,7 @@ paths:
           description: return users
         '404':
           description: Something wrong happened
-  '/domains/{domain}/users/{userid}':
+  /domains/{domain}/users/{userid}:
     get:
       tags:
         - Users
@@ -694,6 +726,100 @@ paths:
           description: Return the user with the specified id
         '404':
           description: Not found
+
+
+  /domains/{domain}/socials:
+    get:
+      summary: Get all messages sent
+      tags:
+        - Socials
+      produces:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: Array
+          schema:
+            $ref: '#/definitions/SocialMessage'
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            type: Array
+            items:
+              $ref: '#/definitions/Error'
+    post:
+      summary: post a message to social networks
+      tags:
+        - Socials
+      consumes:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - name: data
+          in: body
+          description: social message
+          required: true
+          schema:
+            $ref: '#/definitions/SocialMessage'
+      responses:
+        '200':
+          description: message sent
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /domains/{domain}/socials/{msg_id}:
+    get:
+      summary: Get one message
+      tags:
+        - Socials
+      produces:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/MsgId'
+      responses:
+        '200':
+          description: Array
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: delete a message to social networks
+      tags:
+        - Socials
+      consumes:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/MsgId'
+      responses:
+        '200':
+          description: message sent
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+
+
+
+
+
+
+
+
+
   /spec:
     get:
       tags:
