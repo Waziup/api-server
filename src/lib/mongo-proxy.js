@@ -8,20 +8,9 @@ const config = require('../config.js');
 
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
 
-// Connection URL
-var url = 'mongodb://localhost:27017/waziup_history';
+async function putDatapointMongo(domain, sensorID, measID, data) {
 
-function install(router, keycloak) {
-
-  router.get(    '/domains/:domain/history',                                       (req, res) => mongoProxy(getDatapoints(req.params.domain), req, res));
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values', (req, res) => mongoProxy(insertMongoDatapoint(req.params.domain, req.params.sensorID, req.params.measID, req.body), req, res));
-
-}
-
-async function insertMongoDatapoint(domain, sensorID, measID, data) {
-
-  const db = await MongoClient.connect('mongodb://localhost:27017/waziup_history');
+  const db = await MongoClient.connect(config.mongoDBUrl);
 
   var data2 = getMeasAttrValue(sensorID, measID, data);
   // insert the document
@@ -30,7 +19,7 @@ async function insertMongoDatapoint(domain, sensorID, measID, data) {
   db.close();
 }
 
-async function getSensorMeasurementValues(domain, sensorID, measID) {
+async function getSensorMeasurementValuesMongo(domain, sensorID, measID) {
 
   const db = await MongoClient.connect(config.mongoDBUrl);
 
@@ -43,7 +32,7 @@ async function getSensorMeasurementValues(domain, sensorID, measID) {
 
 }
 
-async function getDatapoints(domain) {
+async function getDatapointsMongo(domain) {
 
   const db = await MongoClient.connect(config.mongoDBUrl);
 
@@ -53,7 +42,50 @@ async function getDatapoints(domain) {
   db.close();
   
   return docs
+}
 
+async function postSensorMongo(req) {
+  putSensorMongo(req.params.domain, req.body);
+}
+
+async function putSensorMongo(domain, sensor) {
+  
+  const db = await MongoClient.connect(config.mongoDBUrl);
+
+  var data2 = getDatapoints(sensor);
+
+  // insert the documents
+  db.collection(domain).insertMany(data2);
+
+  db.close();
+}
+
+async function deleteSensorMongo(req) {
+  deleteSensorMongo2(req.params.domain, req.body);
+}
+
+async function deleteSensorMongo2(domain, sensor) {
+  
+  const db = await MongoClient.connect(config.mongoDBUrl);
+
+  var data2 = getDatapoints(sensor);
+
+  // insert the documents
+  db.collection(domain).deleteMany(data2);
+
+  db.close();
+}
+
+function getDatapoints(sensor) {
+
+  var datapoints = []
+  for(let meas of sensor.measurements) {
+    for(let val of meas.values) {
+       console.log('val:' + JSON.stringify(val));
+       datapoints.push(getMeasAttrValue(sensor.id, meas.id, val))
+    }
+  }
+  return datapoints
 }
 
 
@@ -105,8 +137,8 @@ function getMeasAttrValue(sensorID, measID, datapoint) {
   }
 }
 
-
 module.exports = {
-   install,
-   getSensorMeasurementValues
+   getSensorMeasurementValuesMongo,
+   postSensorMongo,
+   deleteSensorMongo
 };
