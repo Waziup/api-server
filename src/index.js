@@ -33,18 +33,18 @@ router.use(function(req, res, next) {
 
 //Add keycloak middleware to handle request authentication
 const keycloak = new Keycloak({
-      url: config.keycloakUrl,
-      realm: config.realm,
-      clientId: config.clientId,
-      bearerOnly: true 
-    });
+    url: config.keycloakUrl,
+    realm: config.realm,
+    clientId: config.clientId,
+    bearerOnly: true
+});
 
 //app.use(keycloak.middleware();
 
 //install routes
 app.use('/api/v1', router);
-router.use('/users', usersRoute);
 proxy.install(router, keycloak);
+router.use(usersRoute);
 
 // var swaggerTools = require('swagger-tools');
 // var YAML = require('yamljs');
@@ -56,7 +56,7 @@ proxy.install(router, keycloak);
 // });
 var swaggerDocument = YAML.load('./swagger/swagger.yaml');
 const host = url.parse(config.serverUrl).host;
-swaggerDocument.host = host; 
+swaggerDocument.host = host;
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

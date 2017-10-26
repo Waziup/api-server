@@ -11,25 +11,25 @@ adminRouter.post('/auth', function(req, res) {
     settings.password = req.body.password;
     auth(settings).then(r => res.json(r)).catch(r => res.json(r));
 });
-adminRouter.post('/search/:realm', function(req, res) {
+adminRouter.post('/domains/:domain/users/search', function(req, res) {
     console.log(req.body);
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm, req.body).then(r => res.json(r)).catch(r => res.json(r));
+    users.find(token, req.params.domain, req.body).then(r => res.json(r)).catch(r => res.json(r));
 });
-adminRouter.get('/:realm', function(req, res) {
+adminRouter.get('/domains/:domain/users', function(req, res) {
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm).then(r => res.json(r)).catch(r => res.json(r));
+    users.find(token, req.params.domain).then(r => res.json(r)).catch(r => res.json(r));
 });
-adminRouter.get('/:realm/:userid', function(req, res) {
+adminRouter.get('/domains/:domain/users/:userid', function(req, res) {
     console.log(req.params);
     var token = req.get("Authorization").split(" ").pop();
-    users.find(token, req.params.realm, { userId: req.params.userid }).then(r => res.json(r)).catch(r => res.json(r));
+    users.find(token, req.params.domain, { userId: req.params.userid }).then(r => res.json(r)).catch(r => res.json(r));
 });
-adminRouter.put('/:realm/:userid', function(req, res) {
+adminRouter.put('/domains/:domain/users/:userid', function(req, res) {
     console.log(req.body);
     var token = req.get("Authorization").split(" ").pop();
     if (req.params.userid === req.body.id)
-        users.update(token, req.params.realm, req.body).then(r => res.json(r)).catch(r => res.json(r));
+        users.update(token, req.params.domain, req.body).then(r => res.json(r)).catch(r => res.json(r));
     else res.status(400).end();
 });
 
