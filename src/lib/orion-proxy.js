@@ -28,32 +28,6 @@ const putSensorMeasurementName = async req => orionProxy('/v2/entities/' + req.p
 const putSensorMeasurementDim  = async req => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'PUT'   , data => getMetadata('dimension', req, data), null, req);
 const putSensorMeasurementUnit = async req => orionProxy('/v2/entities/' + req.params.sensorID + '/attrs/' + req.params.measID, 'PUT'   , data => getMetadata('unit', req, data)     , null, req);
 
-//Perform a request to Orion and handle data transformation to/from waziup format
-async function proxy(callbacks, req, res) {
-
-  try {
-    for (let callback of callbacks) {
-      var resp = await callback(req)
-      console.log(" resp: " + JSON.stringify(resp));
-    }
-    //send the result back to the user
-    res.send(resp);
-
-  } catch (err) {
-    if (err.response) {
-      // The request was made and the server responded with a status code
-      // We forward it to the user
-      res.status(err.response.status);
-      res.send(err.response.data); 
-    } else if (err.request) {
-      // The request was made but no response was received
-      console.log(err.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', err.stack);
-    }
-  }
-}
 
 
 //Perform a request to Orion and handle data transformation to/from waziup format
