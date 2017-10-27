@@ -176,14 +176,37 @@ definitions:
         description: User id
   SocialMessage:
     type: object
+    description: One social network message
     required:
-      - userIds 
+      - user_id 
+      - channel
+      - message
+    properties:
+      username:
+        type: string
+        description: User name in Keycloak
+        example: 'cdupont'
+      user_id:
+        type: string
+        description: Account name for Twitter or Facebook, phone number for SMS or Whatsapp
+        example: 'Test'
+      channel:
+        type: string
+        example: 'facebook'
+      message:
+        type: string
+        example: 'Test message'
+  SocialMessageBatch:
+    type: object
+    description: A message to be sent to several users and socials
+    required:
+      - userNames 
       - channels
       - message
     properties:
-      userIds:
+      usernames:
         type: array
-        description: ids of the destination users 
+        description: names of the destination users 
         items:
           type: string 
         example: ['cdupont', 'arahim']
@@ -248,6 +271,45 @@ definitions:
           example: 'Sensor1'
       condition:
         $ref: '#/definitions/NotificationCondition'
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "eb78eed6-d01a-4f69-b562-1f30002c08d9"
+      username:
+        type: string
+        example: "cdupont"
+      createdTime:
+        type: dateTime
+        example: "2017-09-01T20:00:00.00Z"
+      firstName:
+        type: string
+        example: "Corentin"
+      lastName:
+        type: string
+        example: "Dupont"
+      subservice:
+        type: string
+        example: "farm1"
+      email:
+        type: string
+        example: "test@gmail.com"
+      phone:
+        type: string
+        example: "+390000000"
+      address:
+        type: string
+        example: "25 Test street"
+      facebook:
+        type: string
+        example: "test1"
+      twitter:
+        type: string
+        example: "@Test1"
+      roles:
+        type: string
+        example: "admin"
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -863,13 +925,28 @@ paths:
         - $ref: '#/parameters/MsgId'
       responses:
         '200':
-          description: message sent
+          description: deleted
         '404':
           description: Not Found
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /domains/{domain}/socials/batch:
+    post:
+      summary: post several message to social networks
+      tags:
+        - Socials
+      consumes:
+      - "application/json"
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - name: data
+          in: body
+          description: social message
+          required: true
+          schema:
+            $ref: '#/definitions/SocialMessageBatch'
 
 
   /domains/{domain}/notifications:
@@ -949,7 +1026,7 @@ paths:
         - $ref: '#/parameters/NotifId'
       responses:
         '200':
-          description: message sent
+          description: deleted
         '404':
           description: Not Found
         default:

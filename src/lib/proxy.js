@@ -8,10 +8,10 @@ const url = require('url');
 const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-//const elsProxy = require('./els-proxy.js');
-const mongoProxy = require('./mongo-proxy.js');
-const orionProxy = require('./orion-proxy.js');
-const elsProxy   = require('./els-proxy.js');
+const mongoProxy   = require('./mongo-proxy.js');
+const orionProxy   = require('./orion-proxy.js');
+const elsProxy     = require('./els-proxy.js');
+const socialsProxy = require('./social-proxy.js');
 
 
 function install(router, keycloak) {
@@ -33,6 +33,11 @@ function install(router, keycloak) {
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',      (req, res) => proxy([orionProxy.putSensorMeasurementUnit], req, res));
    
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
+  
+  router.get(    '/domains/:domain/socials',        (req, res) => proxy([socialsProxy.getSocialMsgs], req, res));
+  router.post(   '/domains/:domain/socials',        (req, res) => proxy([socialsProxy.postSocialMsg], req, res));
+  router.get(    '/domains/:domain/socials/:msgID', (req, res) => proxy([socialsProxy.getSocialMsg], req, res));
+  router.delete( '/domains/:domain/socials/:msgID', (req, res) => proxy([socialsProxy.deleteSocialMsg], req, res));
 }
 
 //Perform a request to Orion and handle data transformation to/from waziup format
@@ -41,6 +46,9 @@ async function proxy(callbacks, req, res) {
   try {
     for (let callback of callbacks) {
       var resp = await callback(req)
+
+      const CircularJSON = require('circular-json');
+      console.log(CircularJSON.stringify(resp));
     }
     //send the result back to the user
     res.send(resp);

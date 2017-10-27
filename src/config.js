@@ -9,6 +9,7 @@ module.exports = {
     orionUrl:         process.env.ORION_URL         || 'http://localhost:1026',
     elasticsearchUrl: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
     mongoDBUrl:       process.env.MONGODB_URL       || 'mongodb://localhost:27017/waziup_history',
+    socialsUrl:       process.env.SOCIALS_URL       || 'http://localhost:8080',
     realm: 'waziup',
     clientId: 'api-server'
 };
