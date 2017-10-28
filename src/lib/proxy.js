@@ -12,59 +12,66 @@ const mongoProxy   = require('./mongo-proxy.js');
 const orionProxy   = require('./orion-proxy.js');
 const elsProxy     = require('./els-proxy.js');
 const socialsProxy = require('./social-proxy.js');
+const usersProxy   = require('../routes/users/user.route.js');
 
 
 function install(router, keycloak) {
 
-  router.get(    '/domains/:domain/sensors',                                          (req, res) => proxy([orionProxy.getSensorsOrion], req, res));
-  router.post(   '/domains/:domain/sensors',                                          (req, res) => proxy([orionProxy.postSensorOrion, mongoProxy.postSensorMongo], req, res));
-  router.get(    '/domains/:domain/sensors/:sensorID',                                (req, res) => proxy([orionProxy.getSensorOrion], req, res));
-  router.delete( '/domains/:domain/sensors/:sensorID',                                (req, res) => proxy([orionProxy.deleteSensor, mongoProxy.deleteSensorMongo], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/owner',                          (req, res) => proxy([orionProxy.putSensorOwner], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/location',                       (req, res) => proxy([orionProxy.putSensorLocation], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/name',                           (req, res) => proxy([orionProxy.putSensorName], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/sensor_kind',                    (req, res) => proxy([orionProxy.putSensorKind], req, res));
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements',                   (req, res) => proxy([orionProxy.getSensorMeasurements], req, res));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements',                   (req, res) => proxy([orionProxy.postSensorMeasurement], req, res));
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID',           (req, res) => proxy([orionProxy.getSensorMeasurement], req, res));
-  router.delete( '/domains/:domain/sensors/:sensorID/measurements/:measID',           (req, res) => proxy([orionProxy.deleteSensorMeasurement], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/name',      (req, res) => proxy([orionProxy.putSensorMeasurementName], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/dimension', (req, res) => proxy([orionProxy.putSensorMeasurementDim], req, res));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',      (req, res) => proxy([orionProxy.putSensorMeasurementUnit], req, res));
+  router.get(    '/domains/:domain/sensors',                                          proxy([orionProxy.getSensorsOrion]));
+  router.post(   '/domains/:domain/sensors',                                          proxy([orionProxy.postSensorOrion, mongoProxy.postSensorMongo]));
+  router.get(    '/domains/:domain/sensors/:sensorID',                                proxy([orionProxy.getSensorOrion]));
+  router.delete( '/domains/:domain/sensors/:sensorID',                                proxy([orionProxy.deleteSensor, mongoProxy.deleteSensorMongo]));
+  router.put(    '/domains/:domain/sensors/:sensorID/owner',                          proxy([orionProxy.putSensorOwner]));
+  router.put(    '/domains/:domain/sensors/:sensorID/location',                       proxy([orionProxy.putSensorLocation]));
+  router.put(    '/domains/:domain/sensors/:sensorID/name',                           proxy([orionProxy.putSensorName]));
+  router.put(    '/domains/:domain/sensors/:sensorID/sensor_kind',                    proxy([orionProxy.putSensorKind]));
+  router.get(    '/domains/:domain/sensors/:sensorID/measurements',                   proxy([orionProxy.getSensorMeasurements]));
+  router.post(   '/domains/:domain/sensors/:sensorID/measurements',                   proxy([orionProxy.postSensorMeasurement]));
+  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID',           proxy([orionProxy.getSensorMeasurement]));
+  router.delete( '/domains/:domain/sensors/:sensorID/measurements/:measID',           proxy([orionProxy.deleteSensorMeasurement]));
+  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/name',      proxy([orionProxy.putSensorMeasurementName]));
+  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/dimension', proxy([orionProxy.putiensorMeasurementDim]));
+  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',      proxy([orionProxy.putSensorMeasurementUnit]));
    
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
   
-  router.get(    '/domains/:domain/socials',        (req, res) => proxy([socialsProxy.getSocialMsgs], req, res));
-  router.post(   '/domains/:domain/socials',        (req, res) => proxy([socialsProxy.postSocialMsg], req, res));
-  router.get(    '/domains/:domain/socials/:msgID', (req, res) => proxy([socialsProxy.getSocialMsg], req, res));
-  router.delete( '/domains/:domain/socials/:msgID', (req, res) => proxy([socialsProxy.deleteSocialMsg], req, res));
+  router.get(    '/domains/:domain/socials',        proxy([socialsProxy.getSocialMsgs]));
+  router.post(   '/domains/:domain/socials',        proxy([socialsProxy.postSocialMsg]));
+  router.get(    '/domains/:domain/socials/:msgID', proxy([socialsProxy.getSocialMsg]));
+  router.delete( '/domains/:domain/socials/:msgID', proxy([socialsProxy.deleteSocialMsg]));
+  router.post(   '/domains/:domain/socials/batch',  proxy([socialsProxy.postSocialMsgBatch]));
+
+  router.post(   '/domains/:domain/auth',           proxy([usersProxy.postAuth]));
+  router.get(    '/domains/:domain/users',          proxy([usersProxy.getUsers]));
+  router.post(   '/domains/:domain/users',          proxy([usersProxy.postUsers]));
+  router.get(    '/domains/:domain/users/:userid',  proxy([usersProxy.getUser]));
+  router.delete( '/domains/:domain/users/:userid',  proxy([usersProxy.deleteUser]));
+  router.put(    '/domains/:domain/users/:userid',  proxy([usersProxy.putUser]));
 }
 
-//Perform a request to Orion and handle data transformation to/from waziup format
-async function proxy(callbacks, req, res) {
+//Perform one or several requests to backend components and send back results to user
+function proxy(requests) {
+  return async (req, res) => {
+    try {
+      for (let request of requests) {
+        var resp = await request(req)
+      }
+      //send the result back to the user
+      res.send(resp);
 
-  try {
-    for (let callback of callbacks) {
-      var resp = await callback(req)
-
-      const CircularJSON = require('circular-json');
-      console.log(CircularJSON.stringify(resp));
-    }
-    //send the result back to the user
-    res.send(resp);
-
-  } catch (err) {
-    if (err.response) {
-      // The request was made and the server responded with a status code
-      // We forward it to the user
-      res.status(err.response.status);
-      res.send(err.response.data); 
-    } else if (err.request) {
-      // The request was made but no response was received
-      console.log(err.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', err.stack);
+    } catch (err) {
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // We forward it to the user
+        res.status(err.response.status);
+        res.send(err.response.data); 
+      } else if (err.request) {
+        // The request was made but no response was received
+        console.log(err.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Waziup proxy error:', JSON.stringify(err));
+      }
     }
   }
 }

@@ -44,7 +44,6 @@ const keycloak = new Keycloak({
 //install routes
 app.use('/api/v1', router);
 proxy.install(router, keycloak);
-router.use(usersRoute);
 
 // var swaggerTools = require('swagger-tools');
 // var YAML = require('yamljs');
