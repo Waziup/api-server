@@ -1,6 +1,8 @@
 var jwt = require('jsonwebtoken');
 const request = require('request');
 const settings = require('./settings');
+const config = require('../../config.js');
+const axios = require('axios');
 
 /**
   A function to get the list of users or a user for a realm.
@@ -14,35 +16,23 @@ const settings = require('./settings');
   @returns {Promise} A promise that will resolve with an Array of user objects or just the 1 user object if userId is used
   
  */
-function find(accessToken, realm, options) {
-    return new Promise((resolve, reject) => {
+async function find(token, realm, options) {
         options = options || {};
-        const req = {
-            auth: {
-                bearer: accessToken
-            },
-            json: true
-        };
-
+        var url;
+        var queryString = null;
         if (options.userId) {
-            req.url = `${settings.baseUrl}/admin/realms/${realm}/users/${options.userId}`;
+            url = `${config.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
         } else {
-            req.url = `${settings.baseUrl}/admin/realms/${realm}/users`;
-            req.qs = options;
+            url = `${config.keycloakUrl}/admin/realms/${realm}/users`;
+            queryString = options;
         }
-
-        request(req, (err, resp, body) => {
-            if (err) {
-                return reject(err);
-            }
-
-            if (resp.statusCode !== 200) {
-                return reject(body);
-            }
-
-            return resolve(body);
-        });
-    });
+        
+        var axiosConf = {url: url,
+                         params: queryString,
+                         headers: {'Authorization': "bearer " + token}}
+       console.log('find:' + JSON.stringify(axiosConf));
+       var users = await axios(axiosConf); 
+       return users.data;
 };
 /**
   A function to update a user for a realm

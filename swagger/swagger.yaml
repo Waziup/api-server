@@ -42,6 +42,12 @@ parameters:
     required: true
     type: string
     example: 0d710b12-27e8-433d-ab3a-e05b7127eeac
+  UserId:
+    name: userid
+    in: path
+    required: true
+    type: string
+    example: cdupont
 definitions:
   Sensor:
     type: object
@@ -155,9 +161,11 @@ definitions:
       username:
         type: string
         description: Admin username
+        example: admin
       password:
         type: string
         description: Admin password
+        example: admin
   UserUpdateBody:
     type: object
     title: userupdate
@@ -813,11 +821,7 @@ paths:
         - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
-        - name: userid
-          in: path
-          required: true
-          description: The id of the entity to retrieve
-          type: string
+        - $ref: '#/parameters/UserId'
       responses:
         '200':
           description: Return the user with the specified id
@@ -830,11 +834,7 @@ paths:
         - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
-        - name: userid
-          in: path
-          required: true
-          description: The id of the entity to retrieve
-          type: string
+        - $ref: '#/parameters/userID'
         - name: data
           in: body
           description: user data to update
