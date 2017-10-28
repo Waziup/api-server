@@ -947,6 +947,15 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/SocialMessageBatch'
+      responses:
+        '200':
+          description: messages sent
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 
   /domains/{domain}/notifications:
