@@ -70,7 +70,11 @@ function proxy(requests) {
         console.log(err.request);
       } else {
         // Something happened in setting up the request that triggered an Error
-        console.log('Waziup proxy error:', JSON.stringify(err));
+        console.log('Waziup proxy error:', err);
+        console.log('Waziup proxy error:', err.stack);
+        res.status(500);
+        res.send(err.stack);
+
       }
     }
   }
