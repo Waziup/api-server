@@ -38,16 +38,16 @@ async function postSocialMsgBatch(req, res) {
 async function getMsgs(domain, socialMsgBatch) {
 
   var msgs = [] 
-  for (let username of socialMsg.usernames) {
+  for (let username of socialMsgBatch.usernames) {
   
     var usrs = await users.find(token, domain, {username : username})
     var user = usrs[0];
     console.log('social user:' + JSON.stringify(user));
     console.log('username:' + user.username);
     
-    for (let channel of socialMsg.channels) {
+    for (let channel of socialMsgBatch.channels) {
        
-      msgs.push(getMsg(user, channel, socialMsg.message));
+      msgs.push(getMsg(user, channel, socialMsgBatch.message));
     }
   }
   return msgs;
