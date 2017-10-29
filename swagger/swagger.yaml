@@ -47,7 +47,7 @@ parameters:
     in: path
     required: true
     type: string
-    example: cdupont
+    example: 2ecfae24-f340-4ad0-a12e-02cdc60cd8ba
 definitions:
   Sensor:
     type: object
@@ -834,7 +834,7 @@ paths:
         - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
-        - $ref: '#/parameters/userID'
+        - $ref: '#/parameters/UserId'
         - name: data
           in: body
           description: user data to update
