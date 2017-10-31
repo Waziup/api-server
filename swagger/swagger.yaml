@@ -93,7 +93,7 @@ definitions:
     properties:
       id:
         type: string
-        description: UUID of the measurement
+        description: ID of the measurement
         example: TC1
       name:
         type: string
@@ -109,7 +109,7 @@ definitions:
         example: Degree C
       sensor_kind:
         type: string
-        description: Kind of sensor providing the measurement 
+        description: kind of sensor providing the measurement 
         example: Air temperature sensor
       values:
         type: array
