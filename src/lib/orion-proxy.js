@@ -82,7 +82,7 @@ async function putSensorMeasurementUnit(domain, sensorID, measID, unit) {
 }
 
 async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('sensor_kind', domain, sensorID, measID, unit));
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('sensor_kind', domain, sensorID, measID, kind));
   return resp;
 }
 
@@ -111,14 +111,11 @@ async function orionRequest(path, method, domain, data) {
 async function getMetadata(metadataField, domain, sensorID, measID, newValue) {
 
   let attr = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'GET', domain, null)
-  console.log('meas before:' + JSON.stringify(attr));
   attr.metadata[metadataField] = getStringAttr(newValue);
-  console.log('meas after:' + JSON.stringify(attr));
   return attr;
 }
 
 function getStringAttr(attr) {
-  
   return {
     type: 'String',
     value: attr
