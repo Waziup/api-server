@@ -43,23 +43,23 @@ function install(router, keycloak) {
    
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
   
-  router.get(    '/domains/:domain/socials',        proxy([socialsProxy.getSocialMsgs]));
-  router.post(   '/domains/:domain/socials',        proxy([socialsProxy.postSocialMsg]));
-  router.get(    '/domains/:domain/socials/:msgID', proxy([socialsProxy.getSocialMsg]));
-  router.delete( '/domains/:domain/socials/:msgID', proxy([socialsProxy.deleteSocialMsg]));
-  router.post(   '/domains/:domain/socials/batch',  proxy([socialsProxy.postSocialMsgBatch]));
+  router.get(    '/domains/:domain/socials',        proxy([req => socialsProxy.getSocialMsgs(     req.params.domain)]));
+  router.post(   '/domains/:domain/socials',        proxy([req => socialsProxy.postSocialMsg(     req.params.domain, req.body)]));
+  router.get(    '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID)]));
+  router.delete( '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID)]));
+  router.post(   '/domains/:domain/socials/batch',  proxy([req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body)]));
 
   router.get(    '/domains/:domain/notifications',        proxy([notifsProxy.getNotifsOrion]));
   router.post(   '/domains/:domain/notifications',        proxy([notifsProxy.postNotifOrion]));
   router.get(    '/domains/:domain/notifications/:msgID', proxy([notifsProxy.getNotifOrion]));
   router.delete( '/domains/:domain/notifications/:msgID', proxy([notifsProxy.deleteNotifOrion]));
  
-  router.post(   '/domains/:domain/auth',           proxy([usersProxy.postAuth]));
-  router.get(    '/domains/:domain/users',          proxy([usersProxy.getUsers]));
-  router.post(   '/domains/:domain/users',          proxy([usersProxy.postUsers]));
-  router.get(    '/domains/:domain/users/:userid',  proxy([usersProxy.getUser]));
-  router.delete( '/domains/:domain/users/:userid',  proxy([usersProxy.deleteUser]));
-  router.put(    '/domains/:domain/users/:userid',  proxy([usersProxy.putUser]));
+  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain)]));
+  router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
+  router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
+  router.get(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.getUser(   req.params.domain, req.params.userID)]));
+  router.delete( '/domains/:domain/users/:userID',  proxy([req => usersProxy.deleteUser(req.params.domain, req.params.userID)]));
+  router.put(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.putUser(   req.params.domain, req.params.userID)]));
 }
 
 //Perform one or several requests to backend components and send back results to user
@@ -81,8 +81,9 @@ function proxy(requests) {
         console.log('Proxy response error:', err.response.data);
       } else if (err.request) {
         // The request was made but no response was received
-        console.log(err.request);
-        console.log('Proxy request error, no response received:', err.request);
+        console.log('Proxy error, no response received');
+        res.status(503);
+        res.send('Proxy error: backend service unavailable');
       } else {
         // Something happened in setting up the request that triggered an Error
         console.log('Proxy error:', err);
