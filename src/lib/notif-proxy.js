@@ -7,32 +7,60 @@ const users = require('../routes/users/user.service.js');
 const axios = require('axios');
 const orionProxy = require('./orion-proxy.js');
 
-const getNotifsOrion   = async req => orionProxy.orionProxy('/v2/subscriptions', 'GET', null, data => getNotifs(req.params.domain, data), req);
-const postNotifOrion   = async req => orionProxy.orionProxy('/v2/subscriptions', 'POST', data => getSub(req.params.domain, data), null, req);
-const getNotifOrion    = async req => orionProxy.orionProxy('/v2/subscriptions/ + req.params.notifID', 'GET', null, data => getNotif(req.params.domain, req.params.notifID, data), req);
-const deleteNotifOrion = async req => orionProxy.orionProxy('/v2/subscriptions/ + req.params.notifID', 'DELETE', null, null, req);
+async function getNotifsOrion(domain) {
+  var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', domain, null);
+  return getNotifs(domain, subs)
 
-function getNotifs(domain, data) {
-  return data
 }
 
-function getNotif(domain, notifID, data) {
+async function postNotifOrion(domain, notif) {
+  var sub = getSub(domain, notif)
+  return orionProxy.orionRequest('/v2/subscriptions', 'POST', domain, sub);
+}
 
-  return data
+async function getNotifOrion(domain, notifID) {
+  var sub = orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'GET', domain, null);
+  return getNotif(domain, sub);
+}
+
+async function deleteNotifOrion(domain, notifID) {
+  return orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'DELETE', domain, null);
+}
+
+// ## Helper functions ##
+
+function getNotifs(domain, notifs) {
+  return notifs
+}
+
+function getNotif(domain, notif) {
+
+  return notif
 }
 
 function getSub(domain, notif) {
 
   console.log('Notif:' + JSON.stringify(notif))
-
   var sub = {
     description: notif.description,
-    subject: {},
-    notification: {}
+    subject: {
+      entities: [],
+      condition: {
+        attrs: notif.subject.condition.attrs
+        //expression: { q: notif.subject.condition.expression }
+      }
+    },
+    notification: {
+      httpCustom: {
+        url: config.serverUrl + '/api/v1/domains/' + domain + '/socials/batch',
+        method: "POST",
+        payload: URIEncodeForbiddens(JSON.stringify(notif.notification))
+        }
+      },
+    attrs: notif.subject.condition.attrs 
   }
   for(let entityName of notif.subject.entityNames) {
     
-    //var entity = async orionProxy. 
     sub.subject.entities.push( {id: entityName })
   }
 
@@ -70,12 +98,23 @@ function getSub(domain, notif) {
  //   "throttling": 5
  // }
 
-  return data
+  return sub
 }
+
+// URI encode the forbidden characters of Orion 
+function URIEncodeForbiddens(s) { 
+  // forbidden characters: <>"\;() 
+  const forbiddens = ["<", ">", "\"", "\\\\", ";", "\\(", "\\)"] 
+  return forbiddens.reduce(function (sacc, c) { return replaceAll(sacc, c, encodeURIComponent(c)) }, s) 
+}
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(find, 'g'), replace);
+}
+
 
 module.exports = {
   getNotifsOrion,
   postNotifOrion,
   getNotifOrion,
-  deleteNotifOrion
-};
+  deleteNotifOrion}

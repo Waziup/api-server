@@ -27,21 +27,29 @@ async function deleteSocialMsg(domain, msgID) {
 async function postSocialMsg(domain, socialMsg) {
 
   var usrs = await users.getUserSearch(domain, {username : socialMsg.username})
-  var user = usrs[0];
-  console.log('user:' + JSON.stringify(user));
+  if(usrs.length != 0) {
+    var user = usrs[0];
+    console.log('user:' + JSON.stringify(user));
   
-  var msg = getMsg(user, socialMsg.channel, socialMsg.message);
-  console.log('msg' + JSON.stringify(msg));
-  await socialRequest('', 'POST', msg)
+    var msg = getMsg(user, socialMsg.channel, socialMsg.message);
+    console.log('msg' + JSON.stringify(msg));
+    await socialRequest('', 'POST', msg)
+  } else {
+    throw('user ' + socialMsg.username + ' not found');
+  }
 }
 
 //Post a bunch of social messages
 async function postSocialMsgBatch(domain, socialMsgBatch) {
 
-  var msgs = await getMsgs(domain, socialMsgBatch)
-  console.log('msgs' + JSON.stringify(msgs));
-  for (let msg of msgs) {
-    await socialRequest('', 'POST', msg)
+  for (let username of socialMsgBatch.usernames) {
+    for (let channel of socialMsgBatch.channels) {
+      try {
+        await postSocialMsg(domain, {username: username, channel: channel, message: socialMsgBatch.message})
+      } catch(err) {
+        console.log('Batch social media sending failed: ' + err);
+      }
+    }
   }
 }
 
@@ -62,24 +70,6 @@ async function socialRequest(path, method, data) {
 }
 
 // ## Helper functions ##
-
-async function getMsgs(domain, socialMsgBatch) {
-
-  var msgs = [] 
-  for (let username of socialMsgBatch.usernames) {
-  
-    var usrs = await users.find(token, domain, {username : username})
-    var user = usrs[0];
-    console.log('social user:' + JSON.stringify(user));
-    console.log('username:' + user.username);
-    
-    for (let channel of socialMsgBatch.channels) {
-       
-      msgs.push(getMsg(user, channel, socialMsgBatch.message));
-    }
-  }
-  return msgs;
-}
 
 function getMsg(usr, channel, message) {
       

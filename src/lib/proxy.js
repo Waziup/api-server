@@ -17,7 +17,8 @@ const usersProxy   = require('../routes/users/user.route.js');
 
 
 function install(router, keycloak) {
-
+  
+  //Sensor endpoint
   router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain)]));
   router.post(   '/domains/:domain/sensors',                                           proxy([req => orionProxy.postSensorOrion(           req.params.domain, req.body), 
                                                                                               req => mongoProxy.postSensorMongo(           req.params.domain, req.body)]));
@@ -40,20 +41,23 @@ function install(router, keycloak) {
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy([req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID)]));
   router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy([req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID),
                                                                                               req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, req.params.measID, req.body)]));
-   
+  //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
   
+  //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy([req => socialsProxy.getSocialMsgs(     req.params.domain)]));
   router.post(   '/domains/:domain/socials',        proxy([req => socialsProxy.postSocialMsg(     req.params.domain, req.body)]));
   router.get(    '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID)]));
   router.delete( '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID)]));
   router.post(   '/domains/:domain/socials/batch',  proxy([req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body)]));
 
-  router.get(    '/domains/:domain/notifications',        proxy([notifsProxy.getNotifsOrion]));
-  router.post(   '/domains/:domain/notifications',        proxy([notifsProxy.postNotifOrion]));
-  router.get(    '/domains/:domain/notifications/:msgID', proxy([notifsProxy.getNotifOrion]));
-  router.delete( '/domains/:domain/notifications/:msgID', proxy([notifsProxy.deleteNotifOrion]));
+  //notifications endpoint
+  router.get(    '/domains/:domain/notifications',          proxy([req => notifsProxy.getNotifsOrion(  req.params.domain)]));
+  router.post(   '/domains/:domain/notifications',          proxy([req => notifsProxy.postNotifOrion(  req.params.domain, req.body)]));
+  router.get(    '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID)]));
+  router.delete( '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID)]));
  
+  //users endpoint
   router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain)]));
   router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
   router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
