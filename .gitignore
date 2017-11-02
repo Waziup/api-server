@@ -4,3 +4,5 @@ node_modules/
 /.idea
 node_modules
 npm-debug.log
+
+src/routes/users/admin-settings.js
