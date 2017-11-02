@@ -1,6 +1,6 @@
 var jwt = require('jsonwebtoken');
 const request = require('request');
-const settings = require('./settings');
+const settings = require('./admin-settings');
 const config = require('../../config.js');
 const axios = require('axios');
 
@@ -30,7 +30,6 @@ async function find(token, realm, options) {
         var axiosConf = {url: url,
                          params: queryString,
                          headers: {'Authorization': "bearer " + token}}
-       console.log('find:' + JSON.stringify(axiosConf));
        var users = await axios(axiosConf); 
        return users.data;
 };
