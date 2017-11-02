@@ -1,8 +1,7 @@
 "use strict";
 const users = require('./user.service');
 const auth = require('./auth.service');
-const settings = require('./settings');
-const configSecret = require('../../config-secret.js');
+const settings = require('./admin-settings');
 
 //different admin routes for user management
 async function postAuth(cred) {
