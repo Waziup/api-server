@@ -3,6 +3,7 @@ const request = require('request');
 const settings = require('./settings');
 const config = require('../../config.js');
 const axios = require('axios');
+const User = require('../../models/user.js');
 
 /**
   A function to get the list of users or a user for a realm.
@@ -17,22 +18,28 @@ const axios = require('axios');
   
  */
 async function find(token, realm, options) {
-        options = options || {};
-        var url;
-        var queryString = null;
-        if (options.userId) {
-            url = `${config.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
-        } else {
-            url = `${config.keycloakUrl}/admin/realms/${realm}/users`;
-            queryString = options;
-        }
-        
-        var axiosConf = {url: url,
-                         params: queryString,
-                         headers: {'Authorization': "bearer " + token}}
-       console.log('find:' + JSON.stringify(axiosConf));
-       var users = await axios(axiosConf); 
-       return users.data;
+    options = options || {};
+    var url;
+    var queryString = null;
+    if (options.userId) {
+        url = `${config.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
+    } else {
+        url = `${config.keycloakUrl}/admin/realms/${realm}/users`;
+        queryString = options;
+    }
+
+    var axiosConf = {
+        url: url,
+        params: queryString,
+        headers: { 'Authorization': "bearer " + token }
+    }
+    console.log('find:' + JSON.stringify(axiosConf));
+    var result = await axios(axiosConf);
+    var users = [];
+    result.data.forEach(function(k) {
+        users.push(new User(k));
+    }, this);
+    return users;
 };
 /**
   A function to update a user for a realm
