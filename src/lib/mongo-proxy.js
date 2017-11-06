@@ -8,114 +8,71 @@ const config = require('../config.js');
 
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
 
-async function putDatapointMongo(domain, sensorID, measID, data) {
-
-  const db = await MongoClient.connect(config.mongoDBUrl);
-
-  var data2 = getMeasAttrValue(sensorID, measID, data);
-  // insert the document
-  db.collection(domain).insert(data2);
-
-  db.close();
-}
-
-async function getSensorMeasurementValuesMongo(domain, sensorID, measID) {
-
-  const db = await MongoClient.connect(config.mongoDBUrl);
-
-  // Get the documents collection
-  var docs = await db.collection(domain).find({entityID: sensorID, attributeID: measID}).toArray();
-
-  db.close();
-  
+//get all values for a sensor measurement
+async function getSensorMeasurementValues(domain, sensorID, measID) {
+  var docs = await mongoRequest(db => db.collection(domain).find({entityID: sensorID, attributeID: measID}).toArray());
   return docs.map(getMeasurement)
-
 }
 
-async function getDatapointsMongo(domain) {
+//insert all datapoints for a new sensor
+async function postSensorMongo(domain, sensor) {
+  var docs = getSensorDatapoints(sensor);
+  console.log("postSensorMongo:" + JSON.stringify(docs));
+  mongoRequest(db => db.collection(domain).insertMany(docs));
+}
 
+//insert all datapoints for a new sensor
+async function postSensorMeasMongo(domain, sensorID, meas) {
+  var docs = getSensorMeasDatapoints(sensorID, meas);
+  mongoRequest(db => db.collection(domain).insertMany(docs));
+}
+
+//delete all datapoints belonging to a sensor
+async function deleteSensorMongo(domain, sensorID) {
+  mongoRequest(db => db.collection(domain).deleteMany({entityID: sensorID}));
+}
+
+//create one datapoint for a sensor measurement
+async function postDatapointMongo(domain, sensorID, measID, datapoint) {
+  var doc = getMongoDocument(sensorID, measID, datapoint);
+  mongoRequest(db => db.collection(domain).insert(doc));
+}
+
+//delete all datapoints for a sensor measurement
+async function deleteMeasMongo(domain, sensorID, measID) {
+  mongoRequest(db => db.collection(domain).deleteMany({entityID: sensorID, attributeID: measID}));
+}
+
+//performs a request into Mongo database
+async function mongoRequest(request) {
   const db = await MongoClient.connect(config.mongoDBUrl);
-
-  // Get the documents collection
-  var docs = await db.collection(domain).find().toArray();
-
+  var res = request(db);
   db.close();
-  
-  return docs
+  return res;
 }
 
-async function postSensorMongo(req) {
-  putSensorMongo(req.params.domain, req.body);
-}
+// ## Helper functions ##
 
-async function putSensorMongo(domain, sensor) {
-  
-  const db = await MongoClient.connect(config.mongoDBUrl);
-
-  var data2 = getDatapoints(sensor);
-
-  // insert the documents
-  db.collection(domain).insertMany(data2);
-
-  db.close();
-}
-
-async function deleteSensorMongo(req) {
-  deleteSensorMongo2(req.params.domain, req.body);
-}
-
-async function deleteSensorMongo2(domain, sensor) {
-  
-  const db = await MongoClient.connect(config.mongoDBUrl);
-
-  var data2 = getDatapoints(sensor);
-
-  // insert the documents
-  db.collection(domain).deleteMany(data2);
-
-  db.close();
-}
-
-function getDatapoints(sensor) {
+function getSensorDatapoints(sensor) {
 
   var datapoints = []
   for(let meas of sensor.measurements) {
-    for(let val of meas.values) {
-       console.log('val:' + JSON.stringify(val));
-       datapoints.push(getMeasAttrValue(sensor.id, meas.id, val))
-    }
+    let dts = getSensorMeasDatapoints(sensor.id, meas);
+    dts.forEach(a => datapoints.push(a))
   }
   return datapoints
 }
 
-
-async function mongoProxy(mongoReq, req, res) {
-
-  try {
-    // get processed data from Mongo
-    var waziupResp = await mongoReq
-    
-    //send the result back to the user
-    res.send(waziupResp);
-
-  } catch (err) {
-    if (err.response) {
-      // The request was made and the server responded with a status code
-      // We forward it to the user
-      res.status(err.response.status);
-      res.send(err.response.data); 
-    } else if (err.request) {
-      // The request was made but no response was received
-      console.log(err.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', err.stack);
-    }
+function getSensorMeasDatapoints(sensorID, meas) {
+  var datapoints = []
+  for(let val of meas.values) {
+     console.log('val:' + JSON.stringify(val));
+     datapoints.push(getMongoDocument(sensorID, meas.id, val))
   }
+  return datapoints;
 }
 
 function getMeasurements(docs) {
-
    return docs.map(getMeasurement);
 }
 
@@ -127,7 +84,7 @@ function getMeasurement(doc) {
    }
 }
 
-function getMeasAttrValue(sensorID, measID, datapoint) {
+function getMongoDocument(sensorID, measID, datapoint) {
 
   return {
     entityID: sensorID,
@@ -138,7 +95,10 @@ function getMeasAttrValue(sensorID, measID, datapoint) {
 }
 
 module.exports = {
-   getSensorMeasurementValuesMongo,
+   getSensorMeasurementValues,
    postSensorMongo,
-   deleteSensorMongo
+   postSensorMeasMongo,
+   deleteSensorMongo,
+   postDatapointMongo,
+   deleteMeasMongo
 };

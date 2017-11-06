@@ -1,44 +1,45 @@
 "use strict";
 const users = require('./user.service');
 const auth = require('./auth.service');
-const settings = require('./settings');
+const settings = require('./admin-settings');
 
 //different admin routes for user management
-async function postAuth(req) {
-    console.log(req.body);
-    settings.username = req.body.username;
-    settings.password = req.body.password;
+async function postAuth(cred) {
+    settings.username = cred.username;
+    settings.password = cred.password;
     return auth(settings);
 }
 
-async function getUserSearch(req) {
-    console.log(req.body);
-    var token = req.get("Authorization").split(" ").pop();
-    return users.find(token, req.params.domain, req.body);
+async function getUserSearch(domain, search) {
+    var token = await getAdminAuthToken()
+    return users.find(token.accesstoken, domain, search);
 }
 
-async function getUsers(req) {
-    console.log('getUsers');
-    var token = req.get("Authorization").split(" ").pop();
-    return users.find(token, req.params.domain);
+async function getUsers(domain) {
+    var token = await getAdminAuthToken()
+    return users.find(token.accesstoken, domain);
 }
 
-async function getUser(req) {
-    console.log(req.params);
-    var token = req.get("Authorization").split(" ").pop();
-    return users.find(token, req.params.domain, { userId: req.params.userid });
+async function getUser(domain, userid) {
+    var token = await getAdminAuthToken()
+    return users.find(token.accesstoken, domain, { userId: userid });
 }
 
-async function putUser(req) {
-    console.log(req.body);
-    var token = req.get("Authorization").split(" ").pop();
-    if (req.params.userid === req.body.id)
-        return users.update(token, req.params.domain, req.body);
+async function putUser(domain, userid, user) {
+    var token = await getAdminAuthToken()
+    if (userid === user.id)
+        return users.update(token.accesstoken, domain, user);
     else res.status(400).end();
 }
 
-async function deleteUser(req) {
+async function deleteUser(domain, userid) {
     console.log('delete user not implemented yet');
+}
+
+// ## Helper functions ##
+
+async function getAdminAuthToken() {
+    return auth(settings);
 }
 
 module.exports = {

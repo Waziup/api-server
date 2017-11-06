@@ -1,6 +1,6 @@
 var jwt = require('jsonwebtoken');
 const request = require('request');
-const settings = require('./settings');
+const settings = require('./admin-settings');
 const config = require('../../config.js');
 const axios = require('axios');
 const User = require('../../models/user.js');
@@ -33,7 +33,6 @@ async function find(token, realm, options) {
         params: queryString,
         headers: { 'Authorization': "bearer " + token }
     }
-    console.log('find:' + JSON.stringify(axiosConf));
     var result = await axios(axiosConf);
     var users = [];
     result.data.forEach(function(k) {

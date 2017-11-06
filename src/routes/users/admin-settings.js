@@ -1,3 +1,6 @@
+// This file contains the CONFIDENTIAL credentials to Keycloak.
+// Do not commit on Github.
+
 const config = require('../../config');
 var settings = {
     baseUrl: config.keycloakUrl,
