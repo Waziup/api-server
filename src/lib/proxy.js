@@ -58,7 +58,7 @@ function install(router, keycloak) {
   router.delete( '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID)]));
  
   //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain)]));
+  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain, req.body)]));
   router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
   router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
   router.get(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.getUser(   req.params.domain, req.params.userID)]));
@@ -82,7 +82,8 @@ function proxy(requests) {
         // We forward it to the user
         res.status(err.response.status);
         res.send(err.response.data); 
-        console.log('Proxy response error:', err.response.data);
+        console.log('Proxy response error:', err.response.status);
+        if (err.response.data) console.log(' msg:', err.response.data);
       } else if (err.request) {
         // The request was made but no response was received
         console.log('Proxy error, no response received');
