@@ -32,7 +32,7 @@ router.use(function(req, res, next) {
 });
 
 //Add keycloak middleware to handle request authentication
-const keycloak = new Keycloak({
+const keycloak = new Keycloak({}, {
     url: config.keycloakUrl,
     realm: config.realm,
     clientId: config.clientId,
