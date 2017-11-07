@@ -314,6 +314,12 @@ definitions:
       roles:
         type: string
         example: "admin"
+  Domain:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "farm1"
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -322,6 +328,87 @@ securityDefinitions:
 
 
 paths:
+  '/domains':
+    get:
+      summary: list domains
+      tags:
+        - Domains
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'get domains'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Domain'
+        '404':
+          description: Not Found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a domain
+      tags:
+        - Domains
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Domain'
+      responses:
+        '201':
+          description: Domain created succesfully
+        '422':
+          description: Unprocessable entity
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}':
+    get:
+      summary: get domain
+      description: ''
+      tags:
+        - Domains
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: 'get domain'
+          schema:
+            $ref: '#/definitions/Domain'
+        '400':
+          description: Bad request
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable entity
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete domain
+      tags:
+        - Domains
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   '/domains/{domain}/sensors':
     get:
       summary: Sensor data
@@ -332,6 +419,13 @@ paths:
         - application/json
       parameters:
         - $ref: '#/parameters/domainParam'
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: filter the results
+          example: 'owner==cdupont'
+          required: false
       responses:
         '200':
           description: ''
