@@ -11,8 +11,8 @@ const querystring = require('querystring');
 const mongoProxy = require('./mongo-proxy.js');
 
 
-async function getSensorsOrion(domain) {
-  let entities = await orionRequest('/v2/entities', 'GET', domain, null);
+async function getSensorsOrion(domain, query) {
+  let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
   return getSensors(domain, entities);
 }
 
@@ -88,7 +88,7 @@ async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
 
 
 // Perform a request to Orion
-async function orionRequest(path, method, domain, data) {
+async function orionRequest(path, method, domain, data, query) {
  
    var service = domain.split("-")[0];
    var subservice = domain.split("-").slice(1).join();
@@ -98,8 +98,9 @@ async function orionRequest(path, method, domain, data) {
                     url: url,
                     data: data,
                     headers: headers,
-                    params: {limit: 100}}
+                    params: query}
    console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
+   console.log(" query: " + query);
    console.log(" data: " + JSON.stringify(data));
     
    //perform request to Orion

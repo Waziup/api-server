@@ -20,7 +20,7 @@ function install(router, keycloak) {
  
   //Sensor endpoint
   router.get(    '/domains/:domain/sensors',                                           (req, res, next) => keycloak.protect(protect('GET', req.params.domain, 'sensors'))(req, res, next));
-  router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain, req.params.q)]));
+  router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain, req.query)]));
   router.post(   '/domains/:domain/sensors',                                           proxy([req => orionProxy.postSensorOrion(           req.params.domain, req.body), 
                                                                                               req => mongoProxy.postSensorMongo(           req.params.domain, req.body)]));
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy([req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID)]));
