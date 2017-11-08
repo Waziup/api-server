@@ -160,12 +160,12 @@ definitions:
     properties:
       username:
         type: string
-        description: Admin username
-        example: admin
+        description: username
+        example: cdupont
       password:
         type: string
-        description: Admin password
-        example: admin
+        description: password
+        example: password
   UserUpdateBody:
     type: object
     title: userupdate
@@ -335,6 +335,8 @@ paths:
         - Domains
       produces:
         - application/json
+      security:
+        - Bearer: []
       responses:
         '200':
           description: 'get domains'
@@ -360,6 +362,8 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Domain'
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Domain created succesfully
@@ -379,6 +383,8 @@ paths:
         - application/json
       parameters:
         - $ref: '#/parameters/domainParam'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: 'get domain'
@@ -400,6 +406,8 @@ paths:
         - Domains
       parameters:
         - $ref: '#/parameters/domainParam'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: Deleted
@@ -417,6 +425,8 @@ paths:
         - Sensors
       produces:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - in: query
@@ -446,6 +456,8 @@ paths:
         - Sensors
       consumes:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - in: body
           name: body
@@ -470,6 +482,8 @@ paths:
         - Sensors
       produces:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -496,6 +510,8 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: Deleted
@@ -512,6 +528,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -540,6 +558,8 @@ paths:
         - Sensors
       consumes:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -566,6 +586,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -594,6 +616,8 @@ paths:
         - Sensors
       produces:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -616,6 +640,8 @@ paths:
         - Sensors
       consumes:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -642,6 +668,8 @@ paths:
         - Sensors
       produces:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -664,6 +692,8 @@ paths:
       description: ''
       tags:
         - Sensors
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -684,6 +714,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -711,6 +743,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -738,6 +772,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -765,6 +801,8 @@ paths:
         - Sensors
       consumes:
         - text/plain
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -794,6 +832,8 @@ paths:
         - Sensors
       produces:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -817,6 +857,8 @@ paths:
         - Sensors
       consumes:
         - application/json
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
@@ -845,6 +887,8 @@ paths:
       - "application/json"
       parameters:
       - $ref: '#/parameters/domainParam'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: array
@@ -948,6 +992,8 @@ paths:
       - "application/json"
       parameters:
         - $ref: '#/parameters/domainParam'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: array
@@ -967,6 +1013,8 @@ paths:
         - Socials
       consumes:
       - "application/json"
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - name: data
@@ -994,6 +1042,8 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/MsgId'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: array
@@ -1030,6 +1080,8 @@ paths:
         - Socials
       consumes:
       - "application/json"
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - name: data
@@ -1058,6 +1110,8 @@ paths:
       - "application/json"
       parameters:
         - $ref: '#/parameters/domainParam'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: array
@@ -1101,6 +1155,8 @@ paths:
         - Notifications
       produces:
       - "application/json"
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/NotifId'
@@ -1124,6 +1180,8 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/NotifId'
+      security:
+        - Bearer: []
       responses:
         '200':
           description: deleted
