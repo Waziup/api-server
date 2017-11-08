@@ -4,7 +4,7 @@ const auth = require('./auth.service');
 
 //different admin routes for user management
 async function postAuth(domain, cred) {
-    return auth.getAuthToken(domain, cred);
+    return auth.getUserAuthToken(domain, cred);
 }
 
 async function getUserSearch(domain, search) {

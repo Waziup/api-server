@@ -3,22 +3,32 @@ const admin_creds = require('./admin-settings');
 const config = require('../../config.js');
 const querystring = require('querystring');
 
-async function getAuthToken(domain, cred) {
-   const path = '/protocol/openid-connect/token';
+async function getUserAuthToken(domain, cred) {
    const settings = {
      username: cred.username,
      password: cred.password,
      grant_type: 'password',
      client_id: 'waziup'
    }
+   return getAuthToken(domain, settings);
+}
+
+async function getAdminAuthToken() {
+   const settings = {
+     username: admin_creds.username,
+     password: admin_creds.password,
+     grant_type: 'password',
+     client_id: 'admin-cli'
+   }
+   return getAuthToken('master', settings);
+}
+
+async function getAuthToken(domain, settings) {
+   const path = '/protocol/openid-connect/token';
 
    //perform request to Keycloak
    const resp = await keycloakRequest(domain, path, 'POST', querystring.stringify(settings));
    return resp.access_token;
-}
-
-async function getAdminAuthToken() {
-    return getAuthToken('master', {username: admin_creds.username, password: admin_creds.password });
 }
 
 // Perform a request to Keycloak
@@ -40,6 +50,6 @@ async function keycloakRequest(realm, path, method, data, query) {
    return resp.data;
 }
 module.exports = {
-  getAuthToken,
+  getUserAuthToken,
   getAdminAuthToken
   } 
