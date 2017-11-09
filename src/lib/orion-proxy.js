@@ -5,94 +5,98 @@ const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const url = require('url');
-const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
 const mongoProxy = require('./mongo-proxy.js');
+const config = require('../config.js');
 
 
-async function getSensorsOrion(domain, query) {
-  let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
-  return getSensors(domain, entities);
+function OrionProxy(conf) {
+  this.config = conf
 }
 
-async function postSensorOrion(domain, sensor) {
+OrionProxy.prototype.getSensorsOrion = async function (domain, query) {
+  let entities = await this.orionRequest('/v2/entities', 'GET', domain, null, query);
+  return this.getSensors(domain, entities);
+}
+
+OrionProxy.prototype.postSensorOrion = async function (domain, sensor) {
   let resp = orionRequest('/v2/entities', 'POST', domain, getEntity(domain, sensor));
   return resp;
 }
 
-async function getSensorOrion(domain, sensorID) {
+OrionProxy.prototype.getSensorOrion = async function (domain, sensorID) {
   let entity = await orionRequest('/v2/entities/' + sensorID, 'GET', domain, null);
   return getSensor(domain, sensorID, entity);
 }
 
-async function deleteSensor(domain, sensorID) {
+OrionProxy.prototype.deleteSensor = async function (domain, sensorID) {
   let resp = orionRequest('/v2/entities/' + sensorID, 'DELETE', domain, null);
   return resp;
 }
 
-async function putSensorOwner(domain, sensorID, owner) {
+OrionProxy.prototype.putSensorOwner = async function (domain, sensorID, owner) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/owner', 'PUT', domain, getStringAttr(owner));
   return resp;
 }
 
-async function putSensorLocation(domain, sensorID, location) {
+OrionProxy.prototype.putSensorLocation = async function (domain, sensorID, location) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/location', 'PUT', domain, getEntityLocation(location));
   return resp;
 }
 
-async function putSensorName(domain, sensorID, name) {
+OrionProxy.prototype.putSensorName = async function (domain, sensorID, name) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/name', 'PUT', domain, getStringAttr(name));
   return resp;
 }
 
-async function getSensorMeasurements(domain, sensorID) {
+OrionProxy.prototype.getSensorMeasurements = async function (domain, sensorID) {
   let attrs = await orionRequest('/v2/entities/' + sensorID + '/attrs', 'GET', domain, null);
   return getMeasurements(domain, sensorID, attrs)
 }
 
-async function postSensorMeasurement(domain, sensorID, meas) {
+OrionProxy.prototype.postSensorMeasurement = async function (domain, sensorID, meas) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs', 'POST', domain, getMeasAttr(meas));
   return resp;
 }
 
-async function getSensorMeasurement(domain, sensorID, measID) {
+OrionProxy.prototype.getSensorMeasurement = async function (domain, sensorID, measID) {
   let attr = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'GET', domain, null)
   return getMeasurement(domain, sensorID, measID, attr);
 }
 
-async function deleteSensorMeasurement(domain, sensorID, measID) {
+OrionProxy.prototype.deleteSensorMeasurement = async function (domain, sensorID, measID) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'DELETE', domain, null);
   return resp;
 }
 
-async function putSensorMeasurementName(domain, sensorID, measID, name) {
+OrionProxy.prototype.putSensorMeasurementName = async function (domain, sensorID, measID, name) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('name', domain, sensorID, measID, name));
   return resp;
 }
 
-async function putSensorMeasurementDim(domain, sensorID, measID, dim) {
+OrionProxy.prototype.putSensorMeasurementDim = async function (domain, sensorID, measID, dim) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('dimension', domain, sensorID, measID, dim));
   return resp;
 }
 
-async function putSensorMeasurementUnit(domain, sensorID, measID, unit) {
+OrionProxy.prototype.putSensorMeasurementUnit = async function (domain, sensorID, measID, unit) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('unit', domain, sensorID, measID, unit));
   return resp;
 }
 
-async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
+OrionProxy.prototype.putSensorMeasurementKind = async function (domain, sensorID, measID, kind) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('sensor_kind', domain, sensorID, measID, kind));
   return resp;
 }
 
 
 // Perform a request to Orion
-async function orionRequest(path, method, domain, data, query) {
+OrionProxy.prototype.orionRequest = async function (path, method, domain, data, query) {
  
    var service = domain.split("-")[0];
    var subservice = domain.split("-").slice(1).join();
-   var url = config.orionUrl + path;
+   var url = config.backend.orionUrl + path;
    var headers = {'Fiware-Service': service};
    var axiosConf = {method: method,
                     url: url,
@@ -109,21 +113,21 @@ async function orionRequest(path, method, domain, data, query) {
 }
 
 //get the full metadata before modify it (Orion doesn't support PUT method on specific metadata fields)
-async function getMetadata(metadataField, domain, sensorID, measID, newValue) {
+OrionProxy.prototype.getMetadata = async function (metadataField, domain, sensorID, measID, newValue) {
 
   let attr = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'GET', domain, null)
   attr.metadata[metadataField] = getStringAttr(newValue);
   return attr;
 }
 
-function getStringAttr(attr) {
+OrionProxy.prototype.getStringAttr = function (attr) {
   return {
     type: 'String',
     value: attr
   }
 }
 
-async function getSensors(domain, entities) {
+OrionProxy.prototype.getSensors = async function (domain, entities) {
   var sensors = [];
   for (let e of entities) {
     var s = await getSensor(domain, e.id, e);
@@ -133,7 +137,7 @@ async function getSensors(domain, entities) {
   return sensors
 }
 
-async function getSensor(domain, sensorID, entity) {
+OrionProxy.prototype.getSensor = async function (domain, sensorID, entity) {
 
   console.log(JSON.stringify(entity));
   var sensor = {
@@ -162,7 +166,7 @@ async function getSensor(domain, sensorID, entity) {
   return sensor;
 }
 
-async function getMeasurements(domain, sensorID, attrs) {
+OrionProxy.prototype.getMeasurements = async function (domain, sensorID, attrs) {
 
   console.log('attrs: ' + JSON.stringify(attrs));
   var measurements = []
@@ -177,7 +181,7 @@ async function getMeasurements(domain, sensorID, attrs) {
 }
 
 
-async function getMeasurement(domain, sensorID, attrID, attr) {
+OrionProxy.prototype.getMeasurement = async function (domain, sensorID, attrID, attr) {
  
   console.log('domain:' + domain + ' sensorID:' + sensorID + ' attrID: ' + attrID + ' attr:' + JSON.stringify(attr))
   var meas = { 
@@ -202,7 +206,7 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
   return meas;
 }
 
-function getEntity(domain, sensor) {
+OrionProxy.prototype.getEntity = function (domain, sensor) {
 
   var subservice = domain.split("-").slice(1).join();
   console.log('Subservice:' + JSON.stringify(subservice));
@@ -234,7 +238,7 @@ function getEntity(domain, sensor) {
   return entity;
 }
 
-function getEntityLocation(loc) {
+OrionProxy.prototype.getEntityLocation = function (loc) {
 
   var entityLoc = {
     type: 'geo:json',
@@ -248,14 +252,14 @@ function getEntityLocation(loc) {
 
 }
 
-function getMeasAttr(measurement) {
+OrionProxy.prototype.getMeasAttr = function (measurement) {
 
   return {
     [measurement.id] : getMeasAttrs(measurement)
   }
 }
 
-function getMeasAttrs(measurement) {
+OrionProxy.prototype.getMeasAttrs = function (measurement) {
   var attr = {
     type: 'Measurement',
     metadata: {}
@@ -295,20 +299,4 @@ function getMeasAttrs(measurement) {
   return attr;
 }
 
-module.exports = {
- getSensorsOrion, 
- postSensorOrion,         
- getSensorOrion,          
- deleteSensor,            
- putSensorOwner,          
- putSensorLocation,       
- putSensorName,           
- getSensorMeasurements,   
- postSensorMeasurement,   
- getSensorMeasurement ,   
- deleteSensorMeasurement, 
- putSensorMeasurementName,
- putSensorMeasurementDim, 
- putSensorMeasurementUnit,
- putSensorMeasurementKind,
- orionRequest}
+module.exports = OrionProxy

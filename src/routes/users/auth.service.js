@@ -34,7 +34,7 @@ async function getAuthToken(domain, settings) {
 // Perform a request to Keycloak
 async function keycloakRequest(realm, path, method, data, query) {
  
-   var url = config.keycloakUrl + '/realms/' + realm + path;
+   var url = config.backend.keycloakUrl + '/realms/' + realm + path;
    const headers = {'Content-type': 'application/x-www-form-urlencoded'};
    var axiosConf = {method: method,
                     url: url,

@@ -5,7 +5,6 @@ const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const url = require('url');
-const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
 const mongoProxy   = require('./mongo-proxy.js');
@@ -16,11 +15,12 @@ const notifsProxy  = require('./notif-proxy.js');
 const usersProxy   = require('../routes/users/user.route.js');
 
 
-function install(router, keycloak) {
+function install(router, keycloak, config) {
  
+  var orion = new orionProxy(config);
   //Sensor endpoint
   router.get(    '/domains/:domain/sensors',                                           (req, res, next) => keycloak.protect(protect('GET', req.params.domain, 'sensors'))(req, res, next));
-  router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain, req.query)]));
+  router.get(    '/domains/:domain/sensors',                                           proxy([req => orion.getSensorsOrion(           req.params.domain, req.query)]));
   router.post(   '/domains/:domain/sensors',                                           proxy([req => orionProxy.postSensorOrion(           req.params.domain, req.body), 
                                                                                               req => mongoProxy.postSensorMongo(           req.params.domain, req.body)]));
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy([req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID)]));
