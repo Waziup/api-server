@@ -70,33 +70,6 @@ function getSub(domain, notif) {
   if(notif.throttling) {
     sub.throttling = notif.throttling
   }
- //   "subject": {
- //     "entities": [
- //       {
- //         "id":  
- //       }
- //     ],
- //     "condition": {
- //       "attrs": [
- //         "TC"
- //       ]
- //     }
- //   },
- //   "notification": {
- //     "httpCustom": {
- //       "url": "http://sms2.waziup.io/v1/sms/send",
- //       "qs": {
- //         "contact": "+393806412093",
- //         "msg": "WAZIUP:%20\${id}%20pond%20temperature%20exceeded:%20\${TC}%20C"
- //       }
- //     },
- //     "attrs": [
- //       "TC"
- //     ]
- //   },
- //   "expires": "2040-01-01T14:00:00.00Z",
- //   "throttling": 5
- // }
 
   return sub
 }
