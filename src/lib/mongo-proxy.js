@@ -45,7 +45,7 @@ async function deleteMeasMongo(domain, sensorID, measID) {
 
 //performs a request into Mongo database
 async function mongoRequest(request) {
-  const db = await MongoClient.connect(config.mongoDBUrl);
+  const db = await MongoClient.connect(config.backend.mongoDBUrl);
   var res = request(db);
   db.close();
   return res;

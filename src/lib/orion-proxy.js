@@ -92,7 +92,7 @@ async function orionRequest(path, method, domain, data, query) {
  
    var service = domain.split("-")[0];
    var subservice = domain.split("-").slice(1).join();
-   var url = config.orionUrl + path;
+   var url = config.backend.orionUrl + path;
    var headers = {'Fiware-Service': service};
    var axiosConf = {method: method,
                     url: url,

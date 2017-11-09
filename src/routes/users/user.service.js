@@ -24,9 +24,9 @@ async function find(realm, options) {
   var url;
   var queryString = null;
   if (options.userId) {
-      url = `${config.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
+      url = `${config.backend.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
   } else {
-      url = `${config.keycloakUrl}/admin/realms/${realm}/users`;
+      url = `${config.backend.keycloakUrl}/admin/realms/${realm}/users`;
       queryString = options;
   }
   

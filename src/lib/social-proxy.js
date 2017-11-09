@@ -57,7 +57,7 @@ async function postSocialMsgBatch(domain, socialMsgBatch) {
 //Perform a request on the social backend
 async function socialRequest(path, method, data) {
  
-    var url = config.socialsUrl + '/SocialBackend/socials/' + path;
+    var url = config.backend.socialsUrl + '/SocialBackend/socials/' + path;
     var axiosConf = {method: method,
                      url: url,
                      data: data}
