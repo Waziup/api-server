@@ -2,15 +2,16 @@ const axios = require('axios');
 const admin_creds = require('./admin-settings');
 const config = require('../../config.js');
 const querystring = require('querystring');
+const keycloakProxy = require('./keycloakProxy')
 
-async function getUserAuthToken(domain, cred) {
+async function getUserAuthToken(cred) {
    const settings = {
      username: cred.username,
      password: cred.password,
      grant_type: 'password',
-     client_id: 'waziup'
+     client_id: config.keycloakClientId 
    }
-   return getAuthToken(domain, settings);
+   return getAuthToken(config.keycloakRealm, settings);
 }
 
 async function getAdminAuthToken() {
@@ -23,32 +24,14 @@ async function getAdminAuthToken() {
    return getAuthToken('master', settings);
 }
 
-async function getAuthToken(domain, settings) {
-   const path = '/protocol/openid-connect/token';
+async function getAuthToken(realm, settings) {
+   const path = 'protocol/openid-connect/token';
 
    //perform request to Keycloak
-   const resp = await keycloakRequest(domain, path, 'POST', querystring.stringify(settings));
+   const resp = await keycloakProxy.keycloakRequest(realm, path, 'POST', querystring.stringify(settings), null, false);
    return resp.access_token;
 }
 
-// Perform a request to Keycloak
-async function keycloakRequest(realm, path, method, data, query) {
- 
-   var url = config.backend.keycloakUrl + '/realms/' + realm + path;
-   const headers = {'Content-type': 'application/x-www-form-urlencoded'};
-   var axiosConf = {method: method,
-                    url: url,
-                    data: data,
-                    headers: headers,
-                    params: query}
-   console.log("Keycloak request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   console.log(" query: " + query);
-   console.log(" data: " + JSON.stringify(data));
-    
-   //perform request
-   var resp = await axios(axiosConf);
-   return resp.data;
-}
 module.exports = {
   getUserAuthToken,
   getAdminAuthToken

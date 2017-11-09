@@ -4,6 +4,7 @@ const settings = require('./admin-settings');
 const config = require('../../config.js');
 const axios = require('axios');
 const auth = require('./auth.service');
+const keycloakProxy = require('./keycloakProxy')
 
 /**
   A function to get the list of users or a user for a realm.
@@ -17,24 +18,20 @@ const auth = require('./auth.service');
   @returns {Promise} A promise that will resolve with an Array of user objects or just the 1 user object if userId is used
   
  */
-async function find(realm, options) {
+async function find(domain, options) {
 
   var token = await auth.getAdminAuthToken()
   options = options || {};
-  var url;
+  var path;
   var queryString = null;
   if (options.userId) {
-      url = `${config.backend.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
+      path = `users/${options.userId}`;
   } else {
-      url = `${config.backend.keycloakUrl}/admin/realms/${realm}/users`;
+      path = `users`;
       queryString = options;
   }
   
-  var axiosConf = {url: url,
-                   params: queryString,
-                   headers: {'Authorization': "bearer " + token}}
-  var users = await axios(axiosConf); 
-  return users.data;
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
 }
 
 /**
