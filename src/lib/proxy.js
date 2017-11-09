@@ -59,7 +59,7 @@ function install(router, keycloak) {
   router.delete( '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID)]));
  
   //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain, req.body)]));
+  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.body)]));
   router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
   router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
   router.get(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.getUser(   req.params.domain, req.params.userID)]));

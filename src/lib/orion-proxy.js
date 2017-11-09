@@ -90,10 +90,8 @@ async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
 // Perform a request to Orion
 async function orionRequest(path, method, domain, data, query) {
  
-   var service = domain.split("-")[0];
-   var subservice = domain.split("-").slice(1).join();
    var url = config.backend.orionUrl + path;
-   var headers = {'Fiware-Service': service};
+   var headers = {'Fiware-Service': config.fiwareService};
    var axiosConf = {method: method,
                     url: url,
                     data: data,

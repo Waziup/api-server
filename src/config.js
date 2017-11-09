@@ -3,10 +3,11 @@ module.exports = {
   port: process.env.SERVER_PORT || 3000,
   // API URL to be used in the server-side code
   serverUrl: process.env.SERVER_URL || `http://localhost:${process.env.SERVER_PORT || 3000}`,
-  realm: 'waziup',
-  clientId: 'api-server',
-  FiwareService: 'waziup',
+  keycloakRealm: 'waziup',
+  keycloakClientId: 'waziup',
+  fiwareService: 'waziup',
   mongoPrefix: 'waziup',
+  elsPrefix: 'waziup',
   backend: {
     keycloakUrl:      process.env.KEYCLOAK_URL      || 'http://localhost:8080/auth',
     orionUrl:         process.env.ORION_URL         || 'http://localhost:1026',
