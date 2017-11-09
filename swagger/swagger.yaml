@@ -1061,6 +1061,8 @@ paths:
         - Socials
       consumes:
       - "application/json"
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/MsgId'
@@ -1131,6 +1133,8 @@ paths:
         - Notifications
       consumes:
       - "application/json"
+      security:
+        - Bearer: []
       parameters:
         - $ref: '#/parameters/domainParam'
         - name: data
