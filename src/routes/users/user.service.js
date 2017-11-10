@@ -34,6 +34,13 @@ async function find(domain, options) {
   return keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
 }
 
+async function findByName(domain, username) {
+
+   const users = await find(domain, { username: username })
+   return users[0]
+}
+
+
 /**
   A function to update a user for a realm
   @param {string} realmName - The name of the realm(not the realmID) - ex: master,
@@ -71,6 +78,7 @@ function update(accessToken, realmName, user) {
   });
 };
 module.exports = {
-    find: find,
-    update: update
+    find,
+    findByName,
+    update
 };

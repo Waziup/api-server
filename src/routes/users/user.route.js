@@ -1,6 +1,8 @@
 "use strict";
 const users = require('./user.service');
 const auth = require('./auth.service');
+const keycloakProxy = require('./keycloakProxy');
+const config = require('../../config.js');
 
 //different admin routes for user management
 async function postAuth(cred) {
@@ -29,6 +31,15 @@ async function deleteUser(domain, userid) {
     console.log('delete user not implemented yet');
 }
 
+async function getRoles(username) {
+   const user = await users.findByName('waziup', username)
+   console.log('user: ' + JSON.stringify(user))
+   const path = 'users/' + user.id + '/role-mappings/realm/composite'
+   var token = await auth.getAdminAuthToken()
+   var roleInfos = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, null, true, token) 
+   return roleInfos.map(ri => ri.name)
+}
+
 
 module.exports = {
     postAuth,
@@ -36,5 +47,6 @@ module.exports = {
     getUsers,
     getUser,
     putUser,
-    deleteUser
+    deleteUser,
+    getRoles
 }

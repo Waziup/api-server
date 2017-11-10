@@ -19,7 +19,7 @@ const usersProxy   = require('../routes/users/user.route.js');
 function install(router, keycloak) {
  
   //Sensor endpoint
-  router.get(    '/domains/:domain/sensors',                                           (req, res, next) => keycloak.protect(protect('GET', req.params.domain, 'sensors'))(req, res, next));
+  router.get(    '/domains/:domain/sensors',                                           proxy([req => myKeycloakProtect(req.kauth)]));
   router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain, req.query)]));
   router.post(   '/domains/:domain/sensors',                                           proxy([req => orionProxy.postSensorOrion(           req.params.domain, req.body), 
                                                                                               req => mongoProxy.postSensorMongo(           req.params.domain, req.body)]));
@@ -102,14 +102,28 @@ function proxy(requests) {
   }
 }
 
-function protect(method, domain, resourceType) {
-  return (token, req) => {
+async function myKeycloakProtect(kauth) {
+    
+  var roles = {}
+  //check that token is recognised
+  if (kauth && kauth.grant) {
 
-    console.log('token: ' + JSON.stringify(token))
-    const accs = token.content.realm_access.roles.map(r => hasAccess(method, domain, resourceType, r))
-
-    return accs.some(a => a == true) 
+    roles = kauth.grant.access_token.content.realm_access.roles
+  } else { //if no token, use default permissions
+    roles = await usersProxy.getRoles('guest')
+  } 
+  if (protect(roles, 'GET', 'waziup', 'sensors')) {
+    return {};
+  } else {
+    reject('Access denied');
   }
+};
+
+function protect(roles, method, domain, resourceType) {
+
+  console.log('roles: ' + JSON.stringify(roles))
+  const accs = roles.map(r => hasAccess(method, domain, resourceType, r))
+  return accs.some(a => a == true) 
 }
 
 function hasAccess(method, domain, resType, role) {
