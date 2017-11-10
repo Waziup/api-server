@@ -51,25 +51,25 @@ function install(router, keycloak) {
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
   
   //socials endpoint
-  router.get(    '/domains/:domain/socials',        proxy([req => socialsProxy.getSocialMsgs(     req.params.domain)]));
-  router.post(   '/domains/:domain/socials',        proxy([req => socialsProxy.postSocialMsg(     req.params.domain, req.body)]));
-  router.get(    '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID)]));
-  router.delete( '/domains/:domain/socials/:msgID', proxy([req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID)]));
-  router.post(   '/domains/:domain/socials/batch',  proxy([req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body)]));
+  router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
+  router.post(   '/domains/:domain/socials',        proxy(req => socialsProxy.postSocialMsg(     req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID), true));
+  router.delete( '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID), true));
+  router.post(   '/domains/:domain/socials/batch',  proxy(req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body), true));
 
   //notifications endpoint
-  router.get(    '/domains/:domain/notifications',          proxy([req => notifsProxy.getNotifsOrion(  req.params.domain)]));
-  router.post(   '/domains/:domain/notifications',          proxy([req => notifsProxy.postNotifOrion(  req.params.domain, req.body)]));
-  router.get(    '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID)]));
-  router.delete( '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID)]));
+  router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
+  router.post(   '/domains/:domain/notifications',          proxy(req => notifsProxy.postNotifOrion(  req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID), true));
+  router.delete( '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID), true));
  
   //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.body)]));
-  router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
-  router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
-  router.get(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.getUser(   req.params.domain, req.params.userID)]));
-  router.delete( '/domains/:domain/users/:userID',  proxy([req => usersProxy.deleteUser(req.params.domain, req.params.userID)]));
-  router.put(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.putUser(   req.params.domain, req.params.userID)]));
+  router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
+  router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(  req.params.domain), true));
+  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.postUsers( req.params.domain), true));
+  router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
+  router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser(req.params.domain, req.params.userID), true));
+  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(   req.params.domain, req.params.userID), true));
   
   router.use(proxyError);
 }
@@ -86,6 +86,7 @@ function proxy(request, isFinal) {
         next();
       }
     } catch(err) {
+      console.log('catch error')
       next(err)
     }
   }
