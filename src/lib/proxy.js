@@ -15,15 +15,25 @@ const socialsProxy = require('./social-proxy.js');
 const notifsProxy  = require('./notif-proxy.js');
 const usersProxy   = require('../routes/users/user.route.js');
 
-
 function install(router, keycloak) {
+  
+  //install all routes
+  installSensors(router, keycloak)
+  installHistory(router, keycloak)
+  installSocials(router, keycloak)
+  installNotifs( router, keycloak)
+  installUsers(  router, keycloak)
+
+  //install error handler
+  router.use(proxyError);
+}
+
+function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.get(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, 'GET', req.params.domain,    'sensors')))
-  router.post(   '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, 'POST', req.params.domain,   'sensors')))
-  router.put(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, 'PUT', req.params.domain,    'sensors')))
-  router.delete( '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, 'DELETE', req.params.domain, 'sensors')))
+  router.all(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
 
+  //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
   router.post(   '/domains/:domain/sensors',                                           proxy(req => orionProxy.postSensorOrion(           req.params.domain, req.body)), 
                                                                                        proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body), true));
@@ -47,8 +57,18 @@ function install(router, keycloak) {
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID), true));
   router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID)),
                                                                                        proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+}
+
+function installHistory(router, keycloak) {
+
+  router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
+}
+
+function installSocials(router, keycloak) {
+
+  router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -56,13 +76,24 @@ function install(router, keycloak) {
   router.get(    '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID), true));
   router.delete( '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID), true));
   router.post(   '/domains/:domain/socials/batch',  proxy(req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body), true));
+}
 
+function installNotifs(router, keycloak) {
+
+  router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
+  
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
   router.post(   '/domains/:domain/notifications',          proxy(req => notifsProxy.postNotifOrion(  req.params.domain, req.body), true));
   router.get(    '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID), true));
   router.delete( '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID), true));
- 
+
+}
+
+function installUsers(router, keycloak) {
+
+  router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
+  
   //users endpoint
   router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
   router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(  req.params.domain), true));
@@ -70,8 +101,7 @@ function install(router, keycloak) {
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
   router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser(req.params.domain, req.params.userID), true));
   router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(   req.params.domain, req.params.userID), true));
-  
-  router.use(proxyError);
+
 }
 
 //Perform one or several requests to backend components and send back results to user
@@ -194,4 +224,7 @@ function splitRole(role) {
 
 }
 
-module.exports = { install } 
+module.exports = { 
+  install,
+  proxyError
+} 
