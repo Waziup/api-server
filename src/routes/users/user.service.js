@@ -4,7 +4,8 @@ const settings = require('./admin-settings');
 const config = require('../../config.js');
 const axios = require('axios');
 const User = require('../../models/user.js');
-
+const auth = require('./auth.service');
+const keycloakProxy = require('./keycloakProxy');
 /**
   A function to get the list of users or a user for a realm.
   @param {string} realmName - The name of the realm(not the realmID) - ex: master
@@ -17,29 +18,22 @@ const User = require('../../models/user.js');
   @returns {Promise} A promise that will resolve with an Array of user objects or just the 1 user object if userId is used
   
  */
-async function find(token, realm, options) {
-    options = options || {};
-    var url;
-    var queryString = null;
-    if (options.userId) {
-        url = `${config.keycloakUrl}/admin/realms/${realm}/users/${options.userId}`;
-    } else {
-        url = `${config.keycloakUrl}/admin/realms/${realm}/users`;
-        queryString = options;
-    }
+async function find(domain, options) {
 
-    var axiosConf = {
-        url: url,
-        params: queryString,
-        headers: { 'Authorization': "bearer " + token }
-    }
-    var result = await axios(axiosConf);
-    var users = [];
-    result.data.forEach(function(k) {
-        users.push(new User(k));
-    }, this);
-    return users;
-};
+  var token = await auth.getAdminAuthToken()
+  options = options || {};
+  var path;
+  var queryString = null;
+  if (options.userId) {
+      path = `users/${options.userId}`;
+  } else {
+      path = `users`;
+      queryString = options;
+  }
+  
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
+}
+
 /**
   A function to update a user for a realm
   @param {string} realmName - The name of the realm(not the realmID) - ex: master,
@@ -47,34 +41,34 @@ async function find(token, realm, options) {
   @returns {Promise} A promise that resolves.
  */
 function update(accessToken, realmName, user) {
-    return new Promise((resolve, reject) => {
-        user = user || {};
-        const req = {
-            url: `${settings.baseUrl}/admin/realms/${realmName}/users/${user.id}`,
-            auth: {
-                bearer: accessToken
-            },
-            json: true,
-            method: 'PUT',
-            body: user
-        };
-        console.log(req);
-        request(req, (err, resp, body) => {
-            console.log(resp.statusCode);
-            if (err) {
-                console.log(err);
-                return reject(err);
-            }
+  return new Promise((resolve, reject) => {
+    user = user || {};
+    const req = {
+      url: `${settings.baseUrl}/admin/realms/${realmName}/users/${user.id}`,
+      auth: {
+          bearer: accessToken
+      },
+      json: true,
+      method: 'PUT',
+      body: user
+    };
+    console.log(req);
+    request(req, (err, resp, body) => {
+      console.log(resp.statusCode);
+      if (err) {
+        console.log(err);
+        return reject(err);
+      }
 
-            // Check that the status cod
-            if (resp.statusCode !== 204) {
-                console.log(body);
-                return reject(body);
-            }
+      // Check that the status cod
+      if (resp.statusCode !== 204) {
+        console.log(body);
+        return reject(body);
+      }
 
-            return resolve(body);
-        });
+      return resolve(body);
     });
+  });
 };
 module.exports = {
     find: find,

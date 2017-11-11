@@ -1,34 +1,27 @@
 "use strict";
 const users = require('./user.service');
 const auth = require('./auth.service');
-const settings = require('./admin-settings');
 
 //different admin routes for user management
 async function postAuth(cred) {
-    settings.username = cred.username;
-    settings.password = cred.password;
-    return auth(settings);
+    return auth.getUserAuthToken(cred);
 }
 
 async function getUserSearch(domain, search) {
-    var token = await getAdminAuthToken()
-    return users.find(token.accesstoken, domain, search);
+    return users.find(domain, search);
 }
 
 async function getUsers(domain) {
-    var token = await getAdminAuthToken()
-    return users.find(token.accesstoken, domain);
+    return users.find(domain);
 }
 
 async function getUser(domain, userid) {
-    var token = await getAdminAuthToken()
-    return users.find(token.accesstoken, domain, { userId: userid });
+    return users.find(domain, { userId: userid });
 }
 
 async function putUser(domain, userid, user) {
-    var token = await getAdminAuthToken()
     if (userid === user.id)
-        return users.update(token.accesstoken, domain, user);
+        return users.update(domain, user);
     else res.status(400).end();
 }
 
@@ -36,11 +29,6 @@ async function deleteUser(domain, userid) {
     console.log('delete user not implemented yet');
 }
 
-// ## Helper functions ##
-
-async function getAdminAuthToken() {
-    return auth(settings);
-}
 
 module.exports = {
     postAuth,

@@ -17,9 +17,10 @@ const usersProxy   = require('../routes/users/user.route.js');
 
 
 function install(router, keycloak) {
-  
+ 
   //Sensor endpoint
-  router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain)]));
+  router.get(    '/domains/:domain/sensors',                                           (req, res, next) => keycloak.protect(protect('GET', req.params.domain, 'sensors'))(req, res, next));
+  router.get(    '/domains/:domain/sensors',                                           proxy([req => orionProxy.getSensorsOrion(           req.params.domain, req.query)]));
   router.post(   '/domains/:domain/sensors',                                           proxy([req => orionProxy.postSensorOrion(           req.params.domain, req.body), 
                                                                                               req => mongoProxy.postSensorMongo(           req.params.domain, req.body)]));
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy([req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID)]));
@@ -58,7 +59,7 @@ function install(router, keycloak) {
   router.delete( '/domains/:domain/notifications/:notifID', proxy([req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID)]));
  
   //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.params.domain)]));
+  router.post(   '/domains/:domain/auth',           proxy([req => usersProxy.postAuth(  req.body)]));
   router.get(    '/domains/:domain/users',          proxy([req => usersProxy.getUsers(  req.params.domain)]));
   router.post(   '/domains/:domain/users',          proxy([req => usersProxy.postUsers( req.params.domain)]));
   router.get(    '/domains/:domain/users/:userID',  proxy([req => usersProxy.getUser(   req.params.domain, req.params.userID)]));
@@ -82,7 +83,8 @@ function proxy(requests) {
         // We forward it to the user
         res.status(err.response.status);
         res.send(err.response.data); 
-        console.log('Proxy response error:', err.response.data);
+        console.log('Proxy response error:', err.response.status);
+        if (err.response.data) console.log(' msg:', err.response.data);
       } else if (err.request) {
         // The request was made but no response was received
         console.log('Proxy error, no response received');
@@ -98,6 +100,59 @@ function proxy(requests) {
       }
     }
   }
+}
+
+function protect(method, domain, resourceType) {
+  return (token, req) => {
+
+    console.log('token: ' + JSON.stringify(token))
+    const accs = token.content.realm_access.roles.map(r => hasAccess(method, domain, resourceType, r))
+
+    return accs.some(a => a == true) 
+  }
+}
+
+function hasAccess(method, domain, resType, role) {
+
+   const roleElems = splitRole(role)
+   const permAccess = isPermAccess(method, roleElems.perm)
+   const domainAccess = domain == roleElems.domain
+   const resTypeAccess = resType? resType == roleElems.resourceType : true
+
+   console.log('access role ' + JSON.stringify(roleElems))
+   console.log('access perm ' + permAccess)
+   console.log('access domain ' + domainAccess)
+   console.log('access res type ' + resTypeAccess)
+   return permAccess && domainAccess && resTypeAccess
+}
+
+// view/manage permission level
+function isPermAccess(method, perm) {
+
+  switch(perm) {
+    case 'manage': return true;
+    case 'view': {
+      if (method == 'GET') {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    default: return false;
+  }
+}
+
+//Splits the roles.
+//Roles should have the shape <view|manage>:<domain>:<resType>, for example view:farm1:sensors
+function splitRole(role) {
+  const s = role.split(':')
+  return {
+    perm: s[0],
+    domain: s[1]? s[1]: null,
+    resourceType: s[2]? s[2]: null,
+    resource: s[3]? s[3]: null
+  }
+
 }
 
 module.exports = { install } 

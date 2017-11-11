@@ -22,7 +22,6 @@
         "jsonwebtoken": "^7.4.3",
         "keycloak-auth-utils": "^3.2.0-cr.1",
         "keycloak-connect": "^3.1.0",
-        "keycloak-request-token": "^0.1.0",
         "minimist": "*",
         "mongodb": "^2.2.33",
         "path": "^0.12.7",

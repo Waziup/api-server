@@ -8,9 +8,9 @@ async function getHistory(req, res) {
 
   const reqUrl = url.parse(req.url);
   const domain = req.params.domain;
-  const ELSUrl = config.elasticsearchUrl;
+  const ELSUrl = config.backend.elasticsearchUrl;
   const path = req.params[0];
-  const proxyUrl = `${ELSUrl}/${domain}/${path}${reqUrl.search || ''}`; 
+  const proxyUrl = `${ELSUrl}/${config.elsPrefix}-${domain}/${path}${reqUrl.search || ''}`; 
 
   const options = {
      url: proxyUrl

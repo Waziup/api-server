@@ -1,19 +1,38 @@
-const requestToken = require('keycloak-request-token');
+const axios = require('axios');
+const admin_creds = require('./admin-settings');
+const config = require('../../config.js');
+const querystring = require('querystring');
+const keycloakProxy = require('./keycloakProxy')
 
-function getToken(baseUrl, settings) {
-    if (settings.accessToken) {
-        return Promise.resolve(settings.accessToken);
-    }
-    return requestToken(baseUrl, settings);
+async function getUserAuthToken(cred) {
+   const settings = {
+     username: cred.username,
+     password: cred.password,
+     grant_type: 'password',
+     client_id: config.keycloakClientId 
+   }
+   return getAuthToken(config.keycloakRealm, settings);
 }
 
-function authenticate(settings) {
-    console.log(settings);
-    return getToken(settings.baseUrl, settings)
-        .then((token) => {
-            var newToken = { accesstoken: token };
-            return newToken;
-        });
+async function getAdminAuthToken() {
+   const settings = {
+     username: admin_creds.username,
+     password: admin_creds.password,
+     grant_type: 'password',
+     client_id: 'admin-cli'
+   }
+   return getAuthToken('master', settings);
 }
 
-module.exports = authenticate;
+async function getAuthToken(realm, settings) {
+   const path = 'protocol/openid-connect/token';
+
+   //perform request to Keycloak
+   const resp = await keycloakProxy.keycloakRequest(realm, path, 'POST', querystring.stringify(settings), null, false);
+   return resp.access_token;
+}
+
+module.exports = {
+  getUserAuthToken,
+  getAdminAuthToken
+  } 
