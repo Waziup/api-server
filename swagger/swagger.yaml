@@ -76,6 +76,10 @@ definitions:
           $ref: '#/definitions/Measurement'
       location:
         $ref: '#/definitions/Location'
+      domain:
+        type: string
+        description: the domain of this sensor.
+        example: waziup
   Location:
     type: object
     description: >-
