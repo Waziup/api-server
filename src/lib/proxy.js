@@ -13,11 +13,13 @@ const orionProxy   = require('./orion-proxy.js');
 const elsProxy     = require('./els-proxy.js');
 const socialsProxy = require('./social-proxy.js');
 const notifsProxy  = require('./notif-proxy.js');
+const domainsProxy  = require('./domain-proxy.js');
 const usersProxy   = require('../routes/users/user.route.js');
 
 function install(router, keycloak) {
   
   //install all routes
+  installDomains(router, keycloak)
   installSensors(router, keycloak)
   installHistory(router, keycloak)
   installSocials(router, keycloak)
@@ -28,10 +30,19 @@ function install(router, keycloak) {
   router.use(proxyError);
 }
 
+function installDomains(router, keycloak) {
+ 
+  //routes to backend components
+  router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
+  router.post(   '/domains',          proxy(req => domainsProxy.postDomains(req.body), true)); 
+  router.get(    '/domains/:domain',  proxy(req => domainsProxy.getDomain(req.params.domain), true));
+  router.delete( '/domains/:domain',  proxy(req => domainsProxy.deleteDomain(req.params.domain), true));
+}
+
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
+  router.all(    '/domains/:domain/sensors*',                                          proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
@@ -61,6 +72,7 @@ function installSensors(router, keycloak) {
 
 function installHistory(router, keycloak) {
 
+  //protect endpoints
   router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
@@ -68,6 +80,7 @@ function installHistory(router, keycloak) {
 
 function installSocials(router, keycloak) {
 
+  //protect endpoints
   router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
   
   //socials endpoint
@@ -80,6 +93,7 @@ function installSocials(router, keycloak) {
 
 function installNotifs(router, keycloak) {
 
+  //protect endpoints
   router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
   
   //notifications endpoint
@@ -92,6 +106,7 @@ function installNotifs(router, keycloak) {
 
 function installUsers(router, keycloak) {
 
+  //protect endpoints
   router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
   
   //users endpoint
