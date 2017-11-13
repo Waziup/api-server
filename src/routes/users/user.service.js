@@ -30,11 +30,15 @@ async function find(domain, options) {
         queryString = options;
     }
     var data = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
+    console.log(data);
     var users = [];
-    data.forEach(function(k) {
-        users.push(new User(k));
-    }, this);
-    return users;
+    if (data.id) return new User(data);
+    else {
+        data.forEach(function(k) {
+            users.push(new User(k));
+        }, this);
+        return users;
+    }
 }
 
 /**
@@ -54,7 +58,7 @@ async function update(realmName, user) {
             },
             json: true,
             method: 'PUT',
-            body: changeToKeycloakUser(user)
+            body: changeToKeycloakBasicUser(user)
         };
         console.log(req);
         request(req, (err, resp, body) => {
@@ -79,11 +83,11 @@ async function create(realmName, user) {
     var token = await auth.getAdminAuthToken();
     return new Promise((resolve, reject) => {
         const req = {
-            url: `${config.backend.keycloakUrl}/admin/realms/${realm}/users`,
+            url: `${config.backend.keycloakUrl}/admin/realms/${realmName}/users`,
             auth: {
                 bearer: token
             },
-            body: changeToKeycloakUser(user),
+            body: changeToKeycloakBasicUser(user),
             method: 'POST',
             json: true
         };
@@ -103,7 +107,7 @@ async function create(realmName, user) {
             // Since the create Endpoint returns an empty body, go get what we just imported.
             // *** Body is empty but location header contains user id ***
             // We need to search based on the userid, since it will be unique
-            return resolve(find(realm, {
+            return resolve(find(realmName, {
                 userId: uid
             }));
         });
@@ -111,14 +115,13 @@ async function create(realmName, user) {
 
 };
 
-function changeToKeycloakUser(o) {
+function changeToKeycloakBasicUser(o) {
     var kUser = {};
     try {
         kUser.id = o.id || "";
-        kUser.createdTime = o.createdTimestamp || "";
         kUser.username = o.username || "";
-        kUser.firstname = o.firstname || "";
-        kUser.lastname = o.lastname || "";
+        kUser.firstName = o.firstname || "";
+        kUser.lastName = o.lastname || "";
         kUser.email = o.email || "";
         kUser.attributes = {};
         kUser.attributes.subservice = o.subservice || "";
