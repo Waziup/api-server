@@ -934,6 +934,25 @@ paths:
           description: return users
         '404':
           description: Something wrong happened
+    post:
+      tags:
+        - Users
+      summary: Create a new user in a realm
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - name: user
+          in: body
+          description: user object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: return created user
+        '404':
+          description: Something wrong happened
   /domains/{domain}/users/search/:
     get:
       tags:

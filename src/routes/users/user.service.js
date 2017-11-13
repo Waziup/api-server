@@ -19,19 +19,22 @@ const keycloakProxy = require('./keycloakProxy');
   
  */
 async function find(domain, options) {
-
-  var token = await auth.getAdminAuthToken()
-  options = options || {};
-  var path;
-  var queryString = null;
-  if (options.userId) {
-      path = `users/${options.userId}`;
-  } else {
-      path = `users`;
-      queryString = options;
-  }
-  
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
+    var token = await auth.getAdminAuthToken();
+    options = options || {};
+    var path;
+    var queryString = null;
+    if (options.userId) {
+        path = `users/${options.userId}`;
+    } else {
+        path = `users`;
+        queryString = options;
+    }
+    var data = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
+    var users = [];
+    data.forEach(function(k) {
+        users.push(new User(k));
+    }, this);
+    return users;
 }
 
 /**
@@ -40,37 +43,97 @@ async function find(domain, options) {
   @param {object} user - The JSON representation of the fields to update for the user - This must include the user.id field.
   @returns {Promise} A promise that resolves.
  */
-function update(accessToken, realmName, user) {
-  return new Promise((resolve, reject) => {
-    user = user || {};
-    const req = {
-      url: `${settings.baseUrl}/admin/realms/${realmName}/users/${user.id}`,
-      auth: {
-          bearer: accessToken
-      },
-      json: true,
-      method: 'PUT',
-      body: user
-    };
-    console.log(req);
-    request(req, (err, resp, body) => {
-      console.log(resp.statusCode);
-      if (err) {
-        console.log(err);
-        return reject(err);
-      }
+async function update(realmName, user) {
+    var token = await auth.getAdminAuthToken();
+    return new Promise((resolve, reject) => {
+        user = user || {};
+        const req = {
+            url: `${config.backend.keycloakUrl}/admin/realms/${realmName}/users/${user.id}`,
+            auth: {
+                bearer: token
+            },
+            json: true,
+            method: 'PUT',
+            body: changeToKeycloakUser(user)
+        };
+        console.log(req);
+        request(req, (err, resp, body) => {
+            console.log(resp.statusCode);
+            if (err) {
+                console.log(err);
+                return reject(err);
+            }
 
-      // Check that the status cod
-      if (resp.statusCode !== 204) {
-        console.log(body);
-        return reject(body);
-      }
+            // Check that the status cod
+            if (resp.statusCode !== 204) {
+                console.log(body);
+                return reject(body);
+            }
 
-      return resolve(body);
+            return resolve(body);
+        });
     });
-  });
+};
+
+async function create(realmName, user) {
+    var token = await auth.getAdminAuthToken();
+    return new Promise((resolve, reject) => {
+        const req = {
+            url: `${config.backend.keycloakUrl}/admin/realms/${realm}/users`,
+            auth: {
+                bearer: token
+            },
+            body: changeToKeycloakUser(user),
+            method: 'POST',
+            json: true
+        };
+
+        request(req, (err, resp, body) => {
+            if (err) {
+                return reject(err);
+            }
+
+            if (resp.statusCode !== 201) {
+                return reject(body);
+            }
+
+            // eg "location":"https://<url>/auth/admin/realms/<realm>/users/499b7073-fe1f-4b7a-a8ab-f401d9b6b8ec"
+            const uid = resp.headers.location.replace(/.*\/(.*)$/, '$1');
+
+            // Since the create Endpoint returns an empty body, go get what we just imported.
+            // *** Body is empty but location header contains user id ***
+            // We need to search based on the userid, since it will be unique
+            return resolve(find(realm, {
+                userId: uid
+            }));
+        });
+    });
+
+};
+
+function changeToKeycloakUser(o) {
+    var kUser = {};
+    try {
+        kUser.id = o.id || "";
+        kUser.createdTime = o.createdTimestamp || "";
+        kUser.username = o.username || "";
+        kUser.firstname = o.firstname || "";
+        kUser.lastname = o.lastname || "";
+        kUser.email = o.email || "";
+        kUser.attributes = {};
+        kUser.attributes.subservice = o.subservice || "";
+        kUser.attributes.phone = o.phone || "";
+        kUser.attributes.facebook = o.facebook || "";
+        kUser.attributes.twitter = o.twitter || "";
+        kUser.attributes.address = o.address || "";
+    } catch (err) {
+        console.log("User Object: wrong format");
+    }
+    //kUser.roles = o.roles;
+    return JSON.parse(JSON.stringify(kUser));
 };
 module.exports = {
     find: find,
-    update: update
+    update: update,
+    create: create
 };

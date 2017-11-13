@@ -15,16 +15,24 @@
             this.firstname = k.firstname;
             this.lastname = k.lastname;
             this.email = k.email;
-            /* where to get these from ?*/
-            this.subservice = null;
-            this.phone = null;
-            this.address = null;
-            this.facebook = null;
-            this.twitter = null;
-            this.roles = null;
-
+            this.subservice = "";
+            this.phone = "";
+            this.address = "";
+            this.facebook = "";
+            this.twitter = "";
+            if (!k.attributes) k.attributes = {};
+            this.subservice = k.attributes.subservice || "";
+            this.phone = k.attributes.phone || "";
+            this.address = k.attributes.address || "";
+            this.facebook = k.attributes.facebook || "";
+            this.twitter = k.attributes.twitter || "";
+            //this.roles = null;
         };
-
+        /**
+         * Constructor
+         * @constructor
+         */
+        //function User() {};
         /**
          * Get a new User instance from a keycloak representation
          * @param o
