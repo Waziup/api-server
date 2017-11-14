@@ -27,6 +27,10 @@ async function putUser(domain, userid, user) {
     else res.status(400).end();
 }
 
+async function createUser(domain, user) {
+    return users.create(domain, user);
+}
+
 async function deleteUser(domain, userid) {
     console.log('delete user not implemented yet');
 }
@@ -47,6 +51,7 @@ module.exports = {
     getUsers,
     getUser,
     putUser,
+    createUser,
     deleteUser,
     getRoles
 }

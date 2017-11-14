@@ -8,12 +8,12 @@ const url = require('url');
 const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-const mongoProxy   = require('./mongo-proxy.js');
-const orionProxy   = require('./orion-proxy.js');
-const elsProxy     = require('./els-proxy.js');
+const mongoProxy = require('./mongo-proxy.js');
+const orionProxy = require('./orion-proxy.js');
+const elsProxy = require('./els-proxy.js');
 const socialsProxy = require('./social-proxy.js');
-const notifsProxy  = require('./notif-proxy.js');
-const usersProxy   = require('../routes/users/user.route.js');
+const notifsProxy = require('./notif-proxy.js');
+const usersProxy = require('../routes/users/user.route.js');
 
 function install(router, keycloak) {
   
@@ -183,44 +183,47 @@ function protect(roles, method, domain, resourceType) {
 
 function hasAccess(method, domain, resType, role) {
 
-   const roleElems = splitRole(role)
-   const permAccess = isPermAccess(method, roleElems.perm)
-   const domainAccess = domain == roleElems.domain
-   const resTypeAccess = resType? resType == roleElems.resourceType : true
+    const roleElems = splitRole(role)
+    const permAccess = isPermAccess(method, roleElems.perm)
+    const domainAccess = domain == roleElems.domain
+    const resTypeAccess = resType ? resType == roleElems.resourceType : true
 
-   console.log('access role ' + JSON.stringify(roleElems))
-   console.log('access perm ' + permAccess)
-   console.log('access domain ' + domainAccess)
-   console.log('access res type ' + resTypeAccess)
-   return permAccess && domainAccess && resTypeAccess
+    console.log('access role ' + JSON.stringify(roleElems))
+    console.log('access perm ' + permAccess)
+    console.log('access domain ' + domainAccess)
+    console.log('access res type ' + resTypeAccess)
+    return permAccess && domainAccess && resTypeAccess
 }
 
 // view/manage permission level
 function isPermAccess(method, perm) {
 
-  switch(perm) {
-    case 'manage': return true;
-    case 'view': {
-      if (method == 'GET') {
-        return true;
-      } else {
-        return false;
-      }
+    switch (perm) {
+        case 'manage':
+            return true;
+        case 'view':
+            {
+                if (method == 'GET') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        default:
+            return false;
     }
-    default: return false;
-  }
 }
 
 //Splits the roles.
 //Roles should have the shape <view|manage>:<domain>:<resType>, for example view:farm1:sensors
 function splitRole(role) {
-  const s = role.split(':')
-  return {
-    perm: s[0],
-    domain: s[1]? s[1]: null,
-    resourceType: s[2]? s[2]: null,
-    resource: s[3]? s[3]: null
-  }
+    const s = role.split(':')
+    return {
+        perm: s[0],
+        domain: s[1] ? s[1] : null,
+        resourceType: s[2] ? s[2] : null,
+        resource: s[3] ? s[3] : null
+    }
 
 }
 
