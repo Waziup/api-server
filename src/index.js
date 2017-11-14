@@ -36,7 +36,10 @@ const keycloak = new Keycloak({}, {
     realm: config.keycloakRealm,
     clientId: config.keycloakClientId,
     bearerOnly: true,
-    public: true
+    credentials: {
+       secret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0"
+    },
+    policyEnforcer: {}
 });
 
 app.use(keycloak.middleware());

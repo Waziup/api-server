@@ -15,6 +15,7 @@ const socialsProxy = require('./social-proxy.js');
 const notifsProxy  = require('./notif-proxy.js');
 const domainsProxy  = require('./domain-proxy.js');
 const usersProxy   = require('../routes/users/user.route.js');
+const authProxy   = require('../routes/users/auth.service.js');
 
 function install(router, keycloak) {
   
@@ -42,7 +43,7 @@ function installDomains(router, keycloak) {
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain/sensors*',                                          proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
+  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, 'sensors', req.kauth)))
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
@@ -73,7 +74,7 @@ function installSensors(router, keycloak) {
 function installHistory(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
+  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, 'history', req.kauth)))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
 }
@@ -81,7 +82,7 @@ function installHistory(router, keycloak) {
 function installSocials(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
+  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, 'socials', req.kauth)))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -94,7 +95,7 @@ function installSocials(router, keycloak) {
 function installNotifs(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
+  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, 'notifications', req.kauth)))
   
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
@@ -107,7 +108,7 @@ function installNotifs(router, keycloak) {
 function installUsers(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
+  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, 'users', req.kauth)))
   
   //users endpoint
   router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
@@ -119,7 +120,7 @@ function installUsers(router, keycloak) {
 
 }
 
-//Perform one or several requests to backend components and send back results to user
+//Perform requests to backend components and send back results to user
 function proxy(request, isFinal) {
   return async (req, res, next) => { 
     try {
@@ -131,12 +132,12 @@ function proxy(request, isFinal) {
         next();
       }
     } catch(err) {
-      console.log('catch error')
       next(err)
     }
   }
 }
 
+//middleware in case of error
 function proxyError(err, req, res, next) {
 
   if (err.response) {
@@ -161,82 +162,30 @@ function proxyError(err, req, res, next) {
   }
 }
 
-function proxyAuth(protect) {
-  return async (req, res, next) => {
+//authorization middleware
+async function authProtect(method, domain, resourceType, kauth) {
     
-    var roles = {}
-    var kauth = req.kauth
+    var token = ''
     //check that token is recognised
     if (kauth && kauth.grant) {
-
-      roles = kauth.grant.access_token.content.realm_access.roles
+      token = kauth.grant.access_token
     } else { //if no token, use default permissions
-      try {
-         roles = await usersProxy.getRoles('guest')
-         console.log('Roles:' + JSON.stringify(roles))
-      } catch(err) {
-         console.log('Error in Keycloak protect')
-         next(err)
-      }
-    } 
-    if (protect(req, roles)) {
-      console.log('Access granted')
-      next('route');
-    } else {
-      res.status(403);
-      res.send('Access denied');
+      token = await authProxy.getUserAuthToken({username: 'guest', password: 'guest'})
     }
-  }
+
+    var auth = await authProxy.authz(resourceType, [getScope(method)], token);
+    console.log("Auth result:" + JSON.stringify(auth))
+    return; 
 };
 
-function protect(roles, method, domain, resourceType) {
+function getScope(method) {
 
-  console.log('roles: ' + JSON.stringify(roles))
-  const accs = roles.map(r => hasAccess(method, domain, resourceType, r))
-  return accs.some(a => a == true) 
-}
-
-function hasAccess(method, domain, resType, role) {
-
-   const roleElems = splitRole(role)
-   const permAccess = isPermAccess(method, roleElems.perm)
-   const domainAccess = domain == roleElems.domain
-   const resTypeAccess = resType? resType == roleElems.resourceType : true
-
-   console.log('access role ' + JSON.stringify(roleElems))
-   console.log('access perm ' + permAccess)
-   console.log('access domain ' + domainAccess)
-   console.log('access res type ' + resTypeAccess)
-   return permAccess && domainAccess && resTypeAccess
-}
-
-// view/manage permission level
-function isPermAccess(method, perm) {
-
-  switch(perm) {
-    case 'manage': return true;
-    case 'view': {
-      if (method == 'GET') {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    default: return false;
+  switch(method) {
+    case 'POST':   return 'create';
+    case 'PUT':    return 'modify';
+    case 'DELETE': return 'delete';
+    default:       return 'view';
   }
-}
-
-//Splits the roles.
-//Roles should have the shape <view|manage>:<domain>:<resType>, for example view:farm1:sensors
-function splitRole(role) {
-  const s = role.split(':')
-  return {
-    perm: s[0],
-    domain: s[1]? s[1]: null,
-    resourceType: s[2]? s[2]: null,
-    resource: s[3]? s[3]: null
-  }
-
 }
 
 module.exports = { 

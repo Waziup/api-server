@@ -8,6 +8,7 @@ module.exports = {
   fiwareService: 'waziup',
   mongoPrefix: 'waziup',
   elsPrefix: 'waziup',
+  keycloakClientSecret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0",
   backend: {
     keycloakUrl:      process.env.KEYCLOAK_URL      || 'http://localhost:8080/auth',
     orionUrl:         process.env.ORION_URL         || 'http://localhost:1026',

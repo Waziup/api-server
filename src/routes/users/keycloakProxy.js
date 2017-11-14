@@ -4,16 +4,17 @@ const config = require('../../config.js');
 const querystring = require('querystring');
 
 // Perform a request to Keycloak
-async function keycloakRequest(realm, path, method, data, query, admin, token) {
+async function keycloakRequest(realm, path, method, data, query, isAdmin, token, contentType) {
  
-   var url = config.backend.keycloakUrl + (admin? '/admin': '') + '/realms/' + realm + '/' + path;
-   var headers = {};// = {'Authorization': 'Bearer ' + token}
+   var url = config.backend.keycloakUrl + (isAdmin? '/admin': '') + '/realms/' + realm + '/' + path;
+   var headers = {} 
    if(token) {
-
-      headers = {'Authorization': 'Bearer ' + token}
-   } else {
-      headers = {'Content-type': 'application/x-www-form-urlencoded'}
-   }
+      headers['Authorization'] = 'Bearer ' + token
+   } 
+   if(contentType) {
+      headers['Content-Type'] = contentType
+   } 
+   
    var axiosConf = {method: method,
                     url: url,
                     data: data,
@@ -27,6 +28,7 @@ async function keycloakRequest(realm, path, method, data, query, admin, token) {
    var resp = await axios(axiosConf);
    return resp.data;
 }
+
 
 module.exports = {
   keycloakRequest
