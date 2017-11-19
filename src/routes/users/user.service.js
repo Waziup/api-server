@@ -79,6 +79,13 @@ async function update(realmName, user) {
     });
 };
 
+/**
+  A function to update a user for a realm
+  @param {string} realmName - The name of the realm(not the realmID) - ex: master,
+  @param {object} user - The JSON representation of the fields to update for the user - This must include the user.id field.
+  @returns {Promise} A promise that resolves.
+ */
+
 async function create(realmName, user) {
     var token = await auth.getAdminAuthToken();
     return new Promise((resolve, reject) => {
@@ -114,14 +121,45 @@ async function create(realmName, user) {
     });
 
 };
+/**
+  A function to delete a user in a realm
+  @param {string} realmName - The name of the realm(not the realmID) to delete - ex: master,
+  @param {string} userId - The id of the user to delete
+  @returns {Promise} A promise that resolves.
+ */
+async function remove(realmName, userId) {
+    var token = await auth.getAdminAuthToken();
+    return new Promise((resolve, reject) => {
+        const req = {
+            url: `${config.backend.keycloakUrl}/admin/realms/${realmName}/users/${userId}`,
+            auth: {
+                bearer: token
+            },
+            method: 'DELETE'
+        };
+
+        request(req, (err, resp, body) => {
+            if (err) {
+                return reject(err);
+            }
+
+            // Check that the status code is a 204
+            if (resp.statusCode !== 204) {
+                return reject(body);
+            }
+
+            return resolve(body);
+        });
+    });
+};
 
 function changeToKeycloakBasicUser(o) {
     var kUser = {};
     try {
         kUser.id = o.id || "";
         kUser.username = o.username || "";
-        kUser.firstName = o.firstname || "";
-        kUser.lastName = o.lastname || "";
+        kUser.firstName = o.firstName || "";
+        kUser.lastName = o.lastName || "";
         kUser.email = o.email || "";
         kUser.attributes = {};
         kUser.attributes.subservice = o.subservice || "";
@@ -138,5 +176,6 @@ function changeToKeycloakBasicUser(o) {
 module.exports = {
     find: find,
     update: update,
-    create: create
+    create: create,
+    remove: remove
 };

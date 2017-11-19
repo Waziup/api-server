@@ -995,9 +995,17 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/UserUpdateBody'
+    delete:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/UserId'        
       responses:
         '200':
-          description: Return the user with the specified id
+          description: User is successfuly deleted
         '404':
           description: Not found
 
