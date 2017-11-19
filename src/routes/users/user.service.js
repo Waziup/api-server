@@ -41,6 +41,13 @@ async function find(domain, options) {
     }
 }
 
+async function findByName(domain, username) {
+
+   const users = await find(domain, { username: username })
+   return users[0]
+}
+
+
 /**
   A function to update a user for a realm
   @param {string} realmName - The name of the realm(not the realmID) - ex: master,
@@ -175,6 +182,7 @@ function changeToKeycloakBasicUser(o) {
 };
 module.exports = {
     find: find,
+    findByName: findByName,
     update: update,
     create: create,
     remove: remove
