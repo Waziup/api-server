@@ -32,7 +32,7 @@ async function createUser(domain, user) {
 }
 
 async function deleteUser(domain, userid) {
-    console.log('delete user not implemented yet');
+    return users.remove(domain, userid);
 }
 
 async function getRoles(username) {

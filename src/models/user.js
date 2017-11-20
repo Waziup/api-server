@@ -12,8 +12,8 @@
             this.id = k.id;
             this.createdTime = k.createdTimestamp;
             this.username = k.username;
-            this.firstname = k.firstname;
-            this.lastname = k.lastname;
+            this.firstName = k.firstName;
+            this.lastName = k.lastName;
             this.email = k.email;
             this.subservice = "";
             this.phone = "";
