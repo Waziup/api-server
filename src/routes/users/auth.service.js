@@ -25,6 +25,15 @@ async function getAdminAuthToken() {
    return getAuthToken('master', settings);
 }
 
+async function getClientAuthToken() {
+   const settings = {
+     grant_type: 'client_credentials',
+     client_id: config.keycloakClientId, 
+     client_secret: config.keycloakClientSecret
+   }
+   return getAuthToken(config.keycloakRealm, settings);
+}
+
 async function getAuthToken(realm, settings) {
    const path = 'protocol/openid-connect/token';
    console.log(JSON.stringify(settings))
@@ -50,8 +59,26 @@ function getPerms(name, scopes) {
   return perms;
 }
 
+async function createResource(name, uri, scopes, username) {
+   const res = {
+    name: name,
+    uri: uri,
+    scopes: scopes,
+    owner: username
+   } 
+   const token = await getClientAuthToken()
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set', 'POST', res, null, false, token, 'application/json')
+}
+
+async function createSensorResource(domain, sensor, kauth) {
+
+  const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
+  return createResource(sensor.id, '/sensors/' + sensor.id, ["view", "create", "delete", "update"], username) 
+}
+
 module.exports = {
   getUserAuthToken,
   getAdminAuthToken,
-  authz
+  authz,
+  createSensorResource
   } 

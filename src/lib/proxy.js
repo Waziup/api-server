@@ -48,7 +48,9 @@ function installSensors(router, keycloak) {
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
   router.post(   '/domains/:domain/sensors',                                           proxy(req => orionProxy.postSensorOrion(           req.params.domain, req.body)), 
-                                                                                       proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body), true));
+                                                                                       proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body)),
+                                                                                       proxy(req => authProxy.createSensorResource(       req.params.domain, req.body, req.kauth), true));
+
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID), true))
   router.delete( '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.deleteSensor(              req.params.domain, req.params.sensorID)),
                                                                                        proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID), true));
