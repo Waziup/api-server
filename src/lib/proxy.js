@@ -31,7 +31,7 @@ function install(router, keycloak) {
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
+  //router.all(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
@@ -61,14 +61,14 @@ function installSensors(router, keycloak) {
 
 function installHistory(router, keycloak) {
 
-  router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
+  //router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
 }
 
 function installSocials(router, keycloak) {
 
-  router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
+  //router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -80,7 +80,7 @@ function installSocials(router, keycloak) {
 
 function installNotifs(router, keycloak) {
 
-  router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
+  //router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
   
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
@@ -92,7 +92,7 @@ function installNotifs(router, keycloak) {
 
 function installUsers(router, keycloak) {
 
-  router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
+  //router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
   
   //users endpoint
   router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
