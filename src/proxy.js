@@ -1,31 +1,31 @@
 "use strict";
 
-const access = require('./access.js');
-const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const url = require('url');
-const config = require('../config.js');
+const config = require('./config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-const mongoProxy   = require('./mongo-proxy.js');
-const orionProxy   = require('./orion-proxy.js');
-const elsProxy     = require('./els-proxy.js');
-const socialsProxy = require('./social-proxy.js');
-const notifsProxy  = require('./notif-proxy.js');
-const domainsProxy  = require('./domain-proxy.js');
-const usersProxy   = require('../routes/users/user.route.js');
-const authProxy   = require('../routes/users/auth.service.js');
+const mongoProxy   = require('./lib/mongo-proxy.js');
+const orionProxy   = require('./lib/orion-proxy.js');
+const elsProxy     = require('./lib/els-proxy.js');
+const socialsProxy = require('./lib/social-proxy.js');
+const notifsProxy  = require('./lib/notif-proxy.js');
+const domainsProxy  = require('./lib/domain-proxy.js');
+const usersProxy   = require('./routes/users/user.route.js');
+const authN   = require('./auth/authN.js');
+const authZ   = require('./auth/authZ.js');
 
 function install(router, keycloak) {
   
   //install all routes
-  installDomains(router, keycloak)
-  installSensors(router, keycloak)
-  installHistory(router, keycloak)
-  installSocials(router, keycloak)
-  installNotifs( router, keycloak)
-  installUsers(  router, keycloak)
+  installDomains( router, keycloak)
+  installSensors( router, keycloak)
+  installHistory( router, keycloak)
+  installSocials( router, keycloak)
+  installNotifs(  router, keycloak)
+  installUsers(   router, keycloak)
+  installEntities(router, keycloak)
 
   //install error handler
   router.use(proxyError);
@@ -33,27 +33,36 @@ function install(router, keycloak) {
 
 function installDomains(router, keycloak) {
  
+  //protect endpoints
+  router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, 'domains', req.kauth))) // protect single domain
+  router.all(    '/domains*',         proxy(req => authProtect(req.method, req.params.domain, 'Domains', 'domains', req.kauth))) // generic protect domains
+
   //routes to backend components
   router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
-  router.post(   '/domains',          proxy(req => domainsProxy.postDomains(req.body), true)); 
+  router.post(   '/domains',          proxy(req => domainsProxy.postDomains(req.body)),
+                                      proxy(req => authZ.createDomainResource(req.body, req.kauth), true)); 
   router.get(    '/domains/:domain',  proxy(req => domainsProxy.getDomain(req.params.domain), true));
-  router.delete( '/domains/:domain',  proxy(req => domainsProxy.deleteDomain(req.params.domain), true));
+  router.delete( '/domains/:domain',  proxy(req => domainsProxy.deleteDomain(req.params.domain)),
+                                      proxy(req => authZ.deleteResource(req.params.domain), true)); 
 }
 
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, 'sensors', req.kauth)))
+  router.all(    '/domains/:domain/sensors/:sensorID*',                                proxy(req => authProtect(req.method, req.params.domain, req.params.sensorID, 'domains', req.kauth))) // protect single sensor
+  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, 'Sensors', 'domains', req.kauth))) // generic protect sensors
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
   router.post(   '/domains/:domain/sensors',                                           proxy(req => orionProxy.postSensorOrion(           req.params.domain, req.body)), 
                                                                                        proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body)),
-                                                                                       proxy(req => authProxy.createSensorResource(       req.params.domain, req.body, req.kauth), true));
+                                                                                       proxy(req => authZ.createSensorResource(       req.params.domain, req.body, req.kauth), true));
 
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID), true))
   router.delete( '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.deleteSensor(              req.params.domain, req.params.sensorID)),
-                                                                                       proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID), true));
+                                                                                       proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID)),
+                                                                                       proxy(req => authZ.deleteResource(             req.params.sensorID), true));
+
   router.put(    '/domains/:domain/sensors/:sensorID/owner',                           proxy(req => orionProxy.putSensorOwner(            req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/location',                        proxy(req => orionProxy.putSensorLocation(         req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/name',                            proxy(req => orionProxy.putSensorName(             req.params.domain, req.params.sensorID, req.body), true));
@@ -76,7 +85,7 @@ function installSensors(router, keycloak) {
 function installHistory(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, 'history', req.kauth)))
+  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, 'History', 'history', req.kauth)))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
 }
@@ -84,7 +93,7 @@ function installHistory(router, keycloak) {
 function installSocials(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, 'socials', req.kauth)))
+  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, 'Socials', 'socials', req.kauth)))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -97,7 +106,7 @@ function installSocials(router, keycloak) {
 function installNotifs(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, 'notifications', req.kauth)))
+  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, 'Notifications', 'notifications', req.kauth)))
   
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
@@ -110,7 +119,7 @@ function installNotifs(router, keycloak) {
 function installUsers(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, 'users', req.kauth)))
+  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, 'Users', 'users', req.kauth)))
   
   //users endpoint
   router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
@@ -119,6 +128,18 @@ function installUsers(router, keycloak) {
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
   router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser(req.params.domain, req.params.userID), true));
   router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(   req.params.domain, req.params.userID), true));
+
+}
+
+function installEntities(router, keycloak) {
+
+  //protect endpoints
+  //router.all(    '/domains/:domain/entities*', proxy(req => authProtect(req.method, req.params.domain, 'entities', req.kauth)))
+  
+  //entities endpoint
+  router.get( '/domains/:domain/entities', proxy(req => orionProxy.getEntities(req.params.domain, req.query), true));
+  router.post('/domains/:domain/entities', proxy(req => orionProxy.postEntities(req.params.domain, req.body), true));
+  router.all('/domains/:domain/entities/:entityID*', proxy(req => orionProxy.allEntities(req.path, req.params.domain, req.method, req.body, req.query), true));
 
 }
 
@@ -165,30 +186,21 @@ function proxyError(err, req, res, next) {
 }
 
 //authorization middleware
-async function authProtect(method, domain, resourceType, kauth) {
+async function authProtect(method, domain, resourceName, resourceType, kauth) {
     
     var token = ''
     //check that token is recognised
     if (kauth && kauth.grant) {
       token = kauth.grant.access_token
     } else { //if no token, use default permissions
-      token = await authProxy.getUserAuthToken({username: 'guest', password: 'guest'})
+      token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
     }
 
-    var auth = await authProxy.authz(resourceType, [getScope(method)], token);
+    var auth = await authZ.authorize(resourceName, resourceType, method, token);
     console.log("Auth result:" + JSON.stringify(auth))
     return; 
 };
 
-function getScope(method) {
-
-  switch(method) {
-    case 'POST':   return 'create';
-    case 'PUT':    return 'modify';
-    case 'DELETE': return 'delete';
-    default:       return 'view';
-  }
-}
 
 module.exports = { 
   install,

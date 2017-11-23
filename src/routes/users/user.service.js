@@ -1,10 +1,9 @@
 var jwt = require('jsonwebtoken');
 const request = require('request');
-const settings = require('./admin-settings');
 const config = require('../../config.js');
 const axios = require('axios');
-const auth = require('./auth.service');
-const keycloakProxy = require('./keycloakProxy')
+const auth = require('../../auth/authN');
+const keycloakProxy = require('../../lib/keycloakProxy')
 
 /**
   A function to get the list of users or a user for a realm.

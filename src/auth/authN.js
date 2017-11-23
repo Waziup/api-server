@@ -1,8 +1,8 @@
 const axios = require('axios');
-const admin_creds = require('./admin-settings');
-const config = require('../../config.js');
+const admin_creds = require('../admin-settings');
+const config = require('../config.js');
 const querystring = require('querystring');
-const keycloakProxy = require('./keycloakProxy')
+const keycloakProxy = require('../lib/keycloakProxy')
 
 async function getUserAuthToken(cred) {
    const settings = {
@@ -59,9 +59,10 @@ function getPerms(name, scopes) {
   return perms;
 }
 
-async function createResource(name, uri, scopes, username) {
+async function createResource(name, type, uri, scopes, username) {
    const res = {
     name: name,
+    type: type,
     uri: uri,
     scopes: scopes,
     owner: username
@@ -70,15 +71,33 @@ async function createResource(name, uri, scopes, username) {
   return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set', 'POST', res, null, false, token, 'application/json')
 }
 
-async function createSensorResource(domain, sensor, kauth) {
+async function createSensorResource(domainName, sensor, kauth) {
 
   const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
-  return createResource(sensor.id, '/sensors/' + sensor.id, ["view", "create", "delete", "update"], username) 
+  return createResource(sensor.id, 'domain:' + domainName, '/sensors/' + sensor.id, ["sensors:view", "sensors:create", "sensors:delete", "sensors:update"], username) 
+}
+
+async function createDomainResource(domain, kauth) {
+
+  const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
+  return createResource(domain.name, 'domain:' + domain.id, '/domains/' + domain.id, ["domains:view", "domains:create", "domains:delete", "domains:update"], username) 
+}
+
+async function deleteResource(name) {
+  const token = await getClientAuthToken()
+  const id = await getResourceByName(name)
+  console.log('delete resource ID=' + id)
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + id, 'DELETE', null, null, false, token, null)
+}
+
+async function getResourceByName(name) {
+
+  const token = await getClientAuthToken()
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?filter=name=' + name, 'GET', null, null, false, token, null)
 }
 
 module.exports = {
   getUserAuthToken,
   getAdminAuthToken,
-  authz,
-  createSensorResource
+  getClientAuthToken
   } 
