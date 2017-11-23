@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const proxy = require('./lib/proxy');
+const proxy = require('./proxy');
 const cors = require('cors');
 const config = require('./config');
 const Keycloak = require('keycloak-connect');
@@ -37,7 +37,7 @@ const keycloak = new Keycloak({}, {
     clientId: config.keycloakClientId,
     bearerOnly: true,
     credentials: {
-       secret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0"
+       secret: config.keycloakClientSecret
     },
     policyEnforcer: {}
 });
