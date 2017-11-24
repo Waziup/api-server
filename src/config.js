@@ -4,7 +4,7 @@ module.exports = {
   // API URL to be used in the server-side code
   serverUrl: process.env.SERVER_URL || `http://localhost:${process.env.SERVER_PORT || 3000}`,
   keycloakRealm: 'waziup',
-  keycloakClientId: 'waziup',
+  keycloakClientId: 'api-server',
   fiwareService: 'waziup',
   mongoPrefix: 'waziup',
   elsPrefix: 'waziup',
