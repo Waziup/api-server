@@ -332,6 +332,25 @@ securityDefinitions:
 
 
 paths:
+  '/auth/token':
+    post:
+      summary: Get the access token for subsequent calls
+      tags:
+        - Auth
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - name: credentials
+          in: body
+          description: auth credentials
+          required: true
+          schema:
+            $ref: '#/definitions/AuthBody'
+      responses:
+        '200':
+          description: Return the access token
+        '404':
+          description: Something wrong happened
+
   '/domains':
     get:
       summary: list domains
@@ -906,24 +925,6 @@ paths:
             $ref: '#/definitions/Error'
 
 
-  /domains/{domain}/auth/:
-    post:
-      summary: Get the access token for subsequent calls
-      tags:
-        - Users
-      parameters:
-        - $ref: '#/parameters/domainParam'
-        - name: credentials
-          in: body
-          description: auth credentials
-          required: true
-          schema:
-            $ref: '#/definitions/AuthBody'
-      responses:
-        '200':
-          description: Return the access token
-        '404':
-          description: Something wrong happened
   /domains/{domain}/users/:
     get:
       tags:

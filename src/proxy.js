@@ -19,13 +19,16 @@ const authZ   = require('./auth/authZ.js');
 function install(router, keycloak) {
   
   //install all routes
-  installDomains( router, keycloak)
+  installAuth(    router, keycloak)
   installSensors( router, keycloak)
   installHistory( router, keycloak)
   installSocials( router, keycloak)
   installNotifs(  router, keycloak)
   installUsers(   router, keycloak)
   installEntities(router, keycloak)
+
+  //This route should be last because it is shorter
+  installDomains( router, keycloak)
 
   //install error handler
   router.use(proxyError);
@@ -34,8 +37,8 @@ function install(router, keycloak) {
 function installDomains(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, 'domains', req.kauth))) // protect single domain
-  router.all(    '/domains*',         proxy(req => authProtect(req.method, req.params.domain, 'Domains', 'domains', req.kauth))) // generic protect domains
+  router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, authZ.RESOURCE_DOMAINS, req.kauth))) // protect single domain
+  router.all(    '/domains*',         proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
 
   //routes to backend components
   router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
@@ -49,19 +52,19 @@ function installDomains(router, keycloak) {
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  router.all(    '/domains/:domain/sensors/:sensorID*',                                proxy(req => authProtect(req.method, req.params.domain, req.params.sensorID, 'domains', req.kauth))) // protect single sensor
-  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, 'Sensors', 'domains', req.kauth))) // generic protect sensors
+  router.all(    '/domains/:domain/sensors/:sensorID*',                                proxy(req => authProtect(req.method, req.params.domain, req.params.sensorID, authZ.RESOURCE_SENSORS, req.kauth))) // protect single sensor
+  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SENSORS, authZ.RESOURCE_SENSORS, req.kauth))) // generic protect sensors
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
   router.post(   '/domains/:domain/sensors',                                           proxy(req => orionProxy.postSensorOrion(           req.params.domain, req.body)), 
                                                                                        proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body)),
-                                                                                       proxy(req => authZ.createSensorResource(       req.params.domain, req.body, req.kauth), true));
+                                                                                       proxy(req => authZ.createSensorResource(           req.params.domain, req.body, req.kauth), true));
 
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID), true))
   router.delete( '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.deleteSensor(              req.params.domain, req.params.sensorID)),
                                                                                        proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID)),
-                                                                                       proxy(req => authZ.deleteResource(             req.params.sensorID), true));
+                                                                                       proxy(req => authZ.deleteResource(                 req.params.sensorID), true));
 
   router.put(    '/domains/:domain/sensors/:sensorID/owner',                           proxy(req => orionProxy.putSensorOwner(            req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/location',                        proxy(req => orionProxy.putSensorLocation(         req.params.domain, req.params.sensorID, req.body), true));
@@ -85,7 +88,7 @@ function installSensors(router, keycloak) {
 function installHistory(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, 'History', 'history', req.kauth)))
+  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_HISTORY, authZ.RESOURCE_HISTORY, req.kauth)))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
 }
@@ -93,7 +96,7 @@ function installHistory(router, keycloak) {
 function installSocials(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, 'Socials', 'socials', req.kauth)))
+  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SOCIALS, authZ.RESOURCE_SOCIALS, req.kauth)))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -106,7 +109,7 @@ function installSocials(router, keycloak) {
 function installNotifs(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, 'Notifications', 'notifications', req.kauth)))
+  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_NOTIFICATIONS, authZ.RESOURCE_NOTIFICATIONS, req.kauth)))
   
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
@@ -119,16 +122,21 @@ function installNotifs(router, keycloak) {
 function installUsers(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, 'Users', 'users', req.kauth)))
+  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
   
-  //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
+  //users endpoints
   router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(  req.params.domain), true));
   router.post(   '/domains/:domain/users',          proxy(req => usersProxy.postUsers( req.params.domain), true));
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
   router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser(req.params.domain, req.params.userID), true));
   router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(   req.params.domain, req.params.userID), true));
 
+}
+
+function installAuth(router, keycloak) {
+
+  //auth endpoint
+  router.post(   '/auth/token', proxy(req => usersProxy.postAuth(  req.body), true));
 }
 
 function installEntities(router, keycloak) {
@@ -197,7 +205,7 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     }
 
     var auth = await authZ.authorize(resourceName, resourceType, method, token);
-    console.log("Auth result:" + JSON.stringify(auth))
+    console.log("Auth result positive")
     return; 
 };
 
