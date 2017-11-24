@@ -4,20 +4,33 @@ const config = require('../config.js');
 const querystring = require('querystring');
 const keycloakProxy = require('../lib/keycloakProxy')
 const authN = require('./authN')
+const users = require('../routes/users/user.service.js')
+
+
+const SCOPE_USERS_CREATE   = 'users:create'
+const SCOPE_USERS_VIEW     = 'users:view'
+const SCOPE_USERS_UPDATE   = 'users:update'
+const SCOPE_USERS_DELETE   = 'users:delete'
+const SCOPE_SENSORS_CREATE = 'sensors:create'
+const SCOPE_SENSORS_VIEW   = 'sensors:view'
+const SCOPE_SENSORS_UPDATE = 'sensors:update'
+const SCOPE_SENSORS_DELETE = 'sensors:delete'
+const SCOPE_DOMAINS_CREATE = 'domains:create'
+const SCOPE_DOMAINS_VIEW   = 'domains:view'
+const SCOPE_DOMAINS_UPDATE = 'domains:update'
+const SCOPE_DOMAINS_DELETE = 'domains:delete'
+
+const RESOURCE_USERS         = 'Users'
+const RESOURCE_SENSORS       = 'Sensors'
+const RESOURCE_DOMAINS       = 'Domains'
+const RESOURCE_HISTORY       = 'History'
+const RESOURCE_NOTIFICATIONS = 'Notifications'
+const RESOURCE_SOCIALS       = 'Socials'
 
 async function authorize(resourceName, resourceType, method, token) {
   const scope = getScope(resourceType, method)
-  var perms = getPerms(resourceName, [scope])
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/waziup', 'POST', perms, null, false, token, 'application/json')
-}
-
-function getScope(resourceType, method) {
-   switch(method) {
-     case 'POST':   return resourceType + ':create';
-     case 'PUT':    return resourceType + ':update';
-     case 'DELETE': return resourceType + ':delete';
-     default:       return resourceType + ':view';
-   }
+  const perms = getPerms(resourceName, [scope])
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'POST', perms, null, false, token, 'application/json')
 }
 
 
@@ -47,14 +60,16 @@ async function createResource(name, type, uri, scopes, username) {
 
 async function createSensorResource(domain, sensor, kauth) {
 
-  const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
-  return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, ["view", "create", "delete", "update"], username) 
+  const guest = await users.findByName('guest')
+  console.log('guest', JSON.stringify(guest));
+  const id = kauth && kauth.grant ? kauth.grant.access_token.username : guest.id
+  return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, [SCOPE_SENSORS_CREATE, SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE], id) 
 }
 
 async function createDomainResource(domain, kauth) {
 
   const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
-  return createResource(domain.id, 'domain:' + domain.id, '/domains/' + domain.id, ["view", "create", "delete", "update"], username) 
+  return createResource(domain.id, 'domain:' + domain.id, '/domains/' + domain.id, [SCOPE_DOMAINS_CREATE, SCOPE_DOMAINS_VIEW, SCOPE_DOMAINS_UPDATE, SCOPE_DOMAINS_DELETE], username) 
 }
 
 async function deleteResource(name) {
@@ -71,9 +86,76 @@ async function getResourceByName(name) {
 }
 
 
+function getScope(resourceType, method) {
+   
+   switch(resourceType) {
+     case RESOURCE_DOMAINS: {
+       switch(method) {
+         case 'POST':   return SCOPE_DOMAINS_CREATE;
+         case 'GET':    return SCOPE_DOMAINS_VIEW;
+         case 'PUT':    return SCOPE_DOMAINS_UPDATE;
+         case 'DELETE': return SCOPE_DOMAINS_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     case RESOURCE_USERS: {
+       switch(method) {
+         case 'POST':   return SCOPE_USERS_CREATE;
+         case 'GET':    return SCOPE_USERS_VIEW;
+         case 'PUT':    return SCOPE_USERS_UPDATE;
+         case 'DELETE': return SCOPE_USERS_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     case RESOURCE_SENSORS: {
+       switch(method) {
+         case 'POST':   return SCOPE_SENSORS_CREATE;
+         case 'GET':    return SCOPE_SENSORS_VIEW;
+         case 'PUT':    return SCOPE_SENSORS_UPDATE;
+         case 'DELETE': return SCOPE_SENSORS_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     case RESOURCE_HISTORY: {
+       switch(method) {
+         case 'POST':   return SCOPE_HISTORY_CREATE;
+         case 'GET':    return SCOPE_HISTORY_VIEW;
+         case 'PUT':    return SCOPE_HISTORY_UPDATE;
+         case 'DELETE': return SCOPE_HISTORY_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     case RESOURCE_NOTIFICATIONS: {
+       switch(method) {
+         case 'POST':   return SCOPE_NOTIFICATIONS_CREATE;
+         case 'GET':    return SCOPE_NOTIFICATIONS_VIEW;
+         case 'PUT':    return SCOPE_NOTIFICATIONS_UPDATE;
+         case 'DELETE': return SCOPE_NOTIFICATIONS_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     case RESOURCE_SOCIALS: {
+       switch(method) {
+         case 'POST':   return SCOPE_SOCIALS_CREATE;
+         case 'GET':    return SCOPE_SOCIALS_VIEW;
+         case 'PUT':    return SCOPE_SOCIALS_UPDATE;
+         case 'DELETE': return SCOPE_SOCIALS_DELETE;
+         default: throw('unsupported method');
+       }
+     }
+     default: throw('unsupported resource type');
+   }
+}
+
 module.exports = {
   authorize,
   createSensorResource,
   createDomainResource,
-  deleteResource
-  } 
+  deleteResource,
+  RESOURCE_USERS,
+  RESOURCE_SENSORS,
+  RESOURCE_DOMAINS,
+  RESOURCE_HISTORY,
+  RESOURCE_NOTIFICATIONS,
+  RESOURCE_SOCIALS
+}
