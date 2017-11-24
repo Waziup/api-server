@@ -30,6 +30,24 @@ parameters:
     required: true
     type: string
     example: TC1
+  entityType:
+    name: entity_type
+    in: path
+    required: true
+    type: string
+    example: Room
+  entityId:
+    name: entity_id
+    in: path
+    required: true
+    type: string
+    example: Barn4
+  entityAttr:
+    name: entity_attribute
+    in: path
+    required: true
+    type: string
+    example: temperature
   MsgId:
     name: msg_id
     in: path
@@ -128,6 +146,74 @@ definitions:
         format: dateTime
         description: time of the measurement
         example: '2016-06-08T18:20:27.873Z'
+  EntityType:
+    type: string
+    description: A type of an entity.
+    example: room
+  Entity:
+    type: object
+    description: >-
+      An entity is a general object with type and name,
+      implementing different userdefined attributes.
+    required:
+      - id
+      - type
+    properties:
+      id:
+        type: string
+        description: Unique name (ID) of the entity.
+        example: myBarn12
+      type:
+        $ref: '#/definitions/EntityType'
+  EntityWithAttr:
+    type: object
+    description: >-
+      An entity is a general object with type and name,
+      implementing different userdefined attributes.
+    required:
+      - id
+      - type
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Unique name (ID) of the entity.
+        example: myBarn12
+      type:
+        $ref: '#/definitions/EntityType'
+      attribute1:
+        type: array
+        description: An example attribute with string values.
+        items:
+          type: string
+          example: 'Text Content..'
+      attribute2:
+        type: array
+        description: An example attribute with number values.
+        items:
+          type: number
+          example: '27'
+      attributeN:
+        type: array
+        description: An example attribute with object values.
+        items:
+          type: object
+          properties:
+            latitude:
+              type: number
+              example: 51.412
+            longitude:
+              type: number
+              example: 12.564
+  EntityAttr:
+    anyOf:
+      - type: string
+      - type: number
+      - type: integer
+      - type: boolean
+      - type: object
+    description: An entity attribute value that could be any type.
+    example: {"value": "25.6","timestamp": "2016-06-08T18:20:27.873Z"}
   HistoricalValue:
     type: object
     properties:
@@ -878,6 +964,213 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   
+  '/domains/{domain}/entities':
+    post:
+      summary: create a new entity
+      description: Endpoint to create a new entity with type and name.
+      tags:
+        - Entities
+      consumes:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Entity'
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '201':
+          description: Entity created succesfully
+        '422':
+          description: Unprocessable entity
+  '/domains/{domain}/entities/types':
+    get:
+      summary: get all known entity types
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            description: >-
+              A list of all know entity types.
+            items:
+              $ref: '#/definitions/EntityType'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/entities/{entity_type}':
+    get:
+      summary: get entities of one type
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            description: >-
+              A list of all entities with that type,
+              which might be empty if there are no entities for this domain.
+            items:
+              $ref: '#/definitions/Entity'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/entities/{entity_type}/{entity_id}':
+    get:
+      summary: get a single entity
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/EntityWithAttr'
+        '404':
+          description: Not Found
+    delete:
+      summary: delete a single entity
+      description: ''
+      tags:
+        - Entities
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+      security:
+        - Bearer: []
+      responses:
+        '201':
+          description: Deleted
+        '404':
+          description: Not found
+  '/domains/{domain}/entities/{entity_type}/{entity_id}/{entity_attribute}':
+    get:
+      summary: get entity attribute values
+      description: >-
+        Get all stored values of a single attribute.
+        
+        - If there multiple values (from multiple PUT requests), this returns an array with all values (newest first).
+        
+        - If there is only one value (from a POST request), this returns an array with only one element.
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+        - $ref: '#/parameters/entityAttr'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            description: 'A list of all recieved attribute values.'
+            items:
+              $ref: '#/definitions/EntityAttr'
+        '404':
+          description: Entity Not Found
+    delete:
+      summary: delete an entity attribute
+      description: 'Drop all stored entity data and remove the attribute.'
+      tags:
+        - Entities
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+        - $ref: '#/parameters/entityAttr'
+      security:
+        - Bearer: []
+      responses:
+        '201':
+          description: Deleted
+        '404':
+          description: Entity Not found
+    put:
+      summary: add an entity attribute value
+      description: >-
+        Add a new value to the list of stored values for this attribute.
+        If this attribute does not exist, it will be created within this request.
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+        - $ref: '#/parameters/entityAttr'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EntityAttr'
+      responses:
+        '201':
+          description: Added
+        '404':
+          description: Entity Not Found
+    post:
+      summary: set an entity attribute value
+      description: >-
+        Set a new value for this attribute, removing all previous values.
+        If this attribute does not exist, it will be created within this request.
+      tags:
+        - Entities
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/entityType'
+        - $ref: '#/parameters/entityId'
+        - $ref: '#/parameters/entityAttr'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EntityAttr'
+      responses:
+        '201':
+          description: Set
+        '404':
+          description: Entity Not Found
   /domains/{domain}/history:
     get:
       summary: Get Historical data for analysis
