@@ -21,7 +21,7 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
                     headers: headers,
                     params: query}
    console.log("Keycloak request " + method + " on: " + url);
-   //console.log(" headers: " + JSON.stringify(headers));
+   console.log(" headers: " + JSON.stringify(headers));
    console.log(" query: " + query);
    console.log(" data: " + JSON.stringify(data));
     

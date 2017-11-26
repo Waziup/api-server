@@ -61,15 +61,15 @@ async function createResource(name, type, uri, scopes, username) {
 async function createSensorResource(domain, sensor, kauth) {
 
   const guest = await users.findByName('guest')
-  console.log('guest', JSON.stringify(guest));
-  const id = kauth && kauth.grant ? kauth.grant.access_token.username : guest.id
+  const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
   return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, [SCOPE_SENSORS_CREATE, SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE], id) 
 }
 
 async function createDomainResource(domain, kauth) {
 
-  const username = kauth && kauth.grant ? kauth.grant.access_token.username : 'guest'
-  return createResource(domain.id, 'domain:' + domain.id, '/domains/' + domain.id, [SCOPE_DOMAINS_CREATE, SCOPE_DOMAINS_VIEW, SCOPE_DOMAINS_UPDATE, SCOPE_DOMAINS_DELETE], username) 
+  const guest = await users.findByName('guest')
+  const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
+  return createResource(domain.id, 'domain:' + domain.id, '/domains/' + domain.id, [SCOPE_DOMAINS_CREATE, SCOPE_DOMAINS_VIEW, SCOPE_DOMAINS_UPDATE, SCOPE_DOMAINS_DELETE], id) 
 }
 
 async function deleteResource(name) {

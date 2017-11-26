@@ -38,7 +38,7 @@ function installDomains(router, keycloak) {
  
   //protect endpoints
   router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, authZ.RESOURCE_DOMAINS, req.kauth))) // protect single domain
-  router.all(    '/domains*',         proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
+  router.all(    '/domains',         proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
 
   //routes to backend components
   router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
@@ -53,7 +53,7 @@ function installSensors(router, keycloak) {
  
   //protect endpoints
   router.all(    '/domains/:domain/sensors/:sensorID*',                                proxy(req => authProtect(req.method, req.params.domain, req.params.sensorID, authZ.RESOURCE_SENSORS, req.kauth))) // protect single sensor
-  router.all(    '/domains/:domain/sensors*',                                          proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SENSORS, authZ.RESOURCE_SENSORS, req.kauth))) // generic protect sensors
+  router.all(    '/domains/:domain/sensors',                                           proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SENSORS, authZ.RESOURCE_SENSORS, req.kauth))) // generic protect sensors
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
@@ -199,7 +199,7 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     var token = ''
     //check that token is recognised
     if (kauth && kauth.grant) {
-      token = kauth.grant.access_token
+      token = kauth.grant.access_token.token
     } else { //if no token, use default permissions
       token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
     }
