@@ -1,45 +1,71 @@
 "use strict";
 
-const access = require('./access.js');
-const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const url = require('url');
-const config = require('../config.js');
+const config = require('./config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-const mongoProxy = require('./mongo-proxy.js');
-const orionProxy = require('./orion-proxy.js');
-const elsProxy = require('./els-proxy.js');
-const socialsProxy = require('./social-proxy.js');
-const notifsProxy = require('./notif-proxy.js');
-const usersProxy = require('../routes/users/user.route.js');
+const mongoProxy   = require('./lib/mongo-proxy.js');
+const orionProxy   = require('./lib/orion-proxy.js');
+const elsProxy     = require('./lib/els-proxy.js');
+const socialsProxy = require('./lib/social-proxy.js');
+const notifsProxy  = require('./lib/notif-proxy.js');
+const domainsProxy  = require('./lib/domain-proxy.js');
+const usersProxy   = require('./routes/users/user.route.js');
+const authN   = require('./auth/authN.js');
+const authZ   = require('./auth/authZ.js');
 
 function install(router, keycloak) {
   
   //install all routes
-  installSensors(router, keycloak)
-  installHistory(router, keycloak)
-  installSocials(router, keycloak)
-  installNotifs( router, keycloak)
-  installUsers(  router, keycloak)
+  installAuth(    router, keycloak)
+  installSensors( router, keycloak)
+  installHistory( router, keycloak)
+  installSocials( router, keycloak)
+  installNotifs(  router, keycloak)
+  installUsers(   router, keycloak)
+  installEntities(router, keycloak)
+
+  //This route should be last because it is shorter
+  installDomains( router, keycloak)
 
   //install error handler
   router.use(proxyError);
 }
 
+function installDomains(router, keycloak) {
+ 
+  //protect endpoints
+  router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, authZ.RESOURCE_DOMAINS, req.kauth))) // protect single domain
+  router.all(    '/domains',         proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
+
+  //routes to backend components
+  router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
+  router.post(   '/domains',          proxy(req => domainsProxy.postDomains(req.body)),
+                                      proxy(req => authZ.createDomainResource(req.body, req.kauth), true)); 
+  router.get(    '/domains/:domain',  proxy(req => domainsProxy.getDomain(req.params.domain), true));
+  router.delete( '/domains/:domain',  proxy(req => domainsProxy.deleteDomain(req.params.domain)),
+                                      proxy(req => authZ.deleteResource(req.params.domain), true)); 
+}
+
 function installSensors(router, keycloak) {
  
   //protect endpoints
-  //router.all(    '/domains/:domain/sensors*',                                         proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'sensors')))
+  router.all(    '/domains/:domain/sensors/:sensorID*',                                proxy(req => authProtect(req.method, req.params.domain, req.params.sensorID, authZ.RESOURCE_SENSORS, req.kauth))) // protect single sensor
+  router.all(    '/domains/:domain/sensors',                                           proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SENSORS, authZ.RESOURCE_SENSORS, req.kauth))) // generic protect sensors
 
   //routes to backend components
   router.get(    '/domains/:domain/sensors',                                           proxy(req => orionProxy.getSensorsOrion(           req.params.domain, req.query), true));
   router.post(   '/domains/:domain/sensors',                                           proxy(req => orionProxy.postSensorOrion(           req.params.domain, req.body)), 
-                                                                                       proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body), true));
+                                                                                       proxy(req => mongoProxy.postSensorMongo(           req.params.domain, req.body)),
+                                                                                       proxy(req => authZ.createSensorResource(           req.params.domain, req.body, req.kauth), true));
+
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID), true))
   router.delete( '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.deleteSensor(              req.params.domain, req.params.sensorID)),
-                                                                                       proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID), true));
+                                                                                       proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID)),
+                                                                                       proxy(req => authZ.deleteResource(                 req.params.sensorID), true));
+
   router.put(    '/domains/:domain/sensors/:sensorID/owner',                           proxy(req => orionProxy.putSensorOwner(            req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/location',                        proxy(req => orionProxy.putSensorLocation(         req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/name',                            proxy(req => orionProxy.putSensorName(             req.params.domain, req.params.sensorID, req.body), true));
@@ -61,14 +87,16 @@ function installSensors(router, keycloak) {
 
 function installHistory(router, keycloak) {
 
-  //router.all(    '/domains/:domain/history/*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'history')))
+  //protect endpoints
+  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_HISTORY, authZ.RESOURCE_HISTORY, req.kauth)))
   //history endpoint
   router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
 }
 
 function installSocials(router, keycloak) {
 
-  //router.all(    '/domains/:domain/socials*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'socials')))
+  //protect endpoints
+  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SOCIALS, authZ.RESOURCE_SOCIALS, req.kauth)))
   
   //socials endpoint
   router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
@@ -80,7 +108,8 @@ function installSocials(router, keycloak) {
 
 function installNotifs(router, keycloak) {
 
-  //router.all(    '/domains/:domain/notifications*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'notifications')))
+  //protect endpoints
+  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_NOTIFICATIONS, authZ.RESOURCE_NOTIFICATIONS, req.kauth)))
   
   //notifications endpoint
   router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
@@ -92,10 +121,10 @@ function installNotifs(router, keycloak) {
 
 function installUsers(router, keycloak) {
 
-  //router.all(    '/domains/:domain/users*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
+  //protect endpoints
+  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
   
-  //users endpoint
-  router.post(   '/domains/:domain/auth',           proxy(req => usersProxy.postAuth(  req.body), true));
+  //users endpoints
   router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(  req.params.domain), true));
   router.post(   '/domains/:domain/users',          proxy(req => usersProxy.postUsers( req.params.domain), true));
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
@@ -104,7 +133,25 @@ function installUsers(router, keycloak) {
 
 }
 
-//Perform one or several requests to backend components and send back results to user
+function installAuth(router, keycloak) {
+
+  //auth endpoint
+  router.post(   '/auth/token', proxy(req => usersProxy.postAuth(  req.body), true));
+}
+
+function installEntities(router, keycloak) {
+
+  //protect endpoints
+  //router.all(    '/domains/:domain/entities*', proxy(req => authProtect(req.method, req.params.domain, 'entities', req.kauth)))
+  
+  //entities endpoint
+  router.get( '/domains/:domain/entities', proxy(req => orionProxy.getEntities(req.params.domain, req.query), true));
+  router.post('/domains/:domain/entities', proxy(req => orionProxy.postEntities(req.params.domain, req.body), true));
+  router.all('/domains/:domain/entities/:entityID*', proxy(req => orionProxy.allEntities(req.path, req.params.domain, req.method, req.body, req.query), true));
+
+}
+
+//Perform requests to backend components and send back results to user
 function proxy(request, isFinal) {
   return async (req, res, next) => { 
     try {
@@ -116,12 +163,12 @@ function proxy(request, isFinal) {
         next();
       }
     } catch(err) {
-      console.log('catch error')
       next(err)
     }
   }
 }
 
+//middleware in case of error
 function proxyError(err, req, res, next) {
 
   if (err.response) {
@@ -139,93 +186,30 @@ function proxyError(err, req, res, next) {
   } else {
     // Something happened in setting up the request that triggered an Error
     console.log('Proxy error:', err);
-    console.log('Proxy error:', err.stack);
+    if(err.stack) {
+      console.log('Proxy error:', err.stack);
+    }
     res.status(500);
     res.send(err.stack);
 
   }
 }
 
-function proxyAuth(protect) {
-  return async (req, res, next) => {
+//authorization middleware
+async function authProtect(method, domain, resourceName, resourceType, kauth) {
     
-    var roles = {}
-    var kauth = req.kauth
+    var token = ''
     //check that token is recognised
     if (kauth && kauth.grant) {
-
-      roles = kauth.grant.access_token.content.realm_access.roles
+      token = kauth.grant.access_token.token
     } else { //if no token, use default permissions
-      try {
-         roles = await usersProxy.getRoles('guest')
-         console.log('Roles:' + JSON.stringify(roles))
-      } catch(err) {
-         console.log('Error in Keycloak protect')
-         next(err)
-      }
-    } 
-    if (protect(req, roles)) {
-      console.log('Access granted')
-      next('route');
-    } else {
-      res.status(403);
-      res.send('Access denied');
+      token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
     }
-  }
+
+    var auth = await authZ.authorize(resourceName, resourceType, method, token);
+    console.log("Auth result positive")
+    return; 
 };
-
-function protect(roles, method, domain, resourceType) {
-
-  console.log('roles: ' + JSON.stringify(roles))
-  const accs = roles.map(r => hasAccess(method, domain, resourceType, r))
-  return accs.some(a => a == true) 
-}
-
-function hasAccess(method, domain, resType, role) {
-
-    const roleElems = splitRole(role)
-    const permAccess = isPermAccess(method, roleElems.perm)
-    const domainAccess = domain == roleElems.domain
-    const resTypeAccess = resType ? resType == roleElems.resourceType : true
-
-    console.log('access role ' + JSON.stringify(roleElems))
-    console.log('access perm ' + permAccess)
-    console.log('access domain ' + domainAccess)
-    console.log('access res type ' + resTypeAccess)
-    return permAccess && domainAccess && resTypeAccess
-}
-
-// view/manage permission level
-function isPermAccess(method, perm) {
-
-    switch (perm) {
-        case 'manage':
-            return true;
-        case 'view':
-            {
-                if (method == 'GET') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        default:
-            return false;
-    }
-}
-
-//Splits the roles.
-//Roles should have the shape <view|manage>:<domain>:<resType>, for example view:farm1:sensors
-function splitRole(role) {
-    const s = role.split(':')
-    return {
-        perm: s[0],
-        domain: s[1] ? s[1] : null,
-        resourceType: s[2] ? s[2] : null,
-        resource: s[3] ? s[3] : null
-    }
-
-}
 
 module.exports = { 
   install,

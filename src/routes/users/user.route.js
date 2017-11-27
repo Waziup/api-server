@@ -1,7 +1,7 @@
 "use strict";
 const users = require('./user.service');
-const auth = require('./auth.service');
-const keycloakProxy = require('./keycloakProxy');
+const auth = require('../../auth/authN');
+const keycloakProxy = require('../../lib/keycloakProxy');
 const config = require('../../config.js');
 
 //different admin routes for user management

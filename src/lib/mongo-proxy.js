@@ -5,8 +5,8 @@ const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const config = require('../config.js');
-
-var MongoClient = require('mongodb').MongoClient, assert = require('assert');
+const MongoClient = require('mongodb').MongoClient
+const assert = require('assert');
 
 //get all values for a sensor measurement
 async function getSensorMeasurementValues(domain, sensorID, measID) {
@@ -18,24 +18,24 @@ async function getSensorMeasurementValues(domain, sensorID, measID) {
 async function postSensorMongo(domain, sensor) {
   var docs = getSensorDatapoints(sensor);
   console.log("postSensorMongo:" + JSON.stringify(docs));
-  mongoRequest(domain, col => col.collection(domain).insertMany(docs));
+  mongoRequest(domain, col => col.insertMany(docs));
 }
 
 //insert all datapoints for a new sensor
 async function postSensorMeasMongo(domain, sensorID, meas) {
   var docs = getSensorMeasDatapoints(sensorID, meas);
-  mongoRequest(domain, col => col.collection(domain).insertMany(docs));
+  mongoRequest(domain, col => col.insertMany(docs));
 }
 
 //delete all datapoints belonging to a sensor
 async function deleteSensorMongo(domain, sensorID) {
-  mongoRequest(domain, col => col.collection(domain).deleteMany({entityID: sensorID}));
+  mongoRequest(domain, col => col.deleteMany({entityID: sensorID}));
 }
 
 //create one datapoint for a sensor measurement
 async function postDatapointMongo(domain, sensorID, measID, datapoint) {
   var doc = getMongoDocument(sensorID, measID, datapoint);
-  mongoRequest(domain, col => col.collection(domain).insert(doc));
+  mongoRequest(domain, col => col.insert(doc));
 }
 
 //delete all datapoints for a sensor measurement
