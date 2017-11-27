@@ -72,17 +72,30 @@ async function socialRequest(path, method, data) {
 // ## Helper functions ##
 
 function getMsg(usr, channel, message) {
-      
-  var userID; 
+  if(!usr.attributes) {
+    throw('no user attributes')
+  }
   switch(channel.toLowerCase()) {
       case 'facebook':
-          userID = usr.attributes.facebook[0]; 
+          if(usr.attributes.facebook) {
+             userID = usr.attributes.facebook[0]; 
+          } else {
+            throw('Facebook user attribute not defined')
+          }
           break;
       case 'twitter':
-          userID = usr.attributes.twitter[0]; 
+          if(usr.attributes.twitter) {
+             userID = usr.attributes.twitter[0]; 
+          } else {
+            throw('Twitter user attribute not defined')
+          }
           break;
       case 'sms':
-          userID = usr.attributes.phone[0]; 
+          if(usr.attributes.phone) {
+             userID = usr.attributes.phone[0];
+          } else {
+            throw('phone user attribute not defined')
+          }
           break;
       default:
           throw "Unrecognized channel"

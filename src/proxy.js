@@ -186,7 +186,9 @@ function proxyError(err, req, res, next) {
   } else {
     // Something happened in setting up the request that triggered an Error
     console.log('Proxy error:', err);
-    console.log('Proxy error:', err.stack);
+    if(err.stack) {
+      console.log('Proxy error:', err.stack);
+    }
     res.status(500);
     res.send(err.stack);
 
