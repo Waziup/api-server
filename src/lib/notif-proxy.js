@@ -52,7 +52,7 @@ function getSub(domain, notif) {
     },
     notification: {
       httpCustom: {
-        url: config.serverUrl + '/api/v1/domains/' + domain + '/socials/batch',
+        url: config.httpUrl + '/api/v1/domains/' + domain + '/socials/batch',
         method: "POST",
         payload: URIEncodeForbiddens(JSON.stringify(notif.notification))
         }

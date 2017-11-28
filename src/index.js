@@ -12,6 +12,9 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const url = require('url');
 const session = require('express-session');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
 
 //Create app and router
 const app = express();
@@ -57,14 +60,28 @@ proxy.install(router, keycloak);
 //     app.use(middleware.swaggerUi());
 // });
 var swaggerDocument = YAML.load('./swagger/swagger.yaml');
-const host = url.parse(config.serverUrl).host;
+const host = url.parse(config.httpUrl || config.httpsUrl).host;
 swaggerDocument.host = host;
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-async function run() {
-    await app.listen(config.port);
-    console.log('Listening on port ', config.port);
+
+if(config.httpsEnabled) {
+    
+    var credentials = {
+        key: fs.readFileSync(config.httpsTlsKey, 'utf8'),
+        cert: fs.readFileSync(config.httpsTlsCert, 'utf8')};
+ 
+    https.createServer(credentials, app).listen(config.httpsPort, () => {
+        
+        console.log("Listening on %s", config.httpsUrl);
+    });
 }
 
-run();
+if(config.httpEnabled) {
+    
+    http.createServer(app).listen(config.httpPort, () => {
+        
+        console.log("Listening on %s", config.httpUrl);
+    });
+}

@@ -1,8 +1,18 @@
 module.exports = {
   // Node.js app
-  port: process.env.SERVER_PORT || 3000,
+  httpEnabled: (process.env.HTTP_ENABLED=="true" || process.env.HTTP_ENABLED=="yes" || process.env.HTTP_ENABLED=="1" || true) &&
+    ! (process.env.HTTP_ENABLED=="false" || process.env.HTTP_ENABLED=="no" || process.env.HTTP_ENABLED=="0"),
+  httpPort: process.env.HTTP_PORT || 3000,
+  httpUrl: process.env.HTTP_URL || `http://localhost:${process.env.HTTP_PORT || 3000}`,
+  
+  // Node.js secure app
+  httpsEnabled: (process.env.HTTPS_ENABLED=="true" || process.env.HTTPS_ENABLED=="yes" || process.env.HTTPS_ENABLED=="1"),
+  httpsPort: process.env.HTTPS_PORT || 3001,
+  httpsTlsCert: process.env.HTTPS_TLS_CRT || "",
+  httpsTlsKey: process.env.HTTPS_TLS_KEY || "",
+  httpsUrl: process.env.HTTPS_URL || `http://localhost:${process.env.HTTPS_PORT || 3001}`,
+  
   // API URL to be used in the server-side code
-  serverUrl: process.env.SERVER_URL || `http://localhost:${process.env.SERVER_PORT || 3000}`,
   keycloakRealm: 'waziup',
   keycloakClientId: 'api-server',
   fiwareService: 'waziup',
