@@ -81,7 +81,7 @@ function installSensors(router, keycloak) {
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',       proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/sensor_kind',proxy(req => orionProxy.putSensorMeasurementKind(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID), true));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID)),
+  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.putSensorMeasurementValue( req.params.domain, req.params.sensorID, req.params.measID, req.body)),
                                                                                        proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
 }
 
@@ -147,7 +147,7 @@ function installEntities(router, keycloak) {
   //entities endpoint
   router.get( '/domains/:domain/entities', proxy(req => orionProxy.getEntities(req.params.domain, req.query), true));
   router.post('/domains/:domain/entities', proxy(req => orionProxy.postEntities(req.params.domain, req.body), true));
-  router.all('/domains/:domain/entities/:entityID*', proxy(req => orionProxy.allEntities(req.path, req.params.domain, req.method, req.body, req.query), true));
+  //router.all('/domains/:domain/entities/:entityID*', proxy(req => orionProxy.allEntities(req.path, req.params.domain, req.method, req.body, req.query), true));
 
 }
 

@@ -86,6 +86,10 @@ async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
   return resp;
 }
 
+async function putSensorMeasurementValue(domain, sensorID, measID, value) {
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, value);
+  return resp;
+}
 
 // Perform a request to Orion
 async function orionRequest(path, method, domain, data, query) {
@@ -309,4 +313,5 @@ module.exports = {
  putSensorMeasurementDim, 
  putSensorMeasurementUnit,
  putSensorMeasurementKind,
+ putSensorMeasurementValue,   
  orionRequest}
