@@ -8,17 +8,18 @@ module.exports = {
   // Node.js secure app
   httpsEnabled: (process.env.HTTPS_ENABLED=="true" || process.env.HTTPS_ENABLED=="yes" || process.env.HTTPS_ENABLED=="1"),
   httpsPort: process.env.HTTPS_PORT || 3001,
-  httpsTlsCert: process.env.HTTPS_TLS_CRT || "",
-  httpsTlsKey: process.env.HTTPS_TLS_KEY || "",
+  httpsTlsCert: process.env.HTTPS_TLS_CRT || "./tls/localhost.crt",
+  httpsTlsKey: process.env.HTTPS_TLS_KEY || "./tls/localhost.key",
   httpsUrl: process.env.HTTPS_URL || `http://localhost:${process.env.HTTPS_PORT || 3001}`,
   
-  // API URL to be used in the server-side code
   keycloakRealm: 'waziup',
   keycloakClientId: 'api-server',
   fiwareService: 'waziup',
   mongoPrefix: 'waziup',
   elsPrefix: 'waziup',
   keycloakClientSecret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0",
+
+  // API URL to be used in the server-side code
   backend: {
     keycloakUrl:      process.env.KEYCLOAK_URL      || 'http://localhost:8080/auth',
     orionUrl:         process.env.ORION_URL         || 'http://localhost:1026',

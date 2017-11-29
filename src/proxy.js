@@ -38,7 +38,7 @@ function installDomains(router, keycloak) {
  
   //protect endpoints
   router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, authZ.RESOURCE_DOMAINS, req.kauth))) // protect single domain
-  router.all(    '/domains',         proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
+  router.all(    '/domains',          proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
 
   //routes to backend components
   router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));

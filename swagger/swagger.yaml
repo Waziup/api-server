@@ -6,6 +6,7 @@ info:
 host: '127.0.0.1:8000'
 schemes:
   - http
+  - https
 basePath: /api/v1
 produces:
   - application/json
