@@ -154,7 +154,7 @@ definitions:
   EntityType:
     type: string
     description: A type of an entity.
-    example: room
+    example: Room
   Entity:
     type: object
     description: >-
@@ -167,7 +167,7 @@ definitions:
       id:
         type: string
         description: Unique name (ID) of the entity.
-        example: myBarn12
+        example: Barn4
       type:
         $ref: '#/definitions/EntityType'
   EntityWithAttr:
@@ -977,7 +977,9 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/MeasurementValue'
+            type: array
+            items:
+              $ref: '#/definitions/MeasurementValue'
       responses:
         '201':
           description: Datapoint created succesfully
@@ -1143,7 +1145,7 @@ paths:
           description: Deleted
         '404':
           description: Entity Not found
-    put:
+    post:
       summary: add an entity attribute value
       description: >-
         Add a new value to the list of stored values for this attribute.
@@ -1169,7 +1171,7 @@ paths:
           description: Added
         '404':
           description: Entity Not Found
-    post:
+    put:
       summary: set an entity attribute value
       description: >-
         Set a new value for this attribute, removing all previous values.
