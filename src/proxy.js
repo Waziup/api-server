@@ -76,7 +76,7 @@ function installSensors(router, keycloak) {
                                                                                        proxy(req => mongoProxy.postSensorMeasMongo(       req.params.domain, req.params.sensorID, req.body), true));
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID',            proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID), true));
   router.delete( '/domains/:domain/sensors/:sensorID/measurements/:measID',            proxy(req => orionProxy.deleteSensorMeasurement(   req.params.domain, req.params.sensorID, req.params.measID)),
-                                                                                       proxy(req => mongoProxy.deleteMeasMongo(           req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID), true));
+                                                                                       proxy(req => mongoProxy.deleteEntityMeasMongo(     req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/name',       proxy(req => orionProxy.putSensorMeasurementName(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/dimension',  proxy(req => orionProxy.putSensorMeasurementDim(   req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',       proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
