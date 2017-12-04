@@ -39,7 +39,7 @@ async function deleteEntityMongo(domain, entityID, entityType) {
 
 //create one datapoint for a sensor measurement (add the point the the list of measurements)
 async function postDatapointMongo(domain, entityID, entityType, measID, datapoint) {
-  var doc = getMongoDocument(entityID, entityType, measID, datapoint.value, datapoint.timestamp);
+  var doc = getMongoDocument(entityID, entityType, measID, datapoint.value, new Date(datapoint.timestamp));
   mongoRequest(domain, col => col.insert(doc));
 }
 
@@ -47,6 +47,16 @@ async function postDatapointMongo(domain, entityID, entityType, measID, datapoin
 async function postValueMongo(domain, entityID, entityType, measID, value) {
   var doc = getMongoDocument(entityID, entityType, measID, value);
   mongoRequest(domain, col => col.insert(doc));
+}
+
+// create multiple datapoints
+// measWithValues is like {meas1: [val1, val2], meas2: [val3]}
+async function postValuesMongo(domain, entityID, entityType, measWithValues) {
+  var docs = [];
+  for(var measID in measWithValues)
+    docs = docs.concat(... measWithValues[measID].map(meas => getMongoDocument(entityID, entityType, measID, meas)));
+  
+  mongoRequest(domain, col => col.insertMany(docs));
 }
 
 
@@ -80,7 +90,7 @@ function getEntityMeasDatapoints(entityID, entityType, meas) {
   var datapoints = []
   for(let val of meas.values) {
      console.log('val:' + JSON.stringify(val));
-     datapoints.push(getMongoDocument(entityID, entityType, meas.id, val.value, val.timestamp))
+     datapoints.push(getMongoDocument(entityID, entityType, meas.id, val.value, new Date(val.timestamp)))
   }
   return datapoints;
 }
@@ -97,7 +107,7 @@ function getMeasurement(doc) {
    }
 }
 
-function getMongoDocument(entityID, entityType, measID, value, timestamp) {
+function getMongoDocument(entityID, entityType, measID, value, timestamp=new Date()) {
 
   var doc = {
     entityID,
@@ -119,6 +129,7 @@ module.exports = {
    postDatapointMongo,
   
    getEntityMeasurementValues,
+   postValuesMongo,
    postValueMongo,
    deleteEntityMongo,
    deleteEntityMeasMongo,

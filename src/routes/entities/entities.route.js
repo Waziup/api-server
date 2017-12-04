@@ -11,9 +11,27 @@ async function createEntity(domain, body) {
   var entity = {
     id: body.id,
     type: body.type
+  };
+  
+  var meass = {};
+  
+  for(var key in body) {
+    
+    if(key === "id" || key === "type")
+      continue;
+    
+    meass[key] = Array.isArray(body[key]) ? body[key] : [body[key]];
+    
+    entity[key] = {
+      type: "Object",
+      value: Array.isArray(body[key]) ? body[key][body[key].length-1] : body[key]
+    }
   }
 
-  var resp = orionRequest('/v2/entities', 'POST', domain, entity);
+  var resp = await orionRequest('/v2/entities', 'POST', domain, entity);
+  
+  mongoProxy.postValuesMongo(domain, entity.id, entity.type, meass);
+  
   return resp;
 }
 
@@ -73,7 +91,24 @@ async function deleteEntityAttribute(domain, type, id, attr) {
 async function putEntityAttribute(domain, type, id, attr, body) {
   
   await mongoProxy.deleteEntityMeasMongo(domain, id, type, attr);
-  return postEntityAttribute(domain, type, id, attr, body);
+  
+  var attribute = {
+    [attr]: {
+      value: Array.isArray(body) ? body[body.length-1] : body,
+      type: "Object"
+    }
+  }
+  
+  var entity = await orionRequest('/v2/entities/'+id+'/attrs?type='+type, 'POST', domain, attribute);
+  
+  var values = {
+    [attr]: Array.isArray(body) ? body : [body]
+  }
+  
+  mongoProxy.postValuesMongo(domain, id, type, values);
+  
+  return entity;
+  
 }
 
 async function postEntityAttribute(domain, type, id, attr, body) {
@@ -86,7 +121,10 @@ async function postEntityAttribute(domain, type, id, attr, body) {
   }
   
   var entity = await orionRequest('/v2/entities/'+id+'/attrs?type='+type, 'POST', domain, attribute);
+  
   mongoProxy.postValueMongo(domain, id, type, attr, body);
+  
+  return entity;
 }
 
 
