@@ -10,6 +10,7 @@ module.exports = {
   httpsPort: process.env.HTTPS_PORT || 3001,
   httpsTlsCert: process.env.HTTPS_TLS_CRT || "",
   httpsTlsKey: process.env.HTTPS_TLS_KEY || "",
+  httpsTlsChain: process.env.HTTPS_TLS_CHAIN || "",
   httpsUrl: process.env.HTTPS_URL || `http://localhost:${process.env.HTTPS_PORT || 3001}`,
   
   // API URL to be used in the server-side code
