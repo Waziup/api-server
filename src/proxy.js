@@ -6,13 +6,14 @@ const url = require('url');
 const config = require('./config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-const mongoProxy   = require('./lib/mongo-proxy.js');
-const orionProxy   = require('./lib/orion-proxy.js');
-const elsProxy     = require('./lib/els-proxy.js');
-const socialsProxy = require('./lib/social-proxy.js');
-const notifsProxy  = require('./lib/notif-proxy.js');
+const mongoProxy    = require('./lib/mongo-proxy.js');
+const orionProxy    = require('./lib/orion-proxy.js');
+const elsProxy      = require('./lib/els-proxy.js');
+const socialsProxy  = require('./lib/social-proxy.js');
+const notifsProxy   = require('./lib/notif-proxy.js');
 const domainsProxy  = require('./lib/domain-proxy.js');
-const usersProxy   = require('./routes/users/user.route.js');
+const usersProxy    = require('./routes/users/user.route.js');
+const entitiesProxy = require('./routes/entities/entities.route.js');
 const authN   = require('./auth/authN.js');
 const authZ   = require('./auth/authZ.js');
 
@@ -63,7 +64,7 @@ function installSensors(router, keycloak) {
 
   router.get(    '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.getSensorOrion(            req.params.domain, req.params.sensorID), true))
   router.delete( '/domains/:domain/sensors/:sensorID',                                 proxy(req => orionProxy.deleteSensor(              req.params.domain, req.params.sensorID)),
-                                                                                       proxy(req => mongoProxy.deleteSensorMongo(         req.params.domain, req.params.sensorID)),
+                                                                                       proxy(req => mongoProxy.deleteEntityMongo(         req.params.domain, req.params.sensorID, "SensingDevice")),
                                                                                        proxy(req => authZ.deleteResource(                 req.params.sensorID), true));
 
   router.put(    '/domains/:domain/sensors/:sensorID/owner',                           proxy(req => orionProxy.putSensorOwner(            req.params.domain, req.params.sensorID, req.body), true));
@@ -75,14 +76,38 @@ function installSensors(router, keycloak) {
                                                                                        proxy(req => mongoProxy.postSensorMeasMongo(       req.params.domain, req.params.sensorID, req.body), true));
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID',            proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID), true));
   router.delete( '/domains/:domain/sensors/:sensorID/measurements/:measID',            proxy(req => orionProxy.deleteSensorMeasurement(   req.params.domain, req.params.sensorID, req.params.measID)),
-                                                                                       proxy(req => mongoProxy.deleteMeasMongo(           req.params.domain, req.params.sensorID, req.params.measID), true));
+                                                                                       proxy(req => mongoProxy.deleteEntityMeasMongo(     req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/name',       proxy(req => orionProxy.putSensorMeasurementName(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/dimension',  proxy(req => orionProxy.putSensorMeasurementDim(   req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',       proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/sensor_kind',proxy(req => orionProxy.putSensorMeasurementKind(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID), true));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.putSensorMeasurementValue( req.params.domain, req.params.sensorID, req.params.measID, req.body)),
-                                                                                       proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID)),
+                                                                                       proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID, req.body), true));
+}
+
+function installEntities(router, keycloak) {
+
+  //router.all(    '/domains/:domain/entities*', proxyAuth((req, roles) => protect(roles, req.method, req.params.domain, 'users')))
+  
+  //users endpoint
+  router.post(   '/domains/:domain/entities',                 proxy(req => entitiesProxy.createEntity(         req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/entities/types',           proxy(req => entitiesProxy.getEntityTypes(       req.params.domain), true));
+  
+  router.get(    '/domains/:domain/entities/:type',           proxy(req => entitiesProxy.getEntities(          req.params.domain, req.params.type), true));
+  router.get(    '/domains/:domain/entities/:type/:id',       proxy(req => entitiesProxy.getEntity(            req.params.domain, req.params.type, req.params.id), true));
+  router.delete( '/domains/:domain/entities/:type/:id',       proxy(req => entitiesProxy.deleteEntity(         req.params.domain, req.params.type, req.params.id)),
+                                                              proxy(req => mongoProxy.deleteEntityMongo(       req.params.domain, req.params.id, req.params.type), true));
+  
+  router.get(    '/domains/:domain/entities/:type/:id/:attr', proxy(req => entitiesProxy.getEntityAttribute(   req.params.domain, req.params.type, req.params.id, req.params.attr), true));
+  
+  router.put(    '/domains/:domain/entities/:type/:id/:attr', proxy(req => entitiesProxy.putEntityAttribute(   req.params.domain, req.params.type, req.params.id, req.params.attr, req.body), true));
+  
+  router.post(   '/domains/:domain/entities/:type/:id/:attr', proxy(req => entitiesProxy.postEntityAttribute(  req.params.domain, req.params.type, req.params.id, req.params.attr, req.body), true));
+                                                              
+  router.delete( '/domains/:domain/entities/:type/:id/:attr', proxy(req => entitiesProxy.deleteEntityAttribute(req.params.domain, req.params.type, req.params.id, req.params.attr)),
+                                                              proxy(req => mongoProxy.deleteEntityMeasMongo(   req.params.domain, req.params.id, req.params.type, req.params.attr), true));
+
 }
 
 function installHistory(router, keycloak) {
@@ -137,18 +162,6 @@ function installAuth(router, keycloak) {
 
   //auth endpoint
   router.post(   '/auth/token', proxy(req => usersProxy.postAuth(  req.body), true));
-}
-
-function installEntities(router, keycloak) {
-
-  //protect endpoints
-  //router.all(    '/domains/:domain/entities*', proxy(req => authProtect(req.method, req.params.domain, 'entities', req.kauth)))
-  
-  //entities endpoint
-  router.get( '/domains/:domain/entities', proxy(req => orionProxy.getEntities(req.params.domain, req.query), true));
-  router.post('/domains/:domain/entities', proxy(req => orionProxy.postEntities(req.params.domain, req.body), true));
-  //router.all('/domains/:domain/entities/:entityID*', proxy(req => orionProxy.allEntities(req.path, req.params.domain, req.method, req.body, req.query), true));
-
 }
 
 //Perform requests to backend components and send back results to user

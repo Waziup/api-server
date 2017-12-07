@@ -10,6 +10,7 @@ module.exports = {
   httpsPort: process.env.HTTPS_PORT || 3001,
   httpsTlsCert: process.env.HTTPS_TLS_CRT || "./tls/localhost.crt",
   httpsTlsKey: process.env.HTTPS_TLS_KEY || "./tls/localhost.key",
+  httpsTlsChain: process.env.HTTPS_TLS_CHAIN || "./tls/localhost.chain",
   httpsUrl: process.env.HTTPS_URL || `http://localhost:${process.env.HTTPS_PORT || 3001}`,
   
   keycloakRealm: 'waziup',
