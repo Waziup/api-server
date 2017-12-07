@@ -67,7 +67,8 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 if(config.httpsEnabled) {
-    
+
+  try {
     var credentials = {
         key: fs.readFileSync(config.httpsTlsKey, 'utf8'),
         cert: fs.readFileSync(config.httpsTlsCert, 'utf8')};
@@ -76,6 +77,9 @@ if(config.httpsEnabled) {
         
         console.log("Listening on %s", config.httpsUrl);
     });
+  } catch (err){
+    console.log('Certificates not found! HTTPS disabled.');
+  }
 }
 
 if(config.httpEnabled) {
