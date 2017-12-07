@@ -10,7 +10,12 @@ const assert = require('assert');
 
 //get all values for a sensor measurement
 async function getSensorMeasurementValues(domain, sensorID, measID) {
-  var docs = await mongoRequest(domain, col => col.find({entityID: sensorID, attributeID: measID}).toArray());
+  
+  return getEntityMeasurementValues(domain, sensorID, "SensingDevice", measID);
+}
+
+async function getEntityMeasurementValues(domain, entityID, entityType, measID) {
+  var docs = await mongoRequest(domain, col => col.find({ entityID, entityType, attributeID: measID }).toArray());
   return docs.map(getMeasurement)
 }
 
@@ -23,13 +28,13 @@ async function postSensorMongo(domain, sensor) {
 
 //insert all datapoints for a new sensor
 async function postSensorMeasMongo(domain, sensorID, meas) {
-  var docs = getSensorMeasDatapoints(sensorID, meas);
+  var docs = getEntityMeasDatapoints(sensorID, "SensingDevice", meas);
   mongoRequest(domain, col => col.insertMany(docs));
 }
 
 //delete all datapoints belonging to a sensor
-async function deleteSensorMongo(domain, sensorID) {
-  mongoRequest(domain, col => col.deleteMany({entityID: sensorID}));
+async function deleteEntityMongo(domain, entityID, entityType) {
+  mongoRequest(domain, col => col.deleteMany({entityID, entityType}));
 }
 
 //create one datapoint for a sensor measurement (add the point the the list of measurements)
@@ -74,13 +79,14 @@ function getSensorDatapoints(sensor) {
 
   var datapoints = []
   for(let meas of sensor.measurements) {
-    let dts = getSensorMeasDatapoints(sensor.id, meas);
+    let dts = getEntityMeasDatapoints(sensor.id, "SensingDevice", meas);
     dts.forEach(a => datapoints.push(a))
   }
   return datapoints
 }
 
-function getSensorMeasDatapoints(sensorID, meas) {
+
+function getEntityMeasDatapoints(entityID, entityType, meas) {
   var datapoints = []
   for(let val of meas.values) {
      console.log('val:' + JSON.stringify(val));
@@ -103,20 +109,25 @@ function getMeasurement(doc) {
 
 function getMongoDocument(entityID, entityType, measID, value, timestamp=new Date()) {
 
-  return {
-    entityID: sensorID,
+  var doc = {
+    entityID,
+    entityType,
     attributeID: measID,
-    timestamp: datapoint.timestamp,
-    value: datapoint.value
-  }
+    value
+  };
+  
+  if(timestamp)
+    doc.timestamp = timestamp;
+  
+  return doc;
 }
 
 module.exports = {
    getSensorMeasurementValues,
    postSensorMongo,
    postSensorMeasMongo,
-   deleteSensorMongo,
    postDatapointMongo,
+  
    getEntityMeasurementValues,
    postValuesMongo,
    postValueMongo,

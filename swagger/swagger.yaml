@@ -154,7 +154,7 @@ definitions:
   EntityType:
     type: string
     description: A type of an entity.
-    example: room
+    example: Room
   Entity:
     type: object
     description: >-
@@ -167,7 +167,7 @@ definitions:
       id:
         type: string
         description: Unique name (ID) of the entity.
-        example: myBarn12
+        example: Barn4
       type:
         $ref: '#/definitions/EntityType'
   EntityWithAttr:
@@ -1177,7 +1177,7 @@ paths:
           description: Deleted
         '404':
           description: Entity Not found
-    put:
+    post:
       summary: add an entity attribute value
       description: >-
         Add new a value to the list of stored values for this attribute.
