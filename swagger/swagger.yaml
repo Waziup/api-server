@@ -183,7 +183,7 @@ definitions:
       id:
         type: string
         description: Unique name (ID) of the entity.
-        example: myBarn12
+        example: Barn4
       type:
         $ref: '#/definitions/EntityType'
       attribute1:
@@ -210,6 +210,40 @@ definitions:
             longitude:
               type: number
               example: 12.564
+  EntityWithCurrentAttr:
+    type: object
+    description: >-
+      An entity is a general object with type and name,
+      implementing different userdefined attributes.
+    required:
+      - id
+      - type
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Unique name (ID) of the entity.
+        example: Barn4
+      type:
+        $ref: '#/definitions/EntityType'
+      attribute1:
+        type: string
+        description: An example attribute with string values.
+        example: 'Text Content..'
+      attribute2:
+        type: number
+        description: An example attribute with number values.
+        example: '27'
+      attributeN:
+        type: object
+        description: An example attribute with object values.
+        properties:
+          latitude:
+            type: number
+            example: 51.412
+          longitude:
+            type: number
+            example: 12.564
   EntityAttr:
     anyOf:
       - type: string
@@ -1003,7 +1037,7 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/Entity'
+            $ref: '#/definitions/EntityWithAttr'
         - $ref: '#/parameters/domainParam'
       responses:
         '201':
@@ -1077,7 +1111,7 @@ paths:
         '200':
           description: ''
           schema:
-            $ref: '#/definitions/EntityWithAttr'
+            $ref: '#/definitions/EntityWithCurrentAttr'
         '404':
           description: Not Found
     delete:
@@ -1146,7 +1180,7 @@ paths:
     put:
       summary: add an entity attribute value
       description: >-
-        Add a new value to the list of stored values for this attribute.
+        Add new a value to the list of stored values for this attribute.
         If this attribute does not exist, it will be created within this request.
       tags:
         - Entities
@@ -1169,10 +1203,10 @@ paths:
           description: Added
         '404':
           description: Entity Not Found
-    post:
-      summary: set an entity attribute value
+    put:
+      summary: set entity attribute values
       description: >-
-        Set a new value for this attribute, removing all previous values.
+        Set new values for this attribute, removing all previous values.
         If this attribute does not exist, it will be created within this request.
       tags:
         - Entities
@@ -1189,7 +1223,9 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/EntityAttr'
+            type: array
+            items:
+              $ref: '#/definitions/EntityAttr'
       responses:
         '201':
           description: Set

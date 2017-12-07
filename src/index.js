@@ -69,9 +69,14 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 if(config.httpsEnabled) {
 
   try {
-    var credentials = {
-        key: fs.readFileSync(config.httpsTlsKey, 'utf8'),
-        cert: fs.readFileSync(config.httpsTlsCert, 'utf8')};
+    
+    var credentials = {};
+    if(config.httpsTlsKey)
+      credentials.key = fs.readFileSync(config.httpsTlsKey, 'utf8');
+    if(config.httpsTlsCert)
+      credentials.cert = fs.readFileSync(config.httpsTlsCert, 'utf8');
+    if(config.httpsTlsChain)
+      credentials.ca = fs.readFileSync(config.httpsTlsChain, 'utf8');
  
     https.createServer(credentials, app).listen(config.httpsPort, () => {
         
