@@ -82,7 +82,7 @@ function installSensors(router, keycloak) {
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',       proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/sensor_kind',proxy(req => orionProxy.putSensorMeasurementKind(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID), true));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID)),
+  router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',     proxy(req => orionProxy.putSensorMeasurementValue(req.params.domain, req.params.sensorID, req.params.measID, req.body)),
                                                                                        proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID, req.body), true));
 }
 
@@ -203,6 +203,7 @@ function proxyError(err, req, res, next) {
       console.log('Proxy error:', err.stack);
     }
     res.status(500);
+    res.send(err);
     res.send(err.stack);
 
   }
