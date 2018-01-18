@@ -111,7 +111,7 @@ async function orionRequest(path, method, domain, data, query, contentType) {
                     url: url,
                     data: data,
                     headers: headers,
-                    params: query}
+                    params: myQuery}
    console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
    console.log(" query: " + JSON.stringify(query));
    console.log(" data: " + JSON.stringify(data));
@@ -245,10 +245,10 @@ function getEntity(domain, sensor) {
   if (sensor.location) {
     entity.location = getEntityLocation(sensor.location)
   }
-
-  for (let meas of sensor.measurements) {
-
-    entity[meas.id] = getMeasAttrs(meas);
+  if(sensor.measurements) {
+    for (let meas of sensor.measurements) {
+      entity[meas.id] = getMeasAttrs(meas);
+    }
   }
 
   return entity;

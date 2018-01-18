@@ -78,9 +78,11 @@ async function mongoRequest(domain, request) {
 function getSensorDatapoints(sensor) {
 
   var datapoints = []
-  for(let meas of sensor.measurements) {
-    let dts = getEntityMeasDatapoints(sensor.id, "SensingDevice", meas);
-    dts.forEach(a => datapoints.push(a))
+  if (sensor.measurements) {
+    for(let meas of sensor.measurements) {
+      let dts = getEntityMeasDatapoints(sensor.id, "SensingDevice", meas);
+      dts.forEach(a => datapoints.push(a))
+    }
   }
   return datapoints
 }
