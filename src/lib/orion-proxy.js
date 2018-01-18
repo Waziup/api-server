@@ -86,19 +86,30 @@ async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
   return resp;
 }
 
+async function putSensorMeasurementValue(domain, sensorID, measID, datapoint) {
+  await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, datapoint.value, null, 'text/plain');
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('timestamp', domain, sensorID, measID, datapoint.timestamp));
+  return resp;
+}
+
 
 // Perform a request to Orion
-async function orionRequest(path, method, domain, data, query) {
+async function orionRequest(path, method, domain, data, query, contentType) {
  
    var url = config.backend.orionUrl + path;
-   var headers = {'Fiware-Service': config.fiwareService};
+   var headers = {}
+   if(contentType) {
+      headers['Content-Type'] = contentType;
+   }
+   headers['Fiware-Service'] = config.fiwareService;
+   query['attrs'] = "dateModified,dateCreated,*"; 
    var axiosConf = {method: method,
                     url: url,
                     data: data,
                     headers: headers,
                     params: query}
    console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   console.log(" query: " + query);
+   console.log(" query: " + JSON.stringify(query));
    console.log(" data: " + JSON.stringify(data));
     
    //perform request to Orion
@@ -152,6 +163,12 @@ async function getSensor(domain, sensorID, entity) {
   if (entity.location && entity.location.value && entity.location.value.coordinates) {
     sensor.location = {latitude:  entity.location.value.coordinates[1],
                        longitude: entity.location.value.coordinates[0]};
+  }
+  if (entity.dateCreated) {
+    sensor.dateCreated = entity.dateCreated.value;
+  }
+  if (entity.dateModified) {
+    sensor.dateModified = entity.dateModified.value;
   }
 
   // Retrieve values from historical database
@@ -309,4 +326,5 @@ module.exports = {
  putSensorMeasurementDim, 
  putSensorMeasurementUnit,
  putSensorMeasurementKind,
+ putSensorMeasurementValue,
  orionRequest}
