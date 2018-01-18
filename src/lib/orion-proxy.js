@@ -102,7 +102,11 @@ async function orionRequest(path, method, domain, data, query, contentType) {
       headers['Content-Type'] = contentType;
    }
    headers['Fiware-Service'] = config.fiwareService;
-   query['attrs'] = "dateModified,dateCreated,*"; 
+   var myQuery = {};
+   if(query) {
+     myQuery = query;
+   }
+   myQuery['attrs'] = "dateModified,dateCreated,*";
    var axiosConf = {method: method,
                     url: url,
                     data: data,
@@ -222,8 +226,6 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
 
 function getEntity(domain, sensor) {
 
-  var subservice = domain.split("-").slice(1).join();
-  console.log('Subservice:' + JSON.stringify(subservice));
   var entity = {
     id: sensor.id,
     type: 'SensingDevice'
