@@ -170,6 +170,9 @@ async function getSensor(domain, sensorID, entity) {
   if (entity.dateModified) {
     sensor.dateModified = entity.dateModified.value;
   }
+  if (entity.domain) {
+    sensor.domain = entity.domain.value;
+  }
 
   // Retrieve values from historical database
   sensor.measurements = await getMeasurements(domain, sensorID, entity);
@@ -234,8 +237,8 @@ function getEntity(domain, sensor) {
   if (sensor.owner) {
     entity.owner = {type: 'String', value: sensor.owner};
   }
-  if (subservice) {
-    entity.subservice = {type: 'String', value: subservice};
+  if (domain) {
+    entity.domain = {type: 'String', value: domain};
   }
   if (sensor.location) {
     entity.location = getEntityLocation(sensor.location)
