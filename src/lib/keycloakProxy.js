@@ -2,6 +2,7 @@ const axios = require('axios');
 const admin_creds = require('../admin-settings');
 const config = require('../config.js');
 const querystring = require('querystring');
+const log = require('../log.js');
 
 // Perform a request to Keycloak
 async function keycloakRequest(realm, path, method, data, query, isAdmin, token, contentType) {
@@ -20,10 +21,10 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
                     data: data,
                     headers: headers,
                     params: query}
-   console.log("Keycloak request " + method + " on: " + url);
-   console.log(" headers: " + JSON.stringify(headers));
-   console.log(" query: " + query);
-   console.log(" data: " + JSON.stringify(data));
+   log.info("Keycloak request " + method + " on: " + url);
+   log.info(" headers: " + JSON.stringify(headers));
+   log.info(" query: " + query);
+   log.info(" data: " + JSON.stringify(data));
     
    //perform request
    var resp = await axios(axiosConf);

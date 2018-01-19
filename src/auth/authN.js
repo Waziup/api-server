@@ -3,6 +3,7 @@ const admin_creds = require('../admin-settings');
 const config = require('../config.js');
 const querystring = require('querystring');
 const keycloakProxy = require('../lib/keycloakProxy')
+const log = require('../log.js');
 
 async function getUserAuthToken(cred) {
    const settings = {
@@ -36,7 +37,7 @@ async function getClientAuthToken() {
 
 async function getAuthToken(realm, settings) {
    const path = 'protocol/openid-connect/token';
-   console.log(JSON.stringify(settings))
+   log.debug(JSON.stringify(settings))
    //perform request to Keycloak
    const resp = await keycloakProxy.keycloakRequest(realm, path, 'POST', querystring.stringify(settings), null, false, null, 'application/x-www-form-urlencoded');
    return resp.access_token;

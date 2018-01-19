@@ -1,7 +1,5 @@
 "use strict";
 
-const access = require('./access.js');
-const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const url = require('url');
@@ -9,7 +7,7 @@ const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
 const mongoProxy = require('./mongo-proxy.js');
-
+const log = require('../log.js');
 
 async function getSensorsOrion(domain, query) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
@@ -112,9 +110,9 @@ async function orionRequest(path, method, domain, data, query, contentType) {
                     data: data,
                     headers: headers,
                     params: myQuery}
-   console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   console.log(" query: " + JSON.stringify(query));
-   console.log(" data: " + JSON.stringify(data));
+   log.info("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
+   log.info(" query: " + JSON.stringify(query));
+   log.info(" data: " + JSON.stringify(data));
     
    //perform request to Orion
    var resp = await axios(axiosConf);
@@ -142,13 +140,13 @@ async function getSensors(domain, entities) {
     var s = await getSensor(domain, e.id, e);
     sensors.push(s);
   }
-  console.log("getSensors: " + JSON.stringify(sensors));
+  log.debug("getSensors: " + JSON.stringify(sensors));
   return sensors
 }
 
 async function getSensor(domain, sensorID, entity) {
 
-  console.log(JSON.stringify(entity));
+  log.debug(JSON.stringify(entity));
   var sensor = {
     id: entity.id
   }
@@ -186,7 +184,7 @@ async function getSensor(domain, sensorID, entity) {
 
 async function getMeasurements(domain, sensorID, attrs) {
 
-  console.log('attrs: ' + JSON.stringify(attrs));
+  log.debug('attrs: ' + JSON.stringify(attrs));
   var measurements = []
   for (var attrID in attrs) {
     const attr = attrs[attrID];
@@ -201,7 +199,7 @@ async function getMeasurements(domain, sensorID, attrs) {
 
 async function getMeasurement(domain, sensorID, attrID, attr) {
  
-  console.log('domain:' + domain + ' sensorID:' + sensorID + ' attrID: ' + attrID + ' attr:' + JSON.stringify(attr))
+  log.debug('domain:' + domain + ' sensorID:' + sensorID + ' attrID: ' + attrID + ' attr:' + JSON.stringify(attr))
   var meas = { 
     id: attrID
   }
@@ -220,7 +218,7 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
   }
 
   meas.values = await mongoProxy.getSensorMeasurementValues(domain, sensorID, attrID);
-  console.log('Meass2:' + JSON.stringify(meas.values));
+  log.debug('Meas:' + JSON.stringify(meas.values));
   return meas;
 }
 

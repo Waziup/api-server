@@ -6,6 +6,7 @@ const config = require('../config.js');
 const users = require('../routes/users/user.service.js');
 const axios = require('axios');
 const orionProxy = require('./orion-proxy.js');
+const log = require('../log.js');
 
 async function getNotifsOrion(domain) {
   var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', domain, null);
@@ -40,7 +41,7 @@ function getNotif(domain, notif) {
 
 function getSub(domain, notif) {
 
-  console.log('Notif:' + JSON.stringify(notif))
+  log.debug('Notif:' + JSON.stringify(notif))
   var sub = {
     description: notif.description,
     subject: {

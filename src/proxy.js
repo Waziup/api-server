@@ -16,6 +16,7 @@ const usersProxy    = require('./routes/users/user.route.js');
 const entitiesProxy = require('./routes/entities/entities.route.js');
 const authN   = require('./auth/authN.js');
 const authZ   = require('./auth/authZ.js');
+const log = require('./log.js');
 
 function install(router, keycloak) {
   
@@ -189,18 +190,18 @@ function proxyError(err, req, res, next) {
     // We forward it to the user
     res.status(err.response.status);
     res.send(err.response.data); 
-    console.log('Proxy response error:', err.response.status);
-    if (err.response.data) console.log(' msg:', err.response.data);
+    log.warn('Proxy response error:', err.response.status);
+    if (err.response.data) log.warn(' msg:', err.response.data);
   } else if (err.request) {
     // The request was made but no response was received
-    console.log('Proxy error, no response received');
+    log.warn('Proxy error, no response received');
     res.status(503);
     res.send('Proxy error: backend service unavailable');
   } else {
     // Something happened in setting up the request that triggered an Error
-    console.log('Proxy error:', err);
+    log.warn('Proxy error:', err);
     if(err.stack) {
-      console.log('Proxy error:', err.stack);
+      log.warn('Proxy error:', err.stack);
     }
     res.status(500);
     res.send(err);
@@ -221,7 +222,7 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     }
 
     var auth = await authZ.authorize(resourceName, resourceType, method, token);
-    console.log("Auth result positive")
+    log.info("Auth result positive")
     return; 
 };
 

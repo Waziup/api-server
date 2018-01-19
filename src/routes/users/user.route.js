@@ -3,6 +3,7 @@ const users = require('./user.service');
 const auth = require('../../auth/authN');
 const keycloakProxy = require('../../lib/keycloakProxy');
 const config = require('../../config.js');
+const log = require('../../log.js');
 
 //different admin routes for user management
 async function postAuth(cred) {
@@ -37,7 +38,7 @@ async function deleteUser(domain, userid) {
 
 async function getRoles(username) {
    const user = await users.findByName('waziup', username)
-   console.log('user: ' + JSON.stringify(user))
+   log.debug('user: ' + JSON.stringify(user))
    const path = 'users/' + user.id + '/role-mappings/realm/composite'
    var token = await auth.getAdminAuthToken()
    var roleInfos = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, null, true, token) 

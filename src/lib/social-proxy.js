@@ -5,6 +5,7 @@ const url = require('url');
 const config = require('../config.js');
 const users = require('../routes/users/user.route.js');
 const axios = require('axios');
+const log = require('../log.js');
 
 //get all messages
 async function getSocialMsgs(domain) {
@@ -27,10 +28,10 @@ async function postSocialMsg(domain, socialMsg) {
   var usrs = await users.getUserSearch(domain, {username : socialMsg.username})
   if(usrs.length != 0) {
     var user = usrs[0];
-    console.log('user:' + JSON.stringify(user));
+    log.debug('user:' + JSON.stringify(user));
   
     var msg = getMsg(user, socialMsg.channel, socialMsg.message);
-    console.log('msg' + JSON.stringify(msg));
+    log.debug('msg' + JSON.stringify(msg));
     await socialRequest('', 'POST', msg)
   } else {
     throw('user ' + socialMsg.username + ' not found');
@@ -45,7 +46,7 @@ async function postSocialMsgBatch(domain, socialMsgBatch) {
       try {
         await postSocialMsg(domain, {username: username, channel: channel, message: socialMsgBatch.message})
       } catch(err) {
-        console.log('Batch social media sending failed: ' + err);
+        log.warn('Batch social media sending failed: ' + err);
       }
     }
   }
@@ -59,8 +60,8 @@ async function socialRequest(path, method, data) {
     var axiosConf = {method: method,
                      url: url,
                      data: data}
-    console.log("Socials request " + method + " on: " + url);
-    console.log(" data: " + JSON.stringify(data));
+    log.info("Socials request " + method + " on: " + url);
+    log.info(" data: " + JSON.stringify(data));
     
     //perform request to Orion
     var res = await axios(axiosConf);

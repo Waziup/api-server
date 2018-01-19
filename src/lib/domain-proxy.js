@@ -7,6 +7,7 @@ const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
 const MongoClient = require('mongodb').MongoClient
+const log = require('../log.js');
 
 
 async function getDomains() {
@@ -49,9 +50,9 @@ async function orionRequest(path, method, data, query) {
                     headers: headers,
                     params: query}
 
-   console.log("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   console.log(" query: " + JSON.stringify(query));
-   console.log(" data: " + JSON.stringify(data));
+   log.info("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
+   log.info(" query: " + JSON.stringify(query));
+   log.info(" data: " + JSON.stringify(data));
     
    //perform request to Orion
    var resp = await axios(axiosConf);

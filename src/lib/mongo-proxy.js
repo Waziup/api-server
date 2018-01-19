@@ -1,12 +1,11 @@
 "use strict";
 
-const access = require('./access.js');
-const { AccessLevel, servicePathProtection, getServicePathFromHeader } = access;
 const request = require('request');
 const http = require('http');
 const config = require('../config.js');
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert');
+const log = require('../log.js');
 
 //get all values for a sensor measurement
 async function getSensorMeasurementValues(domain, sensorID, measID) {
@@ -22,7 +21,7 @@ async function getEntityMeasurementValues(domain, entityID, entityType, measID) 
 //insert all datapoints for a new sensor
 async function postSensorMongo(domain, sensor) {
   var docs = getSensorDatapoints(sensor);
-  console.log("postSensorMongo:" + JSON.stringify(docs));
+  log.debug("postSensorMongo:" + JSON.stringify(docs));
   mongoRequest(domain, col => col.insertMany(docs));
 }
 
@@ -91,7 +90,7 @@ function getSensorDatapoints(sensor) {
 function getEntityMeasDatapoints(entityID, entityType, meas) {
   var datapoints = []
   for(let val of meas.values) {
-     console.log('val:' + JSON.stringify(val));
+     log.debug('meas val:' + JSON.stringify(val));
      datapoints.push(getMongoDocument(entityID, entityType, meas.id, val.value, new Date(val.timestamp)))
   }
   return datapoints;

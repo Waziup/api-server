@@ -5,6 +5,7 @@ const axios = require('axios');
 const User = require('../../models/user.js');
 const auth = require('../../auth/authN');
 const keycloakProxy = require('../../lib/keycloakProxy')
+const log = require('../../log.js');
 
 /**
   A function to get the list of users or a user for a realm.
@@ -30,7 +31,7 @@ async function find(domain, options) {
         queryString = options;
     }
     var data = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
-    console.log(data);
+    log.debug(data);
     var users = [];
     if (data.id) return new User(data);
     else {
@@ -67,17 +68,17 @@ async function update(realmName, user) {
             method: 'PUT',
             body: changeToKeycloakBasicUser(user)
         };
-        console.log(req);
+        log.debug(req);
         request(req, (err, resp, body) => {
-            console.log(resp.statusCode);
+            log.debug(resp.statusCode);
             if (err) {
-                console.log(err);
+                log.warn(err);
                 return reject(err);
             }
 
             // Check that the status cod
             if (resp.statusCode !== 204) {
-                console.log(body);
+                log.warn(body);
                 return reject(body);
             }
 
@@ -175,7 +176,7 @@ function changeToKeycloakBasicUser(o) {
         kUser.attributes.twitter = o.twitter || "";
         kUser.attributes.address = o.address || "";
     } catch (err) {
-        console.log("User Object: wrong format");
+        log.warn("User Object: wrong format");
     }
     //kUser.roles = o.roles;
     return JSON.parse(JSON.stringify(kUser));

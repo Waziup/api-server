@@ -5,6 +5,7 @@ const querystring = require('querystring');
 const keycloakProxy = require('../lib/keycloakProxy')
 const authN = require('./authN')
 const users = require('../routes/users/user.service.js')
+const log = require('../log.js');
 
 
 const SCOPE_USERS_CREATE         = 'users:create'
@@ -83,7 +84,7 @@ async function createDomainResource(domain, kauth) {
 async function deleteResource(name) {
   const token = await authN.getClientAuthToken()
   const id = await getResourceByName(name)
-  console.log('delete resource ID=' + id)
+  log.debug('delete resource ID=' + id)
   return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + id, 'DELETE', null, null, false, token, null)
 }
 

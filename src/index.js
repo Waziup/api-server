@@ -15,6 +15,7 @@ const session = require('express-session');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const log = require('./log.js');
 
 //Create app and router
 const app = express();
@@ -28,8 +29,8 @@ app.use(cors());
 
 //Log every API call 
 router.use(function(req, res, next) {
-    console.log('%s URI: %s PATH: %s', req.method, req.url, req.path);
-    console.log('  Headers:' + JSON.stringify(req.headers));
+    log.info('%s URI: %s PATH: %s', req.method, req.url, req.path);
+    log.info('  Headers:' + JSON.stringify(req.headers));
     next();
 });
 
@@ -79,18 +80,15 @@ if(config.httpsEnabled) {
       credentials.ca = fs.readFileSync(config.httpsTlsChain, 'utf8');
  
     https.createServer(credentials, app).listen(config.httpsPort, () => {
-        
-        console.log("Listening on %s", config.httpsUrl);
+      log.info("Listening on %s", config.httpsUrl);
     });
   } catch (err){
-    console.log('Certificates not found! HTTPS disabled.');
+    log.warn('Certificates not found! HTTPS disabled.');
   }
 }
 
 if(config.httpEnabled) {
-    
-    http.createServer(app).listen(config.httpPort, () => {
-        
-        console.log("Listening on %s", config.httpUrl);
-    });
+  http.createServer(app).listen(config.httpPort, () => {
+    log.info("Listening on %s", config.httpUrl);
+  });
 }
