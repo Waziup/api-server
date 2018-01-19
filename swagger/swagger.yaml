@@ -104,6 +104,9 @@ definitions:
     description: >-
       location is a pair [latitude, longitude] with the coordinates on earth in
       decimal notation (e.g. [40.418889, 35.89389]).
+    required:
+      - latitude
+      - longitude
     properties:
       latitude:
         type: number
