@@ -1234,15 +1234,13 @@ paths:
           description: Set
         '404':
           description: Entity Not Found
-  /domains/{domain}/history:
+  /history:
     get:
       summary: Get Historical data for analysis
       tags:
         - Historical data
       produces:
       - "application/json"
-      parameters:
-      - $ref: '#/parameters/domainParam'
       security:
         - Bearer: []
       responses:

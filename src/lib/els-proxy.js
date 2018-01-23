@@ -1,23 +1,32 @@
 "use strict";
 
-const request = require('request');
-const url = require('url');
 const config = require('../config.js');
+const log = require('../log.js');
+const axios = require('axios');
 
-async function getHistory(req, res) {
-
-  const reqUrl = url.parse(req.url);
-  const domain = req.params.domain;
-  const ELSUrl = config.backend.elasticsearchUrl;
-  const path = req.params[0];
-  const proxyUrl = `${ELSUrl}/${config.elsPrefix}-${domain}/${path}${reqUrl.search || ''}`; 
-
-  const options = {
-     url: proxyUrl
-  }
-  request(options).pipe(res);   
+// Perform a request to ELS
+async function elsRequest(req) {
+ 
+   const path = req.params[0];
+   const url = config.backend.elasticsearchUrl + '/' + path;
+   const headers = req.headers;
+   const query = req.qs;
+   const method = req.method;
+   const data = req.body;
+   var axiosConf = {method: method,
+                    url: url,
+                    data: data,
+                    headers: headers,
+                    params: query}
+   log.info("ELS request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
+   log.info(" query: " + JSON.stringify(query));
+   log.info(" data: " + JSON.stringify(data));
+    
+   //perform request to ELS
+   var resp = await axios(axiosConf);
+   return resp.data;
 }
 
 module.exports = {
-   getHistory
+   elsRequest
 };

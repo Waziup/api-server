@@ -17,6 +17,7 @@ const entitiesProxy = require('./routes/entities/entities.route.js');
 const authN   = require('./auth/authN.js');
 const authZ   = require('./auth/authZ.js');
 const log = require('./log.js');
+const bodyParser = require('body-parser');
 
 function install(router, keycloak) {
   
@@ -114,9 +115,9 @@ function installEntities(router, keycloak) {
 function installHistory(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/history/*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_HISTORY, authZ.RESOURCE_HISTORY, req.kauth)))
+  router.all(    '/history/*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_HISTORY, authZ.RESOURCE_HISTORY, req.kauth)))
   //history endpoint
-  router.get(    '/domains/:domain/history/*', elsProxy.getHistory);
+  router.all(    '/history/*', bodyParser.text({type: '*/*'}), proxy(req => elsProxy.elsRequest(req), true));
 }
 
 function installSocials(router, keycloak) {
@@ -190,16 +191,16 @@ function proxyError(err, req, res, next) {
     // We forward it to the user
     res.status(err.response.status);
     res.send(err.response.data); 
-    log.warn('Proxy response error:', err.response.status);
+    log.error('Proxy response error:', err.response.status);
     if (err.response.data) log.warn(' msg:', err.response.data);
   } else if (err.request) {
     // The request was made but no response was received
-    log.warn('Proxy error, no response received');
+    log.error('Proxy error, no response received');
     res.status(503);
     res.send('Proxy error: backend service unavailable');
   } else {
     // Something happened in setting up the request that triggered an Error
-    log.warn('Proxy error:', err);
+    log.error('Proxy error:', err);
     if(err.stack) {
       log.warn('Proxy error:', err.stack);
     }
@@ -220,7 +221,6 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     } else { //if no token, use default permissions
       token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
     }
-
     var auth = await authZ.authorize(resourceName, resourceType, method, token);
     log.info("Auth result positive")
     return; 

@@ -28,6 +28,10 @@ const SCOPE_NOTIFICATIONS_CREATE = 'notifications:create'
 const SCOPE_NOTIFICATIONS_VIEW   = 'notifications:view'
 const SCOPE_NOTIFICATIONS_UPDATE = 'notifications:update'
 const SCOPE_NOTIFICATIONS_DELETE = 'notifications:delete'
+const SCOPE_HISTORY_CREATE       = 'history:create'
+const SCOPE_HISTORY_VIEW         = 'history:view'
+const SCOPE_HISTORY_UPDATE       = 'history:update'
+const SCOPE_HISTORY_DELETE       = 'history:delete'
 
 const RESOURCE_USERS         = 'Users'
 const RESOURCE_SENSORS       = 'Sensors'
@@ -37,9 +41,14 @@ const RESOURCE_NOTIFICATIONS = 'Notifications'
 const RESOURCE_SOCIALS       = 'Socials'
 
 async function authorize(resourceName, resourceType, method, token) {
-  const scope = getScope(resourceType, method)
-  const perms = getPerms(resourceName, [scope])
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'POST', perms, null, false, token, 'application/json')
+  if (method == 'GET' || method == 'POST' || method == 'PUT' || method == 'DELETE') {
+    const scope = getScope(resourceType, method)
+    const perms = getPerms(resourceName, [scope])
+    return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'POST', perms, null, false, token, 'application/json')
+  } else {
+    //Other HTTP methods are allowed.
+    return;
+  }
 }
 
 
@@ -131,7 +140,7 @@ function getScope(resourceType, method) {
          case 'GET':    return SCOPE_HISTORY_VIEW;
          case 'PUT':    return SCOPE_HISTORY_UPDATE;
          case 'DELETE': return SCOPE_HISTORY_DELETE;
-         default: throw('unsupported method');
+         default: throw('unsupported method:' + method);
        }
      }
      case RESOURCE_NOTIFICATIONS: {
