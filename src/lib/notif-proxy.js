@@ -30,12 +30,40 @@ async function deleteNotifOrion(domain, notifID) {
 
 // ## Helper functions ##
 
-function getNotifs(domain, notifs) {
-  return notifs
+function getNotifs(domain, subs) {
+  console.log("Nots:" + JSON.stringify(subs))
+  return subs.map(sub => getNotif(domain, sub))
 }
 
-function getNotif(domain, notif) {
+function getNotif(domain, sub) {
 
+  var notif = {id: sub.id}
+
+  if (sub.description) {
+    notif.description = sub.description;
+  }
+  notif.subject = {condition: {}} 
+  if (sub.subject.entities) {
+    notif.subject.entityNames = sub.subject.entities.map(e => e.id);
+  }
+  if (sub.subject.condition && sub.subject.condition.attrs) {
+    notif.subject.condition.attrs = sub.subject.condition.attrs;
+  }
+  if (sub.subject.condition && sub.subject.condition.expression && sub.subject.condition.expression.q) {
+    notif.subject.condition.expression = sub.subject.condition.expression.q;
+  }
+  if (sub.notification.httpCustom && sub.notification.httpCustom.payload) {
+    notif.notification= JSON.parse(decodeURIComponent(sub.notification.httpCustom.payload));
+  }
+  if (sub.expires) {
+    notif.expires = sub.expires;
+  }
+  if (sub.throttling) {
+    notif.throttling = sub.throttling;
+  }
+  if (sub.status) {
+    notif.status = sub.status;
+  }
   return notif
 }
 
@@ -47,8 +75,8 @@ function getSub(domain, notif) {
     subject: {
       entities: [],
       condition: {
-        attrs: notif.subject.condition.attrs
-        //expression: { q: notif.subject.condition.expression }
+        attrs: notif.subject.condition.attrs,
+        expression: { q: notif.subject.condition.expression }
       }
     },
     notification: {

@@ -373,12 +373,6 @@ definitions:
         type: number
         description: minimum interval between two messages in seconds
         example: 3600
-  NotificationEntity:
-    type: object
-    properties:
-      EntityName:
-        type: string 
-        example: 'Sensor1'
   NotificationCondition:
     type: object
     properties:
@@ -1479,8 +1473,10 @@ paths:
         - Bearer: []
       responses:
         '200':
-          description: array
+          description: 'Received notifications' 
           schema:
+            type: array
+            items:
             $ref: '#/definitions/Notification'
         '404':
           description: Not Found
@@ -1491,7 +1487,7 @@ paths:
             items:
               $ref: '#/definitions/Error'
     post:
-      summary: post a message to social networks
+      summary: create a notification
       tags:
         - Notifications
       consumes:
@@ -1502,7 +1498,7 @@ paths:
         - $ref: '#/parameters/domainParam'
         - name: data
           in: body
-          description: social message
+          description: notification
           required: true
           schema:
             $ref: '#/definitions/Notification'
@@ -1517,7 +1513,7 @@ paths:
             $ref: '#/definitions/Error'
   /domains/{domain}/notifications/{notif_id}:
     get:
-      summary: Get one message
+      summary: Get one notification
       tags:
         - Notifications
       produces:
@@ -1539,7 +1535,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: delete a message to social networks
+      summary: delete a notification
       tags:
         - Notifications
       consumes:
@@ -1558,12 +1554,3 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-
-
-  /spec:
-    get:
-      tags:
-        - Specification
-      responses:
-        '200':
-          description: Return the API specification
