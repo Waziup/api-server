@@ -54,12 +54,10 @@ async function authorize(resourceName, resourceType, method, token) {
 
 function getPerms(name, scopes) {
   let perms = {
-     permissions: [
-        {
-            "resource_set_name" : name,
-            "scopes" : scopes
-        }
-    ]
+    permissions: [{
+      "resource_set_name" : name,
+      "scopes" : scopes
+    }]
   }
   return perms;
 }
