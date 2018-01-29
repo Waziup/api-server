@@ -152,11 +152,11 @@ function installUsers(router, keycloak) {
   router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
   
   //users endpoints
-  router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(  req.params.domain), true));
-  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.postUsers( req.params.domain), true));
-  router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(   req.params.domain, req.params.userID), true));
-  router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser(req.params.domain, req.params.userID), true));
-  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(   req.params.domain, req.params.userID), true));
+  router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(   req.params.domain), true));
+  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.createUser( req.params.domain), true));
+  router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(    req.params.domain, req.params.userID), true));
+  router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser( req.params.domain, req.params.userID), true));
+  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID), true));
 
 }
 
