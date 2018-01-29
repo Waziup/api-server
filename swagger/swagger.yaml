@@ -1,7 +1,9 @@
 swagger: '2.0'
 info:
   title: WAZIUP API
-  description: Applications API
+  description: "This API allows you to access all Waziup services.
+    In order to access protected services, first get a token with POST /auth/token.
+    Then insert this token in the authorization key, specifying \"Bearer\" in front. For example \"Bearer: eyJhbGc...\"."
   version: 1.0.0
 host: '127.0.0.1:8000'
 schemes:
