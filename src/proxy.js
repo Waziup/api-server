@@ -153,7 +153,7 @@ function installUsers(router, keycloak) {
   
   //users endpoints
   router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(   req.params.domain), true));
-  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.createUser( req.params.domain), true));
+  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.createUser( req.params.domain, req.body), true));
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(    req.params.domain, req.params.userID), true));
   router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser( req.params.domain, req.params.userID), true));
   router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID), true));
