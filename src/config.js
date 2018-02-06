@@ -19,7 +19,7 @@ module.exports = {
   mongoPrefix: 'waziup',
   elsPrefix: 'waziup',
   keycloakClientSecret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0",
-
+  logLevel: process.env.LOG_LEVEL || 'INFO',
   // API URL to be used in the server-side code
   backend: {
     keycloakUrl:      process.env.KEYCLOAK_URL      || 'http://localhost:8080/auth',

@@ -22,9 +22,9 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
                     headers: headers,
                     params: query}
    log.info("Keycloak request " + method + " on: " + url);
-   log.info(" headers: " + JSON.stringify(headers));
-   log.info(" query: " + query);
-   log.info(" data: " + JSON.stringify(data));
+   log.debug(" headers: " + JSON.stringify(headers));
+   log.debug(" query: " + query);
+   log.debug(" data: " + JSON.stringify(data));
     
    //perform request
    var resp = await axios(axiosConf);

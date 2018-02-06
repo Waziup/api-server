@@ -39,12 +39,14 @@ async function deleteEntityMongo(domain, entityID, entityType) {
 //create one datapoint for a sensor measurement (add the point the the list of measurements)
 async function postDatapointMongo(domain, entityID, entityType, measID, datapoint) {
   var doc = getMongoDocument(entityID, entityType, measID, datapoint.value, new Date(datapoint.timestamp));
+  log.debug("Mongo post datapoint:" + JSON.stringify(doc));
   mongoRequest(domain, col => col.insert(doc));
 }
 
 //create one datapoint for a sensor measurement (add the point the the list of measurements)
 async function postValueMongo(domain, entityID, entityType, measID, value) {
   var doc = getMongoDocument(entityID, entityType, measID, value);
+  log.debug("Mongo post value:" + JSON.stringify(doc));
   mongoRequest(domain, col => col.insert(doc));
 }
 

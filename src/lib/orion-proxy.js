@@ -110,9 +110,10 @@ async function orionRequest(path, method, domain, data, query, contentType) {
                     data: data,
                     headers: headers,
                     params: myQuery}
-   log.info("Orion request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   log.info(" query: " + JSON.stringify(query));
-   log.info(" data: " + JSON.stringify(data));
+   log.info("Orion request " + method + " on: " + url)
+   log.debug("  headers: " + JSON.stringify(headers));
+   log.debug(" query: " + JSON.stringify(query));
+   log.debug(" data: " + JSON.stringify(data));
     
    //perform request to Orion
    var resp = await axios(axiosConf);

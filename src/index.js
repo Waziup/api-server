@@ -29,8 +29,9 @@ app.use(cors());
 
 //Log every API call 
 router.use(function(req, res, next) {
-    log.info('%s URI: %s PATH: %s', req.method, req.url, req.path);
-    log.info('  Headers:' + JSON.stringify(req.headers));
+    log.info('API-SERVER received request %s on: %s', req.method, req.url);
+    log.debug('  Headers:' + JSON.stringify(req.headers));
+    log.debug('  with data:' + JSON.stringify(req.body));
     next();
 });
 

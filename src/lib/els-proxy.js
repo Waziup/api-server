@@ -18,9 +18,10 @@ async function elsRequest(req) {
                     data: data,
                     headers: headers,
                     params: query}
-   log.info("ELS request " + method + " on: " + url + "\n headers: " + JSON.stringify(headers));
-   log.info(" query: " + JSON.stringify(query));
-   log.info(" data: " + JSON.stringify(data));
+   log.info("ELS request " + method + " on: " + url);
+   log.warn("  headers: " + JSON.stringify(headers));
+   log.warn("  query: " + JSON.stringify(query));
+   log.warn("  data: " + JSON.stringify(data));
     
    //perform request to ELS
    var resp = await axios(axiosConf);
