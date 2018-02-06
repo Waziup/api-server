@@ -69,7 +69,8 @@ async function deleteEntityMeasMongo(domain, entityID, entityType, measID) {
 //performs a request into Mongo database
 async function mongoRequest(domain, request) {
   const db = await MongoClient.connect(config.backend.mongoDBUrl);
-  var res = request(db.collection(config.mongoPrefix + '-' + domain));
+  var collection = db.collection(config.mongoPrefix + '-' + domain)
+  var res = await request(collection);
   db.close();
   return res;
 }
