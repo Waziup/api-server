@@ -30,8 +30,9 @@ app.use(cors());
 //Log every API call 
 router.use(function(req, res, next) {
     log.info('API-SERVER received request %s on: %s', req.method, req.url);
-    log.debug('  Headers:' + JSON.stringify(req.headers));
+    log.debug('  with headers:' + JSON.stringify(req.headers));
     log.debug('  with data:' + JSON.stringify(req.body));
+    log.debug('  with query:' + JSON.stringify(req.query));
     next();
 });
 
@@ -53,14 +54,6 @@ app.use(keycloak.middleware());
 app.use('/api/v1', router);
 proxy.install(router, keycloak);
 
-// var swaggerTools = require('swagger-tools');
-// var YAML = require('yamljs');
-// var swaggerDoc = YAML.load('./swagger/swagger.yaml');
-// //Initialize Swagger
-// swaggerTools.initializeMiddleware(swaggerDoc, function(middleware) {
-//     // Serve the Swagger documents and Swagger UI
-//     app.use(middleware.swaggerUi());
-// });
 var swaggerDocument = YAML.load('./swagger/swagger.yaml');
 const host = url.parse(config.httpUrl || config.httpsUrl).host;
 swaggerDocument.host = host;
