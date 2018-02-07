@@ -8,13 +8,58 @@ const assert = require('assert');
 const log = require('../log.js');
 
 //get all values for a sensor measurement
-async function getSensorMeasurementValues(domain, sensorID, measID) {
+async function getSensorMeasurementValues(domain, sensorID, measID, query) {
   
-  return getEntityMeasurementValues(domain, sensorID, "SensingDevice", measID);
+  return getEntityMeasurementValues(domain, sensorID, "SensingDevice", measID, query);
 }
 
-async function getEntityMeasurementValues(domain, entityID, entityType, measID) {
-  var docs = await mongoRequest(domain, col => col.find({ entityID, entityType, attributeID: measID }).toArray());
+async function getEntityMeasurementValues(domain, entityID, entityType, measID, query) {
+
+  const lastN   = query? parseInt(query.vLastN): undefined
+  const hLimit  = query? parseInt(query.vLimit): undefined
+  const hOffset = query? parseInt(query.vOffset): undefined
+  const from    = query? new Date(query.vDateFrom): undefined
+  const to      = query? new Date(query.vDateTo): undefined
+
+  console.log("query: lastN " + lastN)
+  console.log("query: limit " + hLimit)
+  console.log("query: offset " + hOffset)
+  console.log("query: from " + from)
+  console.log("query: to " + to)
+
+  var findCondition = {
+    'entityID': entityID,
+    'entityType': entityType,
+    'attributeID': measID
+  };
+  var recvTimeFilter;
+  if (from && to) {
+    recvTimeFilter = {
+      $lte: to,
+      $gte: from
+    };
+  } else if (from) {
+    recvTimeFilter = {
+      $gte: from
+    };
+  } else if (to) {
+    recvTimeFilter = {
+      $lte: to
+    };
+  }
+  if (recvTimeFilter) {
+    findCondition['timestamp'] = recvTimeFilter;
+  }
+
+  var docs;
+  if (lastN || lastN === 0) {
+    var docs = await mongoRequest(domain, col => col.find(findCondition).sort({'timestamp': -1}).limit(lastN).toArray());
+  } else if (hOffset || hLimit) {
+    var docs = await mongoRequest(domain, col => col.find(findCondition).sort({'timestamp': 1}).skip(hOffset || 0).limit(hLimit || 0).toArray());
+  } else {
+    var docs = await mongoRequest(domain, col => col.find(findCondition).limit(20).toArray());
+  }
+
   return docs.map(getMeasurement)
 }
 

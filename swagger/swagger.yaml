@@ -981,6 +981,41 @@ paths:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
+        - in: query
+          name: vLastN
+          schema:
+            type: string
+          description: "get the last N datapoints, most recent first. Default value is 20."
+          example: '20'
+          required: false
+        - in: query
+          name: vLimit
+          schema:
+            type: string
+          description: "In case of pagination, number of datapoints per page"
+          example: '50'
+          required: false
+        - in: query
+          name: vOffset
+          schema:
+            type: string
+          description: "In case of pagination, offset for the starting datapoint"
+          example: '0'
+          required: false
+        - in: query
+          name: vDateFrom
+          schema:
+            type: string
+          description: "The starting date and time from which the datapoints are desired. It is an optional parameter."
+          example: '2016-01-01T00:00:00.000Z'
+          required: false
+        - in: query
+          name: vDateTo
+          schema:
+            type: string
+          description: "The final date and time until which the datapoints are desired. It is an optional parameter."
+          example: '2016-01-31T23:59:59.999Z'
+          required: false
       responses:
         '200':
           description: ''
