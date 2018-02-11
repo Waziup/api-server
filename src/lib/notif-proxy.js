@@ -8,6 +8,9 @@ const axios = require('axios');
 const orionProxy = require('./orion-proxy.js');
 const log = require('../log.js');
 
+const WAZIUP_NOTIF = 'waziup_notif'
+
+
 async function getNotifsOrion(domain) {
   var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', domain, null);
   return getNotifs(domain, subs)
@@ -32,7 +35,11 @@ async function deleteNotifOrion(domain, notifID) {
 
 function getNotifs(domain, subs) {
   console.log("Nots:" + JSON.stringify(subs))
-  return subs.map(sub => getNotif(domain, sub))
+  return subs.filter(isWaziupNotif).map(sub => getNotif(domain, sub))
+}
+
+function isWaziupNotif(sub) {
+  return sub.notification.metadata && sub.notification.metadata == WAZIUP_NOTIF 
 }
 
 function getNotif(domain, sub) {
@@ -84,8 +91,9 @@ function getSub(domain, notif) {
         url: config.httpUrl + '/api/v1/domains/' + domain + '/socials/batch',
         method: "POST",
         payload: URIEncodeForbiddens(JSON.stringify(notif.notification))
-        }
       },
+      metadata: [WAZIUP_NOTIF]    
+    },
     attrs: notif.subject.condition.attrs 
   }
   for(let entityName of notif.subject.entityNames) {
