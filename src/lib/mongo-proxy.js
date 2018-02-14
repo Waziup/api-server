@@ -15,11 +15,11 @@ async function getSensorMeasurementValues(domain, sensorID, measID, query) {
 
 async function getEntityMeasurementValues(domain, entityID, entityType, measID, query) {
 
-  const lastN   = query? parseInt(query.vLastN): undefined
-  const hLimit  = query? parseInt(query.vLimit): undefined
-  const hOffset = query? parseInt(query.vOffset): undefined
-  const from    = query? new Date(query.vDateFrom): undefined
-  const to      = query? new Date(query.vDateTo): undefined
+  const lastN   = query.vLastN ? parseInt(query.vLastN): undefined
+  const hLimit  = query.vLimit ? parseInt(query.vLimit): undefined
+  const hOffset = query.vOffset ? parseInt(query.vOffset): undefined
+  const from    = query.vDateFrom ? new Date(query.vDateFrom): undefined
+  const to      = query.vDateTo ? new Date(query.vDateTo): undefined
 
   console.log("query: lastN " + lastN)
   console.log("query: limit " + hLimit)

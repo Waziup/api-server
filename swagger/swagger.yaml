@@ -69,6 +69,46 @@ parameters:
     required: true
     type: string
     example: 2ecfae24-f340-4ad0-a12e-02cdc60cd8ba
+  vLastN:
+    name: vLastN
+    in: query
+    schema:
+      type: string
+    description: "get the last N datapoints, most recent first. Default value is 20."
+    example: '20'
+    required: false
+  vLimit:  
+    in: query
+    name: vLimit
+    schema:
+      type: string
+    description: "In case of pagination, number of datapoints per page"
+    example: '50'
+    required: false
+  vOffset:
+    in: query
+    name: vOffset
+    schema:
+      type: string
+    description: "In case of pagination, offset for the starting datapoint"
+    example: '0'
+    required: false
+  vDateFrom:
+    in: query
+    name: vDateFrom
+    schema:
+      type: string
+    description: "The starting date and time from which the datapoints are desired. It is an optional parameter."
+    example: '2016-01-01T00:00:00.000Z'
+    required: false
+  vDateTo:  
+    in: query
+    name: vDateTo
+    schema:
+      type: string
+    description: "The final date and time until which the datapoints are desired. It is an optional parameter."
+    example: '2016-01-31T23:59:59.999Z'
+    required: false
 definitions:
   Sensor:
     type: object
@@ -579,6 +619,11 @@ paths:
           description: filter the results
           example: 'owner==cdupont'
           required: false
+        - $ref: '#/parameters/vLastN'
+        - $ref: '#/parameters/vLimit'
+        - $ref: '#/parameters/vOffset'
+        - $ref: '#/parameters/vDateFrom'
+        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -630,6 +675,11 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/vLastN'
+        - $ref: '#/parameters/vLimit'
+        - $ref: '#/parameters/vOffset'
+        - $ref: '#/parameters/vDateFrom'
+        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -764,6 +814,11 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/vLastN'
+        - $ref: '#/parameters/vLimit'
+        - $ref: '#/parameters/vOffset'
+        - $ref: '#/parameters/vDateFrom'
+        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -821,6 +876,11 @@ paths:
           required: true
           type: string
           example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
+        - $ref: '#/parameters/vLastN'
+        - $ref: '#/parameters/vLimit'
+        - $ref: '#/parameters/vOffset'
+        - $ref: '#/parameters/vDateFrom'
+        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -981,41 +1041,11 @@ paths:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
-        - in: query
-          name: vLastN
-          schema:
-            type: string
-          description: "get the last N datapoints, most recent first. Default value is 20."
-          example: '20'
-          required: false
-        - in: query
-          name: vLimit
-          schema:
-            type: string
-          description: "In case of pagination, number of datapoints per page"
-          example: '50'
-          required: false
-        - in: query
-          name: vOffset
-          schema:
-            type: string
-          description: "In case of pagination, offset for the starting datapoint"
-          example: '0'
-          required: false
-        - in: query
-          name: vDateFrom
-          schema:
-            type: string
-          description: "The starting date and time from which the datapoints are desired. It is an optional parameter."
-          example: '2016-01-01T00:00:00.000Z'
-          required: false
-        - in: query
-          name: vDateTo
-          schema:
-            type: string
-          description: "The final date and time until which the datapoints are desired. It is an optional parameter."
-          example: '2016-01-31T23:59:59.999Z'
-          required: false
+        - $ref: '#/parameters/vLastN'
+        - $ref: '#/parameters/vLimit'
+        - $ref: '#/parameters/vOffset'
+        - $ref: '#/parameters/vDateFrom'
+        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -1299,8 +1329,12 @@ paths:
       responses:
         '200':
           description: return users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
         '404':
-          description: Something wrong happened
+          description: Not Found 
     post:
       tags:
         - Users
@@ -1319,7 +1353,7 @@ paths:
         '201':
           description: return created user
         '404':
-          description: Something wrong happened
+          description: Not Found
   /domains/{domain}/users/search/:
     get:
       tags:
@@ -1332,6 +1366,10 @@ paths:
       responses:
         '200':
           description: return filtered users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
         '404':
           description: Something wrong happened
   /domains/{domain}/users/{userid}:
@@ -1346,6 +1384,8 @@ paths:
       responses:
         '200':
           description: Return the user with the specified id
+          schema:
+            $ref: '#/definitions/User'
         '404':
           description: Not found
     put:
