@@ -199,9 +199,15 @@ async function getMeasurements(domain, sensorID, attrs, query) {
 async function getMeasurement(domain, sensorID, attrID, attr, query) {
  
   var meas = { 
-    id: attrID
+    id: attrID,
+  }
+  if (attr.value) {
+    meas.last_value = attr.value;
   }
   let metadata = attr.metadata;
+  if (metadata.timestamp) {
+    meas.timestamp = metadata.timestamp.value;
+  }        
   if (metadata.name) {
     meas.name = metadata.name.value;
   }        

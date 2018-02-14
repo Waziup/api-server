@@ -167,6 +167,16 @@ definitions:
         type: string
         description: name of the measurement
         example: My garden temperature
+      last_value:
+        type:
+          $ref: '#/definitions/MeasurementValue'
+        description: last value received by the platform
+        example: 20
+      timestamp:
+        type: string
+        format: dateTime
+        description: time of the last measurement
+        example: '2016-06-08T18:20:27.873Z'
       dimension:
         type: string
         description: physical dimension of the measurement
