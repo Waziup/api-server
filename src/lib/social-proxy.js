@@ -61,7 +61,7 @@ async function socialRequest(path, method, data) {
                      url: url,
                      data: data}
     log.info("Socials request " + method + " on: " + url);
-    log.info(" data: " + JSON.stringify(data));
+    log.info("  data: " + JSON.stringify(data));
     
     //perform request to Orion
     var res = await axios(axiosConf);

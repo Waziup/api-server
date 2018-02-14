@@ -37,7 +37,6 @@ async function getClientAuthToken() {
 
 async function getAuthToken(realm, settings) {
    const path = 'protocol/openid-connect/token';
-   log.debug(JSON.stringify(settings))
    //perform request to Keycloak
    const resp = await keycloakProxy.keycloakRequest(realm, path, 'POST', querystring.stringify(settings), null, false, null, 'application/x-www-form-urlencoded');
    return resp.access_token;
