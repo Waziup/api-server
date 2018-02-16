@@ -11,7 +11,7 @@ const log = require('../log.js');
 
 async function getSensorsOrion(domain, query) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
-  return getSensors(domain, entities, query);
+  return getSensors(domain, entities);
 }
 
 async function postSensorOrion(domain, sensor) {
@@ -21,7 +21,7 @@ async function postSensorOrion(domain, sensor) {
 
 async function getSensorOrion(domain, sensorID, query) {
   let entity = await orionRequest('/v2/entities/' + sensorID, 'GET', domain, null);
-  return getSensor(domain, sensorID, entity, query);
+  return getSensor(domain, sensorID, entity);
 }
 
 async function deleteSensor(domain, sensorID) {
@@ -45,8 +45,8 @@ async function putSensorName(domain, sensorID, name) {
 }
 
 async function getSensorMeasurements(domain, sensorID, query) {
-  let attrs = await orionRequest('/v2/entities/' + sensorID + '/attrs', 'GET', domain, null);
-  return getMeasurements(domain, sensorID, attrs, query)
+  let attrs = await orionRequest('/v2/entities/' + sensorID + '/attrs', 'GET', domain, null, query);
+  return getMeasurements(domain, sensorID, attrs)
 }
 
 async function postSensorMeasurement(domain, sensorID, meas) {
@@ -135,16 +135,16 @@ function getStringAttr(attr) {
   }
 }
 
-async function getSensors(domain, entities, query) {
+async function getSensors(domain, entities) {
   var sensors = [];
   for (let e of entities) {
-    var s = await getSensor(domain, e.id, e, query);
+    var s = await getSensor(domain, e.id, e);
     sensors.push(s);
   }
   return sensors
 }
 
-async function getSensor(domain, sensorID, entity, query) {
+async function getSensor(domain, sensorID, entity) {
 
   log.debug(JSON.stringify(entity));
   var sensor = {
@@ -177,26 +177,26 @@ async function getSensor(domain, sensorID, entity, query) {
   }
 
   // Retrieve values from historical database
-  sensor.measurements = await getMeasurements(domain, sensorID, entity, query);
+  sensor.measurements = await getMeasurements(domain, sensorID, entity);
 
   return sensor;
 }
 
-async function getMeasurements(domain, sensorID, attrs, query) {
+async function getMeasurements(domain, sensorID, attrs) {
 
   var measurements = []
   for (var attrID in attrs) {
     const attr = attrs[attrID];
 
     if (attr.type == 'Measurement') {
-      measurements.push(await getMeasurement(domain, sensorID, attrID, attr, query));
+      measurements.push(await getMeasurement(domain, sensorID, attrID, attr));
     }
   }
   return measurements;
 }
 
 
-async function getMeasurement(domain, sensorID, attrID, attr, query) {
+async function getMeasurement(domain, sensorID, attrID, attr) {
  
   var meas = { 
     id: attrID,
@@ -220,8 +220,6 @@ async function getMeasurement(domain, sensorID, attrID, attr, query) {
   if (metadata.sensor_kind) {
     meas.sensor_kind = metadata.sensor_kind.value;
   }
-  console.log("Queery:" + JSON.stringify(query))
-  meas.values = await mongoProxy.getSensorMeasurementValues(domain, sensorID, attrID, query);
   return meas;
 }
 

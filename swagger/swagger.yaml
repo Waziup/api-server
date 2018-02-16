@@ -69,45 +69,45 @@ parameters:
     required: true
     type: string
     example: 2ecfae24-f340-4ad0-a12e-02cdc60cd8ba
-  vLastN:
-    name: vLastN
+  lastN:
+    name: lastN
     in: query
     schema:
       type: string
-    description: "get the last N datapoints, most recent first. Default value is 20."
+    description: "get the last N entries, most recent first. Default value is 20."
     example: '20'
     required: false
-  vLimit:  
+  limit:  
     in: query
-    name: vLimit
+    name: limit
     schema:
       type: string
-    description: "In case of pagination, number of datapoints per page"
+    description: "In case of pagination, number of entris per page"
     example: '50'
     required: false
-  vOffset:
+  offset:
     in: query
-    name: vOffset
+    name: offset
     schema:
       type: string
-    description: "In case of pagination, offset for the starting datapoint"
+    description: "In case of pagination, offset for the starting entry"
     example: '0'
     required: false
-  vDateFrom:
+  dateFrom:
     in: query
-    name: vDateFrom
+    name: dateFrom
     schema:
       type: string
-    description: "The starting date and time from which the datapoints are desired. It is an optional parameter."
+    description: "The starting date and time from which the entries are desired. It is an optional parameter."
     example: '2016-01-01T00:00:00.000Z'
     required: false
-  vDateTo:  
+  dateTo:  
     in: query
-    name: vDateTo
+    name: dateTo
     schema:
       type: string
-    description: "The final date and time until which the datapoints are desired. It is an optional parameter."
-    example: '2016-01-31T23:59:59.999Z'
+    description: "The final date and time until which the entries are desired. It is an optional parameter."
+    example: '2019-01-31T23:59:59.999Z'
     required: false
 definitions:
   Sensor:
@@ -629,11 +629,8 @@ paths:
           description: filter the results
           example: 'owner==cdupont'
           required: false
-        - $ref: '#/parameters/vLastN'
-        - $ref: '#/parameters/vLimit'
-        - $ref: '#/parameters/vOffset'
-        - $ref: '#/parameters/vDateFrom'
-        - $ref: '#/parameters/vDateTo'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
       responses:
         '200':
           description: ''
@@ -685,11 +682,6 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/vLastN'
-        - $ref: '#/parameters/vLimit'
-        - $ref: '#/parameters/vOffset'
-        - $ref: '#/parameters/vDateFrom'
-        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -824,11 +816,6 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/vLastN'
-        - $ref: '#/parameters/vLimit'
-        - $ref: '#/parameters/vOffset'
-        - $ref: '#/parameters/vDateFrom'
-        - $ref: '#/parameters/vDateTo'
       responses:
         '200':
           description: ''
@@ -881,16 +868,7 @@ paths:
       parameters:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
-        - name: measurement_id
-          in: path
-          required: true
-          type: string
-          example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
-        - $ref: '#/parameters/vLastN'
-        - $ref: '#/parameters/vLimit'
-        - $ref: '#/parameters/vOffset'
-        - $ref: '#/parameters/vDateFrom'
-        - $ref: '#/parameters/vDateTo'
+        - $ref: '#/parameters/measurementId'
       responses:
         '200':
           description: ''
@@ -1051,11 +1029,11 @@ paths:
         - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
-        - $ref: '#/parameters/vLastN'
-        - $ref: '#/parameters/vLimit'
-        - $ref: '#/parameters/vOffset'
-        - $ref: '#/parameters/vDateFrom'
-        - $ref: '#/parameters/vDateTo'
+        - $ref: '#/parameters/lastN'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/dateFrom'
+        - $ref: '#/parameters/dateTo'
       responses:
         '200':
           description: ''
