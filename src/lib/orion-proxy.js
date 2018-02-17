@@ -229,37 +229,30 @@ function getEntity(domain, sensor) {
     id: sensor.id,
     type: 'SensingDevice'
   }
-  if (sensor.gateway_id) {
-    entity.gateway_id = {type: 'String', value: sensor.gateway_id};
-  }
-  if (sensor.name) {
-    entity.name = {type: 'String', value: sensor.name};
-  }
-  if (sensor.owner) {
-    entity.owner = {type: 'String', value: sensor.owner};
-  }
-  if (domain) {
-    entity.domain = {type: 'String', value: domain};
-  }
-  if (sensor.location) {
-    entity.location = getEntityLocation(sensor.location)
-  }
+    entity.gateway_id = {type: 'String', value: sensor.gateway_id? sensor.gateway_id: ''};
+    entity.name       = {type: 'String', value: sensor.name? sensor.name: ''};
+    entity.owner      = {type: 'String', value: sensor.owner? sensor.owner: ''};
+    entity.domain     = {type: 'String', value: domain? domain: ''};
+    entity.location   = getEntityLocation(sensor.location)
+
   if(sensor.measurements) {
     for (let meas of sensor.measurements) {
       entity[meas.id] = getMeasAttrs(meas);
     }
   }
-
   return entity;
 }
 
 function getEntityLocation(loc) {
 
-  var entityLoc = {
-    type: 'geo:json',
-    value: {
-      type: 'Point',
-      coordinates: [loc.longitude, loc.latitude]
+  var entityLoc = {type: 'String', value: ''}
+  if(loc) {
+    entityLoc = {
+      type: 'geo:json',
+      value: {
+        type: 'Point',
+        coordinates: [loc.longitude, loc.latitude]
+      }
     }
   }
 
