@@ -195,16 +195,15 @@ function proxyError(err, req, res, next) {
     // The request was made but no response was received
     log.error('Proxy error, no response received');
     res.status(503);
-    res.send('Proxy error: backend service unavailable');
+    res.send({error:'Service unavailable', description: 'Proxy error: backend service unavailable'});
   } else {
     // Something happened in setting up the request that triggered an Error
-    log.error('Proxy error:', err);
+    log.error('Proxy error:', err.message);
     if(err.stack) {
-      log.warn('Proxy error:', err.stack);
+      log.error('Proxy error:', err.stack);
     }
     res.status(500);
-    res.send(err);
-    res.send(err.stack);
+    res.send({error:'Internal Server Error', description: err.message});
 
   }
 }
