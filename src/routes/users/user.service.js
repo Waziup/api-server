@@ -31,7 +31,6 @@ async function find(domain, options) {
         queryString = options;
     }
     var data = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, queryString, true, token);
-    log.debug(data);
     var users = [];
     if (data.id) return new User(data);
     else {
