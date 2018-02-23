@@ -189,6 +189,9 @@ definitions:
         type: string
         description: kind of sensor providing the measurement 
         example: Air temperature sensor
+        enum:
+          - asc
+          - desc
       values:
         type: array
         items:
@@ -324,12 +327,9 @@ definitions:
   Error:
     type: object
     properties:
-      code:
-        type: integer
-        format: int32
-      message:
+      error:
         type: string
-      fields:
+      description:
         type: string
   AuthBody:
     type: object
@@ -539,8 +539,6 @@ paths:
               $ref: '#/definitions/Domain'
         '404':
           description: Not Found
-        default:
-          description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
     post:
@@ -562,6 +560,8 @@ paths:
           description: Domain created succesfully
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -585,10 +585,16 @@ paths:
             $ref: '#/definitions/Domain'
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -606,6 +612,8 @@ paths:
           description: Deleted
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -640,6 +648,8 @@ paths:
               $ref: '#/definitions/Sensor'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -665,6 +675,8 @@ paths:
           description: Sensor created succesfully
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -689,10 +701,16 @@ paths:
             $ref: '#/definitions/Sensor'
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -712,6 +730,8 @@ paths:
           description: Deleted
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -740,8 +760,12 @@ paths:
           description: Updated
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -768,8 +792,12 @@ paths:
           description: Updated
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -798,8 +826,12 @@ paths:
           description: Updated
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -825,6 +857,8 @@ paths:
               $ref: '#/definitions/Measurement'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -850,8 +884,12 @@ paths:
           description: Measurement created/updated succesfully
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -894,6 +932,8 @@ paths:
           description: deleted
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -923,6 +963,8 @@ paths:
           description: Replaced
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -952,6 +994,8 @@ paths:
           description: Replaced
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -976,11 +1020,16 @@ paths:
             type: string
             description: the measurement unit
             example: °C
+            enum:
+            - test1
+            - test2
       responses:
         '200':
           description: Replaced
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1010,8 +1059,12 @@ paths:
           description: Updated
         '400':
           description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1043,6 +1096,8 @@ paths:
               $ref: '#/definitions/MeasurementValue'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1069,6 +1124,8 @@ paths:
           description: Datapoint created succesfully
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1096,6 +1153,8 @@ paths:
           description: Entity created succesfully
         '422':
           description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
   '/domains/{domain}/entities/types':
     get:
       summary: get all known entity types
@@ -1182,6 +1241,8 @@ paths:
           description: Deleted
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
   '/domains/{domain}/entities/{entity_type}/{entity_id}/{entity_attribute}':
     get:
       summary: get entity attribute values
@@ -1212,6 +1273,8 @@ paths:
               $ref: '#/definitions/EntityAttr'
         '404':
           description: Entity Not Found
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       summary: delete an entity attribute
       description: 'Drop all stored entity data and remove the attribute.'
@@ -1229,6 +1292,8 @@ paths:
           description: Deleted
         '404':
           description: Entity Not found
+          schema:
+            $ref: '#/definitions/Error'
     post:
       summary: add an entity attribute value
       description: >-
@@ -1255,6 +1320,8 @@ paths:
           description: Added
         '404':
           description: Entity Not Found
+          schema:
+            $ref: '#/definitions/Error'
     put:
       summary: set entity attribute values
       description: >-
@@ -1283,6 +1350,8 @@ paths:
           description: Set
         '404':
           description: Entity Not Found
+          schema:
+            $ref: '#/definitions/Error'
   /history:
     get:
       summary: Get Historical data for analysis
@@ -1323,6 +1392,8 @@ paths:
               $ref: '#/definitions/User'
         '404':
           description: Not Found 
+          schema:
+            $ref: '#/definitions/Error'
     post:
       tags:
         - Users
@@ -1342,6 +1413,8 @@ paths:
           description: return created user
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/users/search/:
     get:
       tags:
@@ -1360,6 +1433,8 @@ paths:
               $ref: '#/definitions/User'
         '404':
           description: Something wrong happened
+          schema:
+            $ref: '#/definitions/Error'
   /domains/{domain}/users/{userid}:
     get:
       tags:
@@ -1376,6 +1451,8 @@ paths:
             $ref: '#/definitions/User'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Users
@@ -1403,6 +1480,8 @@ paths:
           description: User is successfuly deleted
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
 
 
   /domains/{domain}/socials:
@@ -1423,6 +1502,8 @@ paths:
             $ref: '#/definitions/SocialMessage'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1450,6 +1531,8 @@ paths:
           description: message sent
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1473,6 +1556,8 @@ paths:
             $ref: '#/definitions/SocialMessage'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1493,6 +1578,8 @@ paths:
           description: deleted
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1519,6 +1606,8 @@ paths:
           description: messages sent
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1545,6 +1634,8 @@ paths:
             $ref: '#/definitions/Notification'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1572,6 +1663,8 @@ paths:
           description: message sent
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1595,6 +1688,8 @@ paths:
             $ref: '#/definitions/Notification'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
@@ -1615,6 +1710,8 @@ paths:
           description: deleted
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
         default:
           description: Unexpected error
           schema:
