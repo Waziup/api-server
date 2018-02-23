@@ -36,6 +36,8 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
        if(error.response.data.error_description) {
          error.response.data.description = error.response.data.error_description;
          delete error.response.data.error_description;
+       } else {
+         error.response.data.description = error.response.data.error;
        }
        throw(error);
      }
