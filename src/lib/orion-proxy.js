@@ -69,18 +69,18 @@ async function putSensorMeasurementName(domain, sensorID, measID, name) {
   return resp;
 }
 
-async function putSensorMeasurementDim(domain, sensorID, measID, dim) {
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('dimension', domain, sensorID, measID, dim));
+async function putSensorMeasurementSD(domain, sensorID, measID, sd) {
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('sensing_device', domain, sensorID, measID, sd));
+  return resp;
+}
+
+async function putSensorMeasurementQK(domain, sensorID, measID, qk) {
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('quantity_kind', domain, sensorID, measID, qk));
   return resp;
 }
 
 async function putSensorMeasurementUnit(domain, sensorID, measID, unit) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('unit', domain, sensorID, measID, unit));
-  return resp;
-}
-
-async function putSensorMeasurementKind(domain, sensorID, measID, kind) {
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('sensor_kind', domain, sensorID, measID, kind));
   return resp;
 }
 
@@ -211,15 +211,15 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
   if (metadata.name) {
     meas.name = metadata.name.value;
   }        
-  if (metadata.dimension) {
-    meas.dimension = metadata.dimension.value;
+  if (metadata.sensing_device) {
+    meas.sensing_device = metadata.sensing_device.value;
+  }
+  if (metadata.quantity_kind) {
+    meas.quantity_kind = metadata.quantity_kind.value;
   }        
   if (metadata.unit) {
     meas.unit = metadata.unit.value;
   }       
-  if (metadata.sensor_kind) {
-    meas.sensor_kind = metadata.sensor_kind.value;
-  }
   return meas;
 }
 
@@ -285,22 +285,22 @@ function getMeasAttrs(measurement) {
       value: measurement.name
     }
   }
+  if (measurement.sensing_device) {
+    attr.metadata.sensing_device = {
+      type: 'String',
+      value: measurement.sensing_device
+    }
+  }
+  if (measurement.quantity_kind) {
+    attr.metadata.quantity_kind = {
+      type: 'String',
+      value: measurement.quantity_kind
+    }
+  }
   if (measurement.unit) {
     attr.metadata.unit = {
       type: 'String',
       value: measurement.unit
-    }
-  }
-  if (measurement.dimension) {
-    attr.metadata.dimension = {
-      type: 'String',
-      value: measurement.dimension
-    }
-  }
-  if (measurement.sensor_kind) {
-    attr.metadata.sensor_kind = {
-      type: 'String',
-      value: measurement.sensor_kind
     }
   }
 
@@ -320,8 +320,8 @@ module.exports = {
  getSensorMeasurement ,   
  deleteSensorMeasurement, 
  putSensorMeasurementName,
- putSensorMeasurementDim, 
+ putSensorMeasurementSD,
+ putSensorMeasurementQK, 
  putSensorMeasurementUnit,
- putSensorMeasurementKind,
  putSensorMeasurementValue,
  orionRequest}

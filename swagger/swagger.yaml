@@ -50,7 +50,7 @@ parameters:
     in: path
     required: true
     type: string
-    example: temperature
+    example: Temperature
   MsgId:
     name: msg_id
     in: path
@@ -177,21 +177,18 @@ definitions:
         format: dateTime
         description: time of the last measurement
         example: '2016-06-08T18:20:27.873Z'
-      dimension:
+      sensing_device:
         type: string
-        description: physical dimension of the measurement
-        example: temperature
+        description: sensing platform used for the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js 
+        example: SoilThermometer
+      quantity_kind:
+        type: string
+        description: quantity measured, from https://github.com/Waziup/waziup-js/blob/master/src/model/QuantityKinds.js
+        example: SoilTemperature
       unit:
         type: string
-        description: unit of the measurement
-        example: Degree C
-      sensor_kind:
-        type: string
-        description: kind of sensor providing the measurement 
-        example: Air temperature sensor
-        enum:
-          - asc
-          - desc
+        description: unit of the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/Units.js
+        example: DegreeCelsius
       values:
         type: array
         items:
@@ -409,6 +406,9 @@ definitions:
       - subject 
       - notification
     properties:
+      id:
+        type: string
+        description: id of the notification (attributed by the server)
       description:
         type: string 
         description: Description of the notification 
@@ -969,9 +969,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/dimension':
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/quantity_kind':
     put:
-      summary: put measurement dimension
+      summary: put the quantity kind, from https://github.com/Waziup/waziup-js/blob/master/src/model/QuantityKinds.js 
       tags:
         - Sensors
       consumes:
@@ -987,8 +987,8 @@ paths:
           required: true
           schema:
             type: string
-            description: the measurement dimension
-            example: temperature
+            description: the quantity kind measured
+            example: SoilTemperature
       responses:
         '200':
           description: Replaced
@@ -1034,9 +1034,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/sensor_kind':
+  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/sensing_device':
     put:
-      summary: insert sensor kind
+      summary: insert sensing device used to perform the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js
       tags:
         - Sensors
       consumes:
@@ -1052,8 +1052,8 @@ paths:
           required: true
           schema:
             type: string
-            description: the sensor kind
-            example: Soil moisture sensor
+            description: the sensing device
+            example: SoilThermometer
       responses:
         '200':
           description: Updated

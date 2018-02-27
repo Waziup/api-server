@@ -14,7 +14,6 @@ const WAZIUP_NOTIF = 'waziup_notif'
 async function getNotifsOrion(domain) {
   var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', domain, null);
   return getNotifs(domain, subs)
-
 }
 
 async function postNotifOrion(domain, notif) {
