@@ -494,6 +494,17 @@ definitions:
       id:
         type: string
         example: "farm1"
+  Permission:
+    type: object
+    properties:
+      resource:
+        type: string
+        example: "Sensor1"
+      scopes:
+        type: array
+        items:
+          type: string
+          example: "sensors:view"
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -502,7 +513,7 @@ securityDefinitions:
 
 
 paths:
-  '/auth/token':
+  /auth/token:
     post:
       summary: Get the access token for subsequent calls
       tags:
@@ -520,6 +531,20 @@ paths:
           description: Return the access token
         '404':
           description: Something wrong happened
+  /auth/permissions:
+    get:
+      summary: Get all user permissions
+      tags:
+        - Auth 
+      produces:
+      - "application/json"
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: array
+          schema:
+            $ref: '#/definitions/Permission'
 
   '/domains':
     get:
