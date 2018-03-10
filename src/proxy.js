@@ -161,7 +161,8 @@ function installUsers(router, keycloak) {
 function installAuth(router, keycloak) {
 
   //auth endpoint
-  router.post(   '/auth/token', proxy(req => usersProxy.postAuth(  req.body), true));
+  router.post('/auth/token',       proxy(req => usersProxy.postAuth(  req.body), true));
+  router.get( '/auth/permissions', proxy(req => getPermissions(  req.kauth), true));
 }
 
 //Perform requests to backend components and send back results to user
@@ -221,6 +222,25 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     var auth = await authZ.authorize(resourceName, resourceType, method, token);
     log.info("Auth result positive")
     return; 
+};
+
+//authorization middleware
+async function getPermissions(kauth) {
+    
+    var token = ''
+    //check that token is recognised
+    if (kauth && kauth.grant) {
+      token = kauth.grant.access_token.token
+    } else { //if no token, use default permissions
+      token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
+    }
+    var auth = await authZ.permissions(token);
+    var tok = auth.rpt.split('.')[1]
+    var buf = Buffer.from(tok, 'base64').toString()
+    var perms = JSON.parse(buf).authorization.permissions
+    log.debug("Permissions result:" + JSON.stringify(perms))
+    var perms2 = perms.map(p => {return {resource: p.resource_set_name, scopes: p.scopes}})
+    return perms2; 
 };
 
 module.exports = { 

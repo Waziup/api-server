@@ -51,6 +51,11 @@ async function authorize(resourceName, resourceType, method, token) {
   }
 }
 
+async function permissions(token) {
+  ret = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'GET', null, null, false, token, null)
+  return ret
+}
+
 
 function getPerms(name, scopes) {
   let perms = {
@@ -165,6 +170,7 @@ function getScope(resourceType, method) {
 
 module.exports = {
   authorize,
+  permissions,
   createSensorResource,
   createDomainResource,
   deleteResource,
