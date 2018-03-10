@@ -494,6 +494,52 @@ definitions:
       id:
         type: string
         example: "farm1"
+  Permission:
+    type: object
+    properties:
+      resource:
+        type: string
+        $ref: '#/definitions/Resource'
+      scopes:
+        type: array
+        items:
+          $ref: '#/definitions/Scope'
+  Scope:
+    type: string
+    enum:
+      - sensors:create
+      - sensors:view
+      - sensors:update
+      - sensors:delete
+      - domains:create
+      - domains:view
+      - domains:update
+      - domains:delete
+      - socials:create
+      - socials:view
+      - socials:update
+      - socials:delete
+      - notifications:create
+      - notifications:view
+      - notifications:update
+      - notifications:delete
+      - history:create
+      - history:view
+      - history:update
+      - history:delete
+      - users:create
+      - users:view
+      - users:update
+      - users:delete
+  Resource:
+    type: string
+    enum:
+      - Sensors
+      - Domains
+      - History
+      - Notifications
+      - Socials
+      - Users
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -502,7 +548,7 @@ securityDefinitions:
 
 
 paths:
-  '/auth/token':
+  /auth/token:
     post:
       summary: Get the access token for subsequent calls
       tags:
@@ -520,6 +566,22 @@ paths:
           description: Return the access token
         '404':
           description: Something wrong happened
+  /auth/permissions:
+    get:
+      summary: Get all user permissions
+      tags:
+        - Auth 
+      produces:
+      - "application/json"
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: list of permissions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Permission'
 
   '/domains':
     get:
