@@ -21,12 +21,6 @@ async function getEntityMeasurementValues(domain, entityID, entityType, measID, 
   const from    = query.vDateFrom ? new Date(query.vDateFrom): undefined
   const to      = query.vDateTo ? new Date(query.vDateTo): undefined
 
-  console.log("query: lastN " + lastN)
-  console.log("query: limit " + hLimit)
-  console.log("query: offset " + hOffset)
-  console.log("query: from " + from)
-  console.log("query: to " + to)
-
   var findCondition = {
     'entityID': entityID,
     'entityType': entityType,
