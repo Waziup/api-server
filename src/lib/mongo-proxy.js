@@ -15,11 +15,17 @@ async function getSensorMeasurementValues(domain, sensorID, measID, query) {
 
 async function getEntityMeasurementValues(domain, entityID, entityType, measID, query) {
 
-  const lastN   = query.vLastN ? parseInt(query.vLastN): undefined
-  const hLimit  = query.vLimit ? parseInt(query.vLimit): undefined
-  const hOffset = query.vOffset ? parseInt(query.vOffset): undefined
-  const from    = query.vDateFrom ? new Date(query.vDateFrom): undefined
-  const to      = query.vDateTo ? new Date(query.vDateTo): undefined
+  const lastN   = query.lastN ? parseInt(query.lastN): undefined
+  const hLimit  = query.limit ? parseInt(query.limit): undefined
+  const hOffset = query.offset ? parseInt(query.offset): undefined
+  const from    = query.dateFrom ? new Date(query.dateFrom): undefined
+  const to      = query.dateTo ? new Date(query.dateTo): undefined
+
+  log.debug("query: lastN " + lastN)
+  log.debug("query: limit " + hLimit)
+  log.debug("query: offset " + hOffset)
+  log.debug("query: from " + from)
+  log.debug("query: to " + to)
 
   var findCondition = {
     'entityID': entityID,
