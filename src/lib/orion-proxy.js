@@ -201,7 +201,7 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
   var meas = { 
     id: attrID,
   }
-  if (attr.value) {
+  if (attr.hasOwnProperty('value')) {
     meas.last_value = attr.value;
   }
   let metadata = attr.metadata;
