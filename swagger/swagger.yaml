@@ -206,6 +206,26 @@ definitions:
         format: dateTime
         description: time of the measurement
         example: '2016-06-08T18:20:27.873Z'
+  SensorValue:
+    type: object
+    properties:
+      sensor_id:
+        type: string
+        example: Sensor2-ea0541de1ab7132a1d45b85f9b2139f5
+      measurement_id: 
+        type: string
+        example: TC1
+      value:
+        $ref: '#/definitions/MeasurementValue'
+  SensorSubscription:
+    type: object
+    properties:
+      sensor_id_pattern:
+        type: string
+        example: Sensor2*
+      callback_url:
+        type: string
+        example: 'http://example.com'
   EntityType:
     type: string
     description: A type of an entity.
@@ -1186,6 +1206,81 @@ paths:
       responses:
         '201':
           description: Datapoint created succesfully
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/subscriptions':
+    get:
+      summary: subscribe on sensor data
+      description: ''
+      tags:
+        - Sensors
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SensorSubscription'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a subscription
+      tags:
+        - Sensors
+      consumes:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/SensorSubscription'
+        - $ref: '#/parameters/domainParam'
+      responses:
+        '201':
+          description: Subscription created succesfully
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/subscriptions/{sub_id}':
+    delete:
+      summary: Delete a subscription
+      description: ''
+      tags:
+        - Sensors
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/NotifId'
+      responses:
+        '200':
+          description: deleted
         '404':
           description: Not Found
           schema:

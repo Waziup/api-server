@@ -12,6 +12,7 @@ const elsProxy      = require('./lib/els-proxy.js');
 const socialsProxy  = require('./lib/social-proxy.js');
 const notifsProxy   = require('./lib/notif-proxy.js');
 const domainsProxy  = require('./lib/domain-proxy.js');
+const subsProxy     = require('./lib/subs-proxy.js');
 const usersProxy    = require('./routes/users/user.route.js');
 const entitiesProxy = require('./routes/entities/entities.route.js');
 const authN   = require('./auth/authN.js');
@@ -84,6 +85,11 @@ function installSensors(router, keycloak) {
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',         proxy(req => mongoProxy.getSensorMeasurementValues(req.params.domain, req.params.sensorID, req.params.measID, req.query), true));
   router.post(   '/domains/:domain/sensors/:sensorID/measurements/:measID/values',         proxy(req => orionProxy.putSensorMeasurementValue( req.params.domain, req.params.sensorID, req.params.measID, req.body)),
                                                                                            proxy(req => mongoProxy.postDatapointMongo(        req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID, req.body), true));
+
+  router.get(    '/domains/:domain/sensors/subscriptions',                                 proxy(req => subsProxy.getSensorSubsOrion(     req.params.domain, req.params.subID), true));
+  router.post(   '/domains/:domain/sensors/subscriptions',                                 proxy(req => subsProxy.postSensorSubsOrion(    req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/sensors/subscriptions/:subID',                          proxy(req => subsProxy.getSensorSubOrion(      req.params.domain, req.params.subID), true));
+  router.delete( '/domains/:domain/sensors/subscriptions/:subID',                          proxy(req => subsProxy.deleteSensorSubOrion(   req.params.domain, req.params.subID), true));
 }
 
 function installEntities(router, keycloak) {
