@@ -3,7 +3,7 @@ info:
   title: WAZIUP API
   description: "This API allows you to access all Waziup services.
     In order to access protected services, first get a token with POST /auth/token.
-    Then insert this token in the authorization key, specifying \"Bearer\" in front. For example \"Bearer: eyJhbGc...\"."
+    Then insert this token in the authorization key, specifying \"Bearer\" in front. For example \"Bearer eyJhbGc...\"."
   version: 1.0.0
 host: '127.0.0.1:8000'
 schemes:
@@ -564,6 +564,8 @@ paths:
       responses:
         '200':
           description: Return the access token
+          schema:
+            type: string
         '404':
           description: Something wrong happened
   /auth/permissions:
