@@ -155,7 +155,7 @@ function installUsers(router, keycloak) {
   router.post(   '/domains/:domain/users',          proxy(req => usersProxy.createUser( req.params.domain, req.body), true));
   router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(    req.params.domain, req.params.userID), true));
   router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser( req.params.domain, req.params.userID), true));
-  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID), true));
+  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID, req.body), true));
 
 }
 
@@ -220,7 +220,8 @@ async function authProtect(method, domain, resourceName, resourceType, kauth) {
     } else { //if no token, use default permissions
       token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
     }
-    var auth = await authZ.authorize(resourceName, resourceType, method, token);
+    //check that resource is authorized
+    await authZ.authorize(resourceName, resourceType, method, token);
     log.info("Auth result positive")
     return; 
 };

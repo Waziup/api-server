@@ -343,22 +343,6 @@ definitions:
         type: string
         description: password
         example: password
-  UserUpdateBody:
-    type: object
-    title: userupdate
-    required:
-      - firstName
-      - lastName
-    properties:
-      firstName:
-        type: string
-        description: User's First Name
-      lastName:
-        type: string
-        description: User's Last Name
-      id:
-        type: string
-        description: User id
   SocialMessage:
     type: object
     description: One social network message
@@ -1564,7 +1548,18 @@ paths:
           description: user data to update
           required: true
           schema:
-            $ref: '#/definitions/UserUpdateBody'
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: user updated
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Users
