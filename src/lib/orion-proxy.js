@@ -44,6 +44,11 @@ async function putSensorName(domain, sensorID, name) {
   return resp;
 }
 
+async function putSensorGatewayId(domain, sensorID, gateway_id) {
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/gateway_id', 'PUT', domain, getStringAttr(gateway_id));
+  return resp;
+}
+
 async function getSensorMeasurements(domain, sensorID, query) {
   let attrs = await orionRequest('/v2/entities/' + sensorID + '/attrs', 'GET', domain, null, query);
   return getMeasurements(domain, sensorID, attrs)
@@ -315,6 +320,7 @@ module.exports = {
  putSensorOwner,          
  putSensorLocation,       
  putSensorName,           
+ putSensorGatewayId,           
  getSensorMeasurements,   
  postSensorMeasurement,   
  getSensorMeasurement ,   

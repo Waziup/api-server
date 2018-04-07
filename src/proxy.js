@@ -71,6 +71,7 @@ function installSensors(router, keycloak) {
   router.put(    '/domains/:domain/sensors/:sensorID/owner',                               proxy(req => orionProxy.putSensorOwner(            req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/location',                            proxy(req => orionProxy.putSensorLocation(         req.params.domain, req.params.sensorID, req.body), true));
   router.put(    '/domains/:domain/sensors/:sensorID/name',                                proxy(req => orionProxy.putSensorName(             req.params.domain, req.params.sensorID, req.body), true));
+  router.put(    '/domains/:domain/sensors/:sensorID/gateway_id',                          proxy(req => orionProxy.putSensorGatewayId(        req.params.domain, req.params.sensorID, req.body), true));
 
   router.get(    '/domains/:domain/sensors/:sensorID/measurements',                        proxy(req => orionProxy.getSensorMeasurements(     req.params.domain, req.params.sensorID, req.query), true));
   router.post(   '/domains/:domain/sensors/:sensorID/measurements',                        proxy(req => orionProxy.postSensorMeasurement(     req.params.domain, req.params.sensorID, req.body), true));

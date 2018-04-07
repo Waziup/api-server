@@ -900,6 +900,40 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/gateway_id':
+    put:
+      summary: insert gateway id
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: string
+            description: the gateway id
+            example: ea0541de1ab7132a1d45b85f9b2139f5
+      responses:
+        '200':
+          description: Updated
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   '/domains/{domain}/sensors/{sensor_id}/measurements':
     get:
       summary: get measurements
