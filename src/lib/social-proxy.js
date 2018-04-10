@@ -40,11 +40,12 @@ async function postSocialMsg(domain, socialMsg) {
 
 //Post a bunch of social messages
 async function postSocialMsgBatch(domain, socialMsgBatch) {
-
-  for (let username of socialMsgBatch.usernames) {
-    for (let channel of socialMsgBatch.channels) {
+  //Express is not always interpreting correctly payloads from Orion, so we parse it again.
+  var batch = typeof socialMsgBatch === 'string'? JSON.parse(socialMsgBatch): socialMsgBatch
+  for (let username of batch.usernames) {
+    for (let channel of batch.channels) {
       try {
-        await postSocialMsg(domain, {username: username, channel: channel, message: socialMsgBatch.message})
+        await postSocialMsg(domain, {username: username, channel: channel, message: batch.message})
       } catch(err) {
         log.warn('Batch social media sending failed: ' + err);
       }

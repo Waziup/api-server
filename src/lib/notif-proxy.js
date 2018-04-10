@@ -89,7 +89,8 @@ function getSub(domain, notif) {
       httpCustom: {
         url: config.httpUrl + '/api/v1/domains/' + domain + '/socials/batch',
         method: "POST",
-        payload: URIEncodeForbiddens(JSON.stringify(notif.notification))
+        payload: URIEncodeForbiddens(JSON.stringify(notif.notification)),
+        headers: {"Content-Type": "application/json", "accept": "application/json"}
       },
       metadata: [WAZIUP_NOTIF]    
     },
