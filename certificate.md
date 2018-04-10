@@ -2,6 +2,7 @@ Certificate install
 -------------------
 
 This is the procedure to install certificates on the online instance.
+Be careful that the port 80 should be free, so you might need to kill some containers on the host (i.e. api-server)
 
 ```
 wget https://dl.eff.org/certbot-auto
