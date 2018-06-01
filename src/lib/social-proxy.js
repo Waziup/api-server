@@ -95,6 +95,13 @@ function getMsg(usr, channel, message) {
             throw('phone user attribute not defined')
           }
           break;
+      case 'voice':
+          if(usr.phone) {
+             userID = usr.phone[0];
+          } else {
+            throw('phone user attribute not defined')
+          }
+          break;
       default:
           throw "Unrecognized channel"
   } 
