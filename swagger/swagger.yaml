@@ -189,10 +189,6 @@ definitions:
         type: string
         description: unit of the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/Units.js
         example: DegreeCelsius
-      values:
-        type: array
-        items:
-          $ref: '#/definitions/MeasurementValue'
   MeasurementValue:
     type: object
     properties:
