@@ -152,7 +152,8 @@ function getMeasurement(doc) {
 
   return {
      timestamp: doc.timestamp,
-     value: doc.value
+     value: doc.value,
+     dateReceived: doc._id.getTimestamp()
    }
 }
 
