@@ -158,6 +158,8 @@ definitions:
         example: 4.0083
   Measurement:
     type: object
+    required:
+      - id
     properties:
       id:
         type: string
@@ -172,11 +174,13 @@ definitions:
           $ref: '#/definitions/MeasurementValue'
         description: last value received by the platform
         example: 20
+        readOnly: true
       timestamp:
         type: string
         format: dateTime
         description: time of the last measurement
         example: '2016-06-08T18:20:27.873Z'
+        readOnly: true
       sensing_device:
         type: string
         description: sensing platform used for the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js 
@@ -191,6 +195,8 @@ definitions:
         example: DegreeCelsius
   MeasurementValue:
     type: object
+    required:
+      - value
     properties:
       value:
         type: number
@@ -199,9 +205,15 @@ definitions:
         example: '25.6'
       timestamp:
         type: string
-        format: dateTime
+        format: datetime
         description: time of the measurement
-        example: '2016-06-08T18:20:27.873Z'
+        example: '2016-06-08t18:20:27.873z'
+      dateReceived:
+        type: string
+        format: datetime
+        description: time at which the measurement has been received on the Cloud
+        example: '2016-06-08t18:20:27.873z'
+        readOnly: true
   EntityType:
     type: string
     description: A type of an entity.
