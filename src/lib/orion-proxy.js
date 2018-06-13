@@ -90,8 +90,12 @@ async function putSensorMeasurementUnit(domain, sensorID, measID, unit) {
 }
 
 async function putSensorMeasurementValue(domain, sensorID, measID, datapoint) {
-  await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, datapoint.value, null, 'text/plain');
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('timestamp', domain, sensorID, measID, datapoint.timestamp));
+  let resp = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, datapoint.value, null, 'text/plain');
+  if(datapoint.timestamp) {
+    orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('timestamp', domain, sensorID, measID, datapoint.timestamp));
+  } else {
+    orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await deleteMetadata('timestamp', domain, sensorID, measID));
+  }
   return resp;
 }
 
@@ -105,16 +109,16 @@ async function orionRequest(path, method, domain, data, query, contentType) {
       headers['Content-Type'] = contentType;
    }
    headers['Fiware-Service'] = config.fiwareService;
-   var myQuery = {};
-   if(query) {
-     myQuery = query;
+   var params = {
+     ...query,
+     attrs: "dateModified,dateCreated,*",
+     metadata: "dateModified,dateCreated,*"
    }
-   myQuery['attrs'] = "dateModified,dateCreated,*";
    var axiosConf = {method: method,
                     url: url,
                     data: data,
                     headers: headers,
-                    params: myQuery}
+                    params: params}
    log.info("Orion request " + method + " on: " + url)
    log.debug("  headers: " + JSON.stringify(headers));
    log.debug(" query: " + JSON.stringify(query));
@@ -130,6 +134,14 @@ async function getMetadata(metadataField, domain, sensorID, measID, newValue) {
 
   let attr = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'GET', domain, null)
   attr.metadata[metadataField] = getStringAttr(newValue);
+  return attr;
+}
+
+//get the full metadata before modify it (Orion doesn't support PUT method on specific metadata fields)
+async function deleteMetadata(metadataField, domain, sensorID, measID) {
+
+  let attr = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'GET', domain, null)
+  delete attr.metadata[metadataField];
   return attr;
 }
 
@@ -201,18 +213,15 @@ async function getMeasurements(domain, sensorID, attrs) {
 }
 
 
-async function getMeasurement(domain, sensorID, attrID, attr) {
+function getMeasurement(domain, sensorID, attrID, attr) {
  
   var meas = { 
     id: attrID,
   }
   if (attr.hasOwnProperty('value')) {
-    meas.last_value = attr.value;
+    meas.last_value = getLastValue(attr);
   }
   let metadata = attr.metadata;
-  if (metadata.timestamp) {
-    meas.timestamp = metadata.timestamp.value;
-  }        
   if (metadata.name) {
     meas.name = metadata.name.value;
   }        
@@ -226,6 +235,25 @@ async function getMeasurement(domain, sensorID, attrID, attr) {
     meas.unit = metadata.unit.value;
   }       
   return meas;
+}
+
+function getLastValue(attr) {
+ 
+  var lastValue = {}
+
+  if (attr.hasOwnProperty('value')) {
+    lastValue.value = attr.value;
+
+    let metadata = attr.metadata;
+    console.log("val:" + JSON.stringify(metadata))
+    if (metadata.timestamp) {
+      lastValue.timestamp = metadata.timestamp.value;
+    }        
+    if (metadata.dateModified) {
+      lastValue.date_received = metadata.dateModified.value;
+    }        
+  }
+  return lastValue;
 }
 
 function getEntity(domain, sensor) {

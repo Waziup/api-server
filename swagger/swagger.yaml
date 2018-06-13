@@ -169,18 +169,6 @@ definitions:
         type: string
         description: name of the measurement
         example: My garden temperature
-      last_value:
-        type:
-          $ref: '#/definitions/MeasurementValue'
-        description: last value received by the platform
-        example: 20
-        readOnly: true
-      timestamp:
-        type: string
-        format: dateTime
-        description: time of the last measurement
-        example: '2016-06-08T18:20:27.873Z'
-        readOnly: true
       sensing_device:
         type: string
         description: sensing platform used for the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js 
@@ -193,10 +181,15 @@ definitions:
         type: string
         description: unit of the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/Units.js
         example: DegreeCelsius
+      last_value:
+        $ref: '#/definitions/MeasurementValue'
+        description: last value received by the platform
+        example: 20
   MeasurementValue:
     type: object
     required:
       - value
+    readOnly: true
     properties:
       value:
         type: number
@@ -207,12 +200,12 @@ definitions:
         type: string
         format: datetime
         description: time of the measurement
-        example: '2016-06-08t18:20:27.873z'
-      dateReceived:
+        example: '2016-06-08T18:20:27.873Z'
+      date_received:
         type: string
         format: datetime
         description: time at which the measurement has been received on the Cloud
-        example: '2016-06-08t18:20:27.873z'
+        example: '2016-06-08T18:20:27.873Z'
         readOnly: true
   EntityType:
     type: string

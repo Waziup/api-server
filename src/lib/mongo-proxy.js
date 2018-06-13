@@ -81,9 +81,9 @@ async function deleteEntityMongo(domain, entityID, entityType) {
   mongoRequest(domain, col => col.deleteMany({entityID, entityType}));
 }
 
-//create one datapoint for a sensor measurement (add the point the the list of measurements)
+//create one datapoint for a sensor measurement (add the point to the list of measurements)
 async function postDatapointMongo(domain, entityID, entityType, measID, datapoint) {
-  var doc = getMongoDocument(entityID, entityType, measID, datapoint.value, new Date(datapoint.timestamp));
+  var doc = getMongoDocument(entityID, entityType, measID, datapoint);
   log.debug("Mongo post datapoint:" + JSON.stringify(doc));
   mongoRequest(domain, col => col.insert(doc));
 }
@@ -139,7 +139,7 @@ function getEntityMeasDatapoints(entityID, entityType, meas) {
   var datapoints = []
   for(let val of meas.values) {
      log.debug('meas val:' + JSON.stringify(val));
-     datapoints.push(getMongoDocument(entityID, entityType, meas.id, val.value, new Date(val.timestamp)))
+     datapoints.push(getMongoDocument(entityID, entityType, meas.id, val.value))
   }
   return datapoints;
 }
@@ -153,21 +153,21 @@ function getMeasurement(doc) {
   return {
      timestamp: doc.timestamp,
      value: doc.value,
-     dateReceived: doc._id.getTimestamp()
+     date_received: doc._id.getTimestamp()
    }
 }
 
-function getMongoDocument(entityID, entityType, measID, value, timestamp=new Date()) {
+function getMongoDocument(entityID, entityType, measID, datapoint) {
 
   var doc = {
-    entityID,
-    entityType,
+    entityID: entityID,
+    entityType: entityType,
     attributeID: measID,
-    value
+    value: datapoint.value
   };
   
-  if(timestamp)
-    doc.timestamp = timestamp;
+  if(datapoint.timestamp)
+    doc.timestamp = datapoint.timestamp;
   
   return doc;
 }
