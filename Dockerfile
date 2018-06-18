@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:9.4
 
 RUN mkdir /usr/src/app
 VOLUME ["/app"]
