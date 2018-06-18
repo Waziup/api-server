@@ -184,7 +184,6 @@ definitions:
       last_value:
         $ref: '#/definitions/MeasurementValue'
         description: last value received by the platform
-        example: 20
   MeasurementValue:
     type: object
     required:

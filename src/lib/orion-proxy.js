@@ -120,8 +120,8 @@ async function orionRequest(path, method, domain, data, query, contentType) {
                     headers: headers,
                     params: params}
    log.info("Orion request " + method + " on: " + url)
-   log.debug("  headers: " + JSON.stringify(headers));
-   log.debug(" query: " + JSON.stringify(query));
+   log.debug(" headers: " + JSON.stringify(headers));
+   log.debug(" query: " + JSON.stringify(params));
    log.debug(" data: " + JSON.stringify(data));
     
    //perform request to Orion
@@ -218,7 +218,7 @@ function getMeasurement(domain, sensorID, attrID, attr) {
   var meas = { 
     id: attrID,
   }
-  if (attr.hasOwnProperty('value')) {
+  if (attr.hasOwnProperty('value') && attr.value != null) {
     meas.last_value = getLastValue(attr);
   }
   let metadata = attr.metadata;
@@ -304,13 +304,6 @@ function getMeasAttrs(measurement) {
   var attr = {
     type: 'Measurement',
     metadata: {}
-  }
-  if (measurement.values) {
-    attr.value = measurement.values[0].value;
-    attr.metadata.timestamp = {
-      type: 'DateTime',
-      value: measurement.values[0].timestamp
-    }
   }
   if (measurement.name) {
     attr.metadata.name = {
