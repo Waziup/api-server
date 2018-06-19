@@ -184,10 +184,10 @@ async function getSensor(domain, sensorID, entity) {
                        longitude: entity.location.value.coordinates[0]};
   }
   if (entity.dateCreated) {
-    sensor.dateCreated = entity.dateCreated.value;
+    sensor.date_created = entity.dateCreated.value;
   }
   if (entity.dateModified) {
-    sensor.dateModified = entity.dateModified.value;
+    sensor.date_modified = entity.dateModified.value;
   }
   if (entity.domain) {
     sensor.domain = entity.domain.value;

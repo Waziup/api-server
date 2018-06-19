@@ -141,6 +141,18 @@ definitions:
         type: string
         description: the domain of this sensor.
         example: waziup
+      date_created:
+        type: string
+        format: datetime
+        readOnly: true
+        description: creation date of the sensor node
+        example: '2016-06-08T18:20:27.873Z'
+      date_updated:
+        type: string
+        format: datetime
+        readOnly: true
+        description: last update date of the sensor node
+        example: '2016-06-08T18:20:27.873Z'
   Location:
     type: object
     description: >-
