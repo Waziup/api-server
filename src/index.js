@@ -59,7 +59,9 @@ const host = url.parse(config.httpUrl || config.httpsUrl).host;
 swaggerDocument.host = host;
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+app.get("/", (req, res) => {
+  res.status(301).redirect('/docs')
+})
 
 if(config.httpsEnabled) {
 
