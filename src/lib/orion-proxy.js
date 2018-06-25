@@ -90,7 +90,15 @@ async function putSensorMeasurementUnit(domain, sensorID, measID, unit) {
 }
 
 async function putSensorMeasurementValue(domain, sensorID, measID, datapoint) {
-  let resp = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, datapoint.value, null, 'text/plain');
+
+  var contentType = null
+  if(typeof datapoint.value == "object") {
+     contentType = "application/json";
+  } else {
+     contentType = "text/plain";
+  }
+
+  let resp = await orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID + '/value', 'PUT', domain, JSON.stringify(datapoint.value), null, contentType);
   if(datapoint.timestamp) {
     orionRequest('/v2/entities/' + sensorID + '/attrs/' + measID, 'PUT', domain, await getMetadata('timestamp', domain, sensorID, measID, datapoint.timestamp));
   } else {
