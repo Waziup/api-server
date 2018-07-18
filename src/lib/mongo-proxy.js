@@ -20,6 +20,7 @@ async function getEntityMeasurementValues(domain, entityID, entityType, measID, 
   const hOffset = query.offset ? parseInt(query.offset): undefined
   const from    = query.dateFrom ? new Date(query.dateFrom): undefined
   const to      = query.dateTo ? new Date(query.dateTo): undefined
+  const format  = query.format ? query.format : undefined
 
   log.debug("query: lastN " + lastN)
   log.debug("query: limit " + hLimit)
@@ -59,8 +60,13 @@ async function getEntityMeasurementValues(domain, entityID, entityType, measID, 
   } else {
     var docs = await mongoRequest(domain, col => col.find(findCondition).limit(20).toArray());
   }
-
-  return docs.map(getMeasurement)
+ 
+  let res = docs.map(getMeasurement)
+  if(format == 'csv') {
+    return "timestamp, date_received, value\n" + res.map(doc => doc.timestamp + "," + doc.date_received.toISOString() + "," + doc.value + "\n").join()
+  } else {
+    return res
+  }
 }
 
 //insert all datapoints for a new sensor
@@ -148,13 +154,12 @@ function getMeasurements(docs) {
    return docs.map(getMeasurement);
 }
 
-function getMeasurement(doc) {
-
+function getMeasurement(doc, format) {
   return {
      timestamp: doc.timestamp,
      value: doc.value,
      date_received: doc._id.getTimestamp()
-   }
+  }
 }
 
 function getMongoDocument(entityID, entityType, measID, datapoint) {
