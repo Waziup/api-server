@@ -36,16 +36,6 @@ async function deleteUser(domain, userid) {
     return users.remove(domain, userid);
 }
 
-async function getRoles(username) {
-   const user = await users.findByName('waziup', username)
-   log.debug('user: ' + JSON.stringify(user))
-   const path = 'users/' + user.id + '/role-mappings/realm/composite'
-   var token = await auth.getAdminAuthToken()
-   var roleInfos = await keycloakProxy.keycloakRequest(config.keycloakRealm, path, 'GET', null, null, true, token) 
-   return roleInfos.map(ri => ri.name)
-}
-
-
 module.exports = {
     postAuth,
     getUserSearch,
@@ -53,6 +43,5 @@ module.exports = {
     getUser,
     putUser,
     createUser,
-    deleteUser,
-    getRoles
+    deleteUser
 }
