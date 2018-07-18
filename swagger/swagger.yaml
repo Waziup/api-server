@@ -153,6 +153,13 @@ definitions:
         readOnly: true
         description: last update date of the sensor node
         example: '2016-06-08T18:20:27.873Z'
+      visibility:
+        type: string
+        schema:
+          type: string
+          enum: [public, private]
+        description: this sensor can be public or private
+        example: public
   Location:
     type: object
     description: >-
@@ -168,6 +175,12 @@ definitions:
       longitude:
         type: number
         example: 4.0083
+  Visibility:
+    type: string
+    description: Visibility can be either public or private.
+    enum:
+      - public
+      - private
   Measurement:
     type: object
     required:
@@ -915,6 +928,38 @@ paths:
             type: string
             description: the gateway id
             example: ea0541de1ab7132a1d45b85f9b2139f5
+      responses:
+        '200':
+          description: Updated
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/domains/{domain}/sensors/{sensor_id}/visibility':
+    put:
+      summary: insert sensor visibility (public or private)
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/domainParam'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Visibility'
       responses:
         '200':
           description: Updated
