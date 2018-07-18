@@ -6,12 +6,19 @@ const url = require('url');
 const config = require('../config.js');
 const axios = require('axios');
 const querystring = require('querystring');
-const mongoProxy = require('./mongo-proxy.js');
+const authZ = require('../auth/authZ.js');
 const log = require('../log.js');
+const users = require('../routes/users/user.service.js')
 
-async function getSensorsOrion(domain, query) {
+async function getSensorsOrion(domain, query, p) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
-  return getSensors(domain, entities);
+  let sensors = await getSensors(domain, entities);
+  let perms = await p
+  log.debug("perms:" + JSON.stringify(perms))
+  log.debug("sensor before filter:" + JSON.stringify(sensors))
+  let sensorsFiltered = sensors.filter(s => perms.find(p => p.resource == s.id))
+  log.debug("sensor filtered:" + JSON.stringify(sensorsFiltered))
+  return sensorsFiltered
 }
 
 async function postSensorOrion(domain, sensor) {
@@ -46,6 +53,11 @@ async function putSensorName(domain, sensorID, name) {
 
 async function putSensorGatewayId(domain, sensorID, gateway_id) {
   let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/gateway_id', 'PUT', domain, getStringAttr(gateway_id));
+  return resp;
+}
+
+async function putSensorVisibility(domain, sensorID, visibility) {
+  let resp = authZ.setResourceVisibility(sensorID, visibility);
   return resp;
 }
 
@@ -184,9 +196,6 @@ async function getSensor(domain, sensorID, entity) {
   if (entity.subservice) {
     sensor.subservice = entity.subservice.value;
   }
-  if (entity.owner) {
-    sensor.owner = entity.owner.value;
-  }
   if (entity.location && entity.location.value && entity.location.value.coordinates) {
     sensor.location = {latitude:  entity.location.value.coordinates[1],
                        longitude: entity.location.value.coordinates[0]};
@@ -199,6 +208,18 @@ async function getSensor(domain, sensorID, entity) {
   }
   if (entity.domain) {
     sensor.domain = entity.domain.value;
+  }
+
+  let res = await authZ.getResourceByName(sensorID);
+  log.debug("auth res resource:" + JSON.stringify(res))
+  let user = await users.find("waziup", {userId: res.owner.id})
+  log.debug("user:" + JSON.stringify(user))
+  
+  if(user.length != 0) {
+    sensor.owner = user.username;
+  }
+  if(res.attributes && res.attributes.visibility) {
+    sensor.visibility = res.attributes.visibility[0];
   }
 
   // Retrieve values from historical database
@@ -350,6 +371,7 @@ module.exports = {
  putSensorLocation,       
  putSensorName,           
  putSensorGatewayId,           
+ putSensorVisibility,           
  getSensorMeasurements,   
  postSensorMeasurement,   
  getSensorMeasurement ,   

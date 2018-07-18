@@ -16,6 +16,8 @@ const SCOPE_SENSORS_CREATE       = 'sensors:create'
 const SCOPE_SENSORS_VIEW         = 'sensors:view'
 const SCOPE_SENSORS_UPDATE       = 'sensors:update'
 const SCOPE_SENSORS_DELETE       = 'sensors:delete'
+const SCOPE_SENSORS_DATA_CREATE  = 'sensors-data:create'
+const SCOPE_SENSORS_DATA_VIEW    = 'sensors-data:view'
 const SCOPE_DOMAINS_CREATE       = 'domains:create'
 const SCOPE_DOMAINS_VIEW         = 'domains:view'
 const SCOPE_DOMAINS_UPDATE       = 'domains:update'
@@ -34,29 +36,35 @@ const SCOPE_HISTORY_UPDATE       = 'history:update'
 const SCOPE_HISTORY_DELETE       = 'history:delete'
 
 const RESOURCE_USERS         = 'Users'
-const RESOURCE_SENSORS       = 'Sensors'
 const RESOURCE_DOMAINS       = 'Domains'
 const RESOURCE_HISTORY       = 'History'
 const RESOURCE_NOTIFICATIONS = 'Notifications'
 const RESOURCE_SOCIALS       = 'Socials'
 
-async function authorize(resourceName, resourceType, method, token) {
-  if (method == 'GET' || method == 'POST' || method == 'PUT' || method == 'DELETE') {
-    const scope = getScope(resourceType, method)
-    const perms = getPerms(resourceName, [scope])
-    return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'POST', perms, null, false, token, 'application/json')
-  } else {
-    //Other HTTP methods are allowed.
-    return;
+async function authorize(resourceName, scope, usertoken) {
+
+    var resourceId = null
+    
+    if(resourceName == '') {
+      resourceId = ''
+    } else {
+      resourceId = await getResourceId(resourceName)
+    }
+    const data = "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket&audience=" + config.keycloakClientId + (scope != ''? "&permission=" + resourceId + "#" + scope: '')
+    return keycloakProxy.keycloakRequest(config.keycloakRealm, 'protocol/openid-connect/token/', 'POST', data, null, false, usertoken, null)
+}
+
+async function permissions(scope, token) {
+    auth = await authorize('', scope, token)
+    var tok = auth.access_token.split('.')[1]
+    var buf = Buffer.from(tok, 'base64').toString()
+    var perms = JSON.parse(buf).authorization.permissions
+    log.debug("Permissions result:" + JSON.stringify(perms))
+    var perms2 = perms.map(p => {return {resource: p.rsname, scopes: p.scopes}})
+    return perms2; 
   }
-}
-
-async function permissions(token) {
-  ret = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/entitlement/' + config.keycloakClientId, 'GET', null, null, false, token, null)
-  return ret
-}
-
-
+  
+ 
 function getPerms(name, scopes) {
   let perms = {
     permissions: [{
@@ -67,23 +75,29 @@ function getPerms(name, scopes) {
   return perms;
 }
 
-async function createResource(name, type, uri, scopes, username) {
+async function createResource(name, type, uri, scopes, username, visibility) {
    const res = {
-    name: name,
-    type: type,
-    uri: uri,
-    scopes: scopes,
-    owner: username
-   } 
+     name: name,
+     type: type,
+     uri: uri,
+     scopes: scopes,
+     owner: username,
+     ownerManagedAccess: true
+   }
+   console.log("Visibility:" + visibility)
+   if(typeof visibility !== 'undefined') {
+     res.attributes = { visibility: visibility}
+   }
    const token = await authN.getClientAuthToken()
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set', 'POST', res, null, false, token, 'application/json')
+   return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set', 'POST', res, null, false, token, 'application/json')
 }
 
 async function createSensorResource(domain, sensor, kauth) {
 
   const guest = await users.findByName('guest')
   const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
-  return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, [SCOPE_SENSORS_CREATE, SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE], id) 
+  return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, 
+                        [SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE, SCOPE_SENSORS_DATA_CREATE, SCOPE_SENSORS_DATA_VIEW], id, sensor.visibility) 
 }
 
 async function createDomainResource(domain, kauth) {
@@ -95,7 +109,7 @@ async function createDomainResource(domain, kauth) {
 
 async function deleteResource(name) {
   const token = await authN.getClientAuthToken()
-  const id = await getResourceByName(name)
+  const id = await getResourceId(name, token)
   log.debug('delete resource ID=' + id)
   return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + id, 'DELETE', null, null, false, token, null)
 }
@@ -103,69 +117,29 @@ async function deleteResource(name) {
 async function getResourceByName(name) {
 
   const token = await authN.getClientAuthToken()
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?filter=name=' + name, 'GET', null, null, false, token, null)
+  const ids = await getResourceId(name, token)
+  return await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + ids[0], 'GET', null, null, false, token, null)
 }
 
+async function getResourceId(name, token) {
 
-function getScope(resourceType, method) {
-   
-   switch(resourceType) {
-     case RESOURCE_DOMAINS: {
-       switch(method) {
-         case 'POST':   return SCOPE_DOMAINS_CREATE;
-         case 'GET':    return SCOPE_DOMAINS_VIEW;
-         case 'PUT':    return SCOPE_DOMAINS_UPDATE;
-         case 'DELETE': return SCOPE_DOMAINS_DELETE;
-         default: throw('unsupported method');
-       }
-     }
-     case RESOURCE_USERS: {
-       switch(method) {
-         case 'POST':   return SCOPE_USERS_CREATE;
-         case 'GET':    return SCOPE_USERS_VIEW;
-         case 'PUT':    return SCOPE_USERS_UPDATE;
-         case 'DELETE': return SCOPE_USERS_DELETE;
-         default: throw('unsupported method');
-       }
-     }
-     case RESOURCE_SENSORS: {
-       switch(method) {
-         case 'POST':   return SCOPE_SENSORS_CREATE;
-         case 'GET':    return SCOPE_SENSORS_VIEW;
-         case 'PUT':    return SCOPE_SENSORS_UPDATE;
-         case 'DELETE': return SCOPE_SENSORS_DELETE;
-         default: throw('unsupported method');
-       }
-     }
-     case RESOURCE_HISTORY: {
-       switch(method) {
-         case 'POST':   return SCOPE_HISTORY_CREATE;
-         case 'GET':    return SCOPE_HISTORY_VIEW;
-         case 'PUT':    return SCOPE_HISTORY_UPDATE;
-         case 'DELETE': return SCOPE_HISTORY_DELETE;
-         default: throw('unsupported method:' + method);
-       }
-     }
-     case RESOURCE_NOTIFICATIONS: {
-       switch(method) {
-         case 'POST':   return SCOPE_NOTIFICATIONS_CREATE;
-         case 'GET':    return SCOPE_NOTIFICATIONS_VIEW;
-         case 'PUT':    return SCOPE_NOTIFICATIONS_UPDATE;
-         case 'DELETE': return SCOPE_NOTIFICATIONS_DELETE;
-         default: throw('unsupported method');
-       }
-     }
-     case RESOURCE_SOCIALS: {
-       switch(method) {
-         case 'POST':   return SCOPE_SOCIALS_CREATE;
-         case 'GET':    return SCOPE_SOCIALS_VIEW;
-         case 'PUT':    return SCOPE_SOCIALS_UPDATE;
-         case 'DELETE': return SCOPE_SOCIALS_DELETE;
-         default: throw('unsupported method');
-       }
-     }
-     default: throw('unsupported resource type');
-   }
+  if(!token) {
+    token = await authN.getClientAuthToken()
+  }
+  return await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?name=' + name, 'GET', null, null, false, token, null)
+}
+
+async function getResourceOwner(name) {
+  const res = await getResourceByName(name)
+  return users.find("waziup", {ownerId: res.owner.id})
+}
+
+async function setResourceVisibility(name, visibility) {
+  console.log("name:" + name)
+  const token = await authN.getClientAuthToken()
+  const res = await getResourceByName(name)
+  res.attributes = {visibility: visibility}
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + res._id, 'PUT', res, null, false, token, 'application/json')
 }
 
 module.exports = {
@@ -174,10 +148,37 @@ module.exports = {
   createSensorResource,
   createDomainResource,
   deleteResource,
+  getResourceByName,
+  setResourceVisibility,
   RESOURCE_USERS,
-  RESOURCE_SENSORS,
   RESOURCE_DOMAINS,
   RESOURCE_HISTORY,
   RESOURCE_NOTIFICATIONS,
-  RESOURCE_SOCIALS
+  RESOURCE_SOCIALS,
+  SCOPE_USERS_CREATE,        
+  SCOPE_USERS_VIEW,          
+  SCOPE_USERS_UPDATE,        
+  SCOPE_USERS_DELETE,        
+  SCOPE_SENSORS_CREATE,      
+  SCOPE_SENSORS_VIEW,        
+  SCOPE_SENSORS_UPDATE,      
+  SCOPE_SENSORS_DELETE,      
+  SCOPE_SENSORS_DATA_CREATE,      
+  SCOPE_SENSORS_DATA_VIEW,        
+  SCOPE_DOMAINS_CREATE,      
+  SCOPE_DOMAINS_VIEW,        
+  SCOPE_DOMAINS_UPDATE,      
+  SCOPE_DOMAINS_DELETE,      
+  SCOPE_SOCIALS_CREATE,      
+  SCOPE_SOCIALS_VIEW,        
+  SCOPE_SOCIALS_UPDATE,      
+  SCOPE_SOCIALS_DELETE,      
+  SCOPE_NOTIFICATIONS_CREATE,
+  SCOPE_NOTIFICATIONS_VIEW,  
+  SCOPE_NOTIFICATIONS_UPDATE,
+  SCOPE_NOTIFICATIONS_DELETE,
+  SCOPE_HISTORY_CREATE,      
+  SCOPE_HISTORY_VIEW,        
+  SCOPE_HISTORY_UPDATE,      
+  SCOPE_HISTORY_DELETE
 }
