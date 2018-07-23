@@ -2,7 +2,7 @@
 // Do not commit on Github.
 
 var creds = {
-    username: 'admin',
-    password: 'admin',
+    username: 'admin' || process.env.ADMIN_LOGIN,
+    password: 'admin' || process.env.ADMIN_PASS,
 }
 module.exports = creds;

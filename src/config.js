@@ -15,7 +15,7 @@ module.exports = {
   
   keycloakRealm: 'waziup',
   keycloakClientId: 'api-server',
-  fiwareService: 'waziup',
+  fiwareService: process.env.FIWARE_SERVICE || 'waziup',
   mongoPrefix: 'waziup',
   elsPrefix: 'waziup',
   keycloakClientSecret: "4e9dcb80-efcd-484c-b3d7-1e95a0096ac0",
