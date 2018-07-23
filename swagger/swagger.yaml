@@ -130,6 +130,7 @@ definitions:
       owner:
         type: string
         description: owner of the sensor node
+        readOnly: true
         example: cdupont
       measurements:
         type: array
@@ -594,103 +595,6 @@ paths:
             items:
               $ref: '#/definitions/Permission'
 
-  '/domains':
-    get:
-      summary: list domains
-      tags:
-        - Domains
-      produces:
-        - application/json
-      security:
-        - Bearer: []
-      responses:
-        '200':
-          description: 'get domains'
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Domain'
-        '404':
-          description: Not Found
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      summary: Create a domain
-      tags:
-        - Domains
-      consumes:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            $ref: '#/definitions/Domain'
-      security:
-        - Bearer: []
-      responses:
-        '201':
-          description: Domain created succesfully
-        '422':
-          description: Unprocessable entity
-          schema:
-            $ref: '#/definitions/Error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  '/domains/{domain}':
-    get:
-      summary: get domain
-      description: ''
-      tags:
-        - Domains
-      produces:
-        - application/json
-      parameters:
-        - $ref: '#/parameters/domainParam'
-      security:
-        - Bearer: []
-      responses:
-        '200':
-          description: 'get domain'
-          schema:
-            $ref: '#/definitions/Domain'
-        '400':
-          description: Bad request
-          schema:
-            $ref: '#/definitions/Error'
-        '404':
-          description: Not Found
-          schema:
-            $ref: '#/definitions/Error'
-        '422':
-          description: Unprocessable entity
-          schema:
-            $ref: '#/definitions/Error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      summary: Delete domain
-      tags:
-        - Domains
-      parameters:
-        - $ref: '#/parameters/domainParam'
-      security:
-        - Bearer: []
-      responses:
-        '200':
-          description: Deleted
-        '404':
-          description: Not found
-          schema:
-            $ref: '#/definitions/Error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
   '/domains/{domain}/sensors':
     get:
       summary: Sensor data
