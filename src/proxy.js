@@ -55,7 +55,7 @@ function installDomains(router, keycloak) {
 function installSensors(router, keycloak) {
 
   //routes to sensors
-  router.get(    '/domains/:domain/sensors',                                               proxy(req => orionProxy.getSensorsOrion(req.params.domain, req.query, getPermissions(authZ.SCOPE_SENSORS_VIEW, req.kauth)), true));
+  router.get(    '/domains/:domain/sensors',                                               proxy(req => orionProxy.getSensorsOrion(req.params.domain, req.query, req.kauth), true));
   router.post(   '/domains/:domain/sensors',                                               proxy(req => authProtect('',            authZ.SCOPE_SENSORS_CREATE, req.kauth)),
                                                                                            proxy(req => orionProxy.postSensorOrion(req.params.domain, req.body)), 
                                                                                            proxy(req => authZ.createSensorResource(req.params.domain, req.body, req.kauth), true));
@@ -181,7 +181,7 @@ function installAuth(router, keycloak) {
 
   //auth endpoint
   router.post('/auth/token',       proxy(req => usersProxy.postAuth(  req.body), true));
-  router.get( '/auth/permissions', proxy(req => getPermissions('',  req.kauth), true));
+  router.get( '/auth/permissions', proxy(req => authZ.getPermissions(req.kauth), true));
 }
 
 //Perform requests to backend components and send back results to user
@@ -244,18 +244,6 @@ async function authProtect(resourceName, scope, kauth) {
     return; 
 };
 
-//authorization middleware
-async function getPermissions(scope, kauth) {
-    
-    var token = ''
-    //check that token is recognised
-    if (kauth && kauth.grant) {
-      token = kauth.grant.access_token.token
-    } else { //if no token, use default permissions
-      token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
-    }
-    return await authZ.permissions(scope, token);
-};
 
 module.exports = { 
   install,

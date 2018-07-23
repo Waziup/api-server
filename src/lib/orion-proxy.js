@@ -10,13 +10,14 @@ const authZ = require('../auth/authZ.js');
 const log = require('../log.js');
 const users = require('../routes/users/user.service.js')
 
-async function getSensorsOrion(domain, query, p) {
+async function getSensorsOrion(domain, query, auth) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
-  let sensors = await getSensors(domain, entities);
-  let perms = await p
+  let resources = await authZ.getResources();
+  let perms = await authZ.getPermissions(auth, [authZ.SCOPE_SENSORS_VIEW])
+  let sensors = await getSensors(domain, entities, resources);
   log.debug("perms:" + JSON.stringify(perms))
   log.debug("sensor before filter:" + JSON.stringify(sensors))
-  let sensorsFiltered = sensors.filter(s => perms.find(p => p.resource == s.id))
+  let sensorsFiltered = sensors.filter(s => perms.find(p => p.resource == s.id) != null)
   log.debug("sensor filtered:" + JSON.stringify(sensorsFiltered))
   return sensorsFiltered
 }
@@ -28,7 +29,8 @@ async function postSensorOrion(domain, sensor) {
 
 async function getSensorOrion(domain, sensorID, query) {
   let entity = await orionRequest('/v2/entities/' + sensorID, 'GET', domain, null);
-  return getSensor(domain, sensorID, entity);
+  let res = await authZ.getResourceByName(sensorID);
+  return getSensor(domain, sensorID, entity, res);
 }
 
 async function deleteSensor(domain, sensorID) {
@@ -172,16 +174,17 @@ function getStringAttr(attr) {
   }
 }
 
-async function getSensors(domain, entities) {
+function getSensors(domain, entities, resources) {
   var sensors = [];
   for (let e of entities) {
-    var s = await getSensor(domain, e.id, e);
+    let res = resources.find(r => r.name == e.id)
+    var s = getSensor(domain, e.id, e, res);
     sensors.push(s);
   }
   return sensors
 }
 
-async function getSensor(domain, sensorID, entity) {
+function getSensor(domain, sensorID, entity, res) {
 
   log.debug(JSON.stringify(entity));
   var sensor = {
@@ -210,32 +213,29 @@ async function getSensor(domain, sensorID, entity) {
     sensor.domain = entity.domain.value;
   }
 
-  let res = await authZ.getResourceByName(sensorID);
   log.debug("auth res resource:" + JSON.stringify(res))
-  let user = await users.find("waziup", {userId: res.owner.id})
-  log.debug("user:" + JSON.stringify(user))
   
-  if(user.length != 0) {
-    sensor.owner = user.username;
+  if(res && res.owner && res.owner.name) {
+    sensor.owner = res.owner.name;
   }
-  if(res.attributes && res.attributes.visibility) {
+  if(res && res.attributes && res.attributes.visibility) {
     sensor.visibility = res.attributes.visibility[0];
   }
 
   // Retrieve values from historical database
-  sensor.measurements = await getMeasurements(domain, sensorID, entity);
+  sensor.measurements = getMeasurements(domain, sensorID, entity);
 
   return sensor;
 }
 
-async function getMeasurements(domain, sensorID, attrs) {
+function getMeasurements(domain, sensorID, attrs) {
 
   var measurements = []
   for (var attrID in attrs) {
     const attr = attrs[attrID];
 
     if (attr.type == 'Measurement') {
-      measurements.push(await getMeasurement(domain, sensorID, attrID, attr));
+      measurements.push(getMeasurement(domain, sensorID, attrID, attr));
     }
   }
   return measurements;
@@ -274,7 +274,6 @@ function getLastValue(attr) {
     lastValue.value = attr.value;
 
     let metadata = attr.metadata;
-    console.log("val:" + JSON.stringify(metadata))
     if (metadata.timestamp) {
       lastValue.timestamp = metadata.timestamp.value;
     }        

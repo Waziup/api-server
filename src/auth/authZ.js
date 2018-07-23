@@ -41,40 +41,56 @@ const RESOURCE_HISTORY       = 'History'
 const RESOURCE_NOTIFICATIONS = 'Notifications'
 const RESOURCE_SOCIALS       = 'Socials'
 
+
 async function authorize(resourceName, scope, usertoken) {
 
     var resourceId = null
-    
     if(resourceName == '') {
       resourceId = ''
     } else {
-      resourceId = await getResourceId(resourceName)
+      let resource = await getResourceByName(resourceName)
+      if(resource) {
+        resourceId = resource._id
+      } else {
+        resourceId = ''
+      }
     }
     const data = "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket&audience=" + config.keycloakClientId + (scope != ''? "&permission=" + resourceId + "#" + scope: '')
     return keycloakProxy.keycloakRequest(config.keycloakRealm, 'protocol/openid-connect/token/', 'POST', data, null, false, usertoken, null)
 }
 
-async function permissions(scope, token) {
-    auth = await authorize('', scope, token)
+//authorization middleware
+async function getPermissions(kauth, scopes) {
+    
+    var token = ''
+    //check that token is recognised
+    if (kauth && kauth.grant) {
+      token = kauth.grant.access_token.token
+    } else { //if no token, use default permissions
+      token = await authN.getUserAuthToken({username: 'guest', password: 'guest'})
+    }
+    return await permissions(token, scopes);
+};
+
+async function permissions(token, scopes) {
+
+    if(!scopes) {
+      scopes = [SCOPE_SENSORS_CREATE, SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE, SCOPE_SENSORS_DATA_CREATE, SCOPE_SENSORS_DATA_VIEW]
+    }
+ 
+    let data = "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket&audience=" + config.keycloakClientId
+    console.log(typeof(scopes))
+    for(s of scopes) {
+      data += "&permission=#" + s
+    }
+    let auth = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'protocol/openid-connect/token/', 'POST', data, null, false, token, null)
     var tok = auth.access_token.split('.')[1]
     var buf = Buffer.from(tok, 'base64').toString()
     var perms = JSON.parse(buf).authorization.permissions
-    log.debug("Permissions result:" + JSON.stringify(perms))
     var perms2 = perms.map(p => {return {resource: p.rsname, scopes: p.scopes}})
     return perms2; 
   }
   
- 
-function getPerms(name, scopes) {
-  let perms = {
-    permissions: [{
-      "resource_set_name" : name,
-      "scopes" : scopes
-    }]
-  }
-  return perms;
-}
-
 async function createResource(name, type, uri, scopes, username, visibility) {
    const res = {
      name: name,
@@ -94,7 +110,8 @@ async function createResource(name, type, uri, scopes, username, visibility) {
 
 async function createSensorResource(domain, sensor, kauth) {
 
-  const guest = await users.findByName('guest')
+  const guest = await users.findByName(domain, 'guest')
+  console.log("guest: " + JSON.stringify(guest))
   const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
   return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, 
                         [SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE, SCOPE_SENSORS_DATA_CREATE, SCOPE_SENSORS_DATA_VIEW], id, sensor.visibility) 
@@ -109,29 +126,27 @@ async function createDomainResource(domain, kauth) {
 
 async function deleteResource(name) {
   const token = await authN.getClientAuthToken()
-  const id = await getResourceId(name, token)
-  log.debug('delete resource ID=' + id)
-  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + id, 'DELETE', null, null, false, token, null)
+  const res = await getResourceByName(name)
+  log.debug('delete resource' + res)
+  return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + res._id, 'DELETE', null, null, false, token, null)
+}
+
+async function getResources() {
+
+  const token = await authN.getClientAuthToken()
+  let res = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/', 'GET', null, null, false, token, null)
+  return res
 }
 
 async function getResourceByName(name) {
 
   const token = await authN.getClientAuthToken()
-  const ids = await getResourceId(name, token)
-  return await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set/' + ids[0], 'GET', null, null, false, token, null)
-}
-
-async function getResourceId(name, token) {
-
-  if(!token) {
-    token = await authN.getClientAuthToken()
+  let res = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?name=' + name, 'GET', null, null, false, token, null)
+  if(res.length>0) {
+    return res[0]
+  } else {
+    return null
   }
-  return await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?name=' + name, 'GET', null, null, false, token, null)
-}
-
-async function getResourceOwner(name) {
-  const res = await getResourceByName(name)
-  return users.find("waziup", {ownerId: res.owner.id})
 }
 
 async function setResourceVisibility(name, visibility) {
@@ -144,11 +159,12 @@ async function setResourceVisibility(name, visibility) {
 
 module.exports = {
   authorize,
-  permissions,
+  getPermissions,
   createSensorResource,
   createDomainResource,
   deleteResource,
   getResourceByName,
+  getResources,
   setResourceVisibility,
   RESOURCE_USERS,
   RESOURCE_DOMAINS,
