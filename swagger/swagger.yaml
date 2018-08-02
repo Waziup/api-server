@@ -435,6 +435,14 @@ definitions:
         type: number
         description: minimum interval between two messages in seconds
         example: 3600
+      times_sent:
+        type: number
+        description: number of notifications sent 
+        readOnly: true
+      last_notification:
+        type: dateTime
+        description: last notification send date 
+        readOnly: true
   NotificationCondition:
     type: object
     properties:
