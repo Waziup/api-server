@@ -12,18 +12,15 @@ const users = require('../routes/users/user.service.js')
 
 async function getSensorsOrion(domain, query, auth) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
-  let resources = await authZ.getResources();
   let perms = await authZ.getPermissions(auth, [authZ.SCOPE_SENSORS_VIEW])
-  let sensors = await getSensors(domain, entities, resources);
-  log.debug("perms:" + JSON.stringify(perms))
-  log.debug("sensor before filter:" + JSON.stringify(sensors))
+  let sensors = await getSensors(domain, entities);
   let sensorsFiltered = sensors.filter(s => perms.find(p => p.resource == s.id) != null)
-  log.debug("sensor filtered:" + JSON.stringify(sensorsFiltered))
   return sensorsFiltered
 }
 
-async function postSensorOrion(domain, sensor) {
-  let resp = orionRequest('/v2/entities', 'POST', domain, getEntity(domain, sensor));
+async function postSensorOrion(domain, sensor, kauth) {
+  const username = kauth && kauth.grant ? kauth.grant.access_token.content.preferred_username : 'guest'
+  let resp = orionRequest('/v2/entities', 'POST', domain, getEntity(domain, sensor, username));
   return resp;
 }
 
@@ -35,11 +32,6 @@ async function getSensorOrion(domain, sensorID, query) {
 
 async function deleteSensor(domain, sensorID) {
   let resp = orionRequest('/v2/entities/' + sensorID, 'DELETE', domain, null);
-  return resp;
-}
-
-async function putSensorOwner(domain, sensorID, owner) {
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/owner', 'PUT', domain, getStringAttr(owner));
   return resp;
 }
 
@@ -59,7 +51,7 @@ async function putSensorGatewayId(domain, sensorID, gateway_id) {
 }
 
 async function putSensorVisibility(domain, sensorID, visibility) {
-  let resp = authZ.setResourceVisibility(sensorID, visibility);
+  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs/visibility', 'PUT', domain, getStringAttr(visibility));
   return resp;
 }
 
@@ -174,11 +166,10 @@ function getStringAttr(attr) {
   }
 }
 
-function getSensors(domain, entities, resources) {
+function getSensors(domain, entities) {
   var sensors = [];
   for (let e of entities) {
-    let res = resources.find(r => r.name == e.id)
-    var s = getSensor(domain, e.id, e, res);
+    var s = getSensor(domain, e.id, e);
     sensors.push(s);
   }
   return sensors
@@ -186,7 +177,6 @@ function getSensors(domain, entities, resources) {
 
 function getSensor(domain, sensorID, entity, res) {
 
-  log.debug(JSON.stringify(entity));
   var sensor = {
     id: entity.id
   }
@@ -212,14 +202,11 @@ function getSensor(domain, sensorID, entity, res) {
   if (entity.domain) {
     sensor.domain = entity.domain.value;
   }
-
-  log.debug("auth res resource:" + JSON.stringify(res))
-  
-  if(res && res.owner && res.owner.name) {
-    sensor.owner = res.owner.name;
+  if (entity.user) {
+    sensor.user = entity.user.value;
   }
-  if(res && res.attributes && res.attributes.visibility) {
-    sensor.visibility = res.attributes.visibility[0];
+  if (entity.visibility) {
+    sensor.visibility = entity.visibility.value;
   }
 
   // Retrieve values from historical database
@@ -284,7 +271,7 @@ function getLastValue(attr) {
   return lastValue;
 }
 
-function getEntity(domain, sensor) {
+function getEntity(domain, sensor, username) {
 
   var entity = {
     id: sensor.id,
@@ -292,8 +279,9 @@ function getEntity(domain, sensor) {
   }
     entity.gateway_id = {type: 'String', value: sensor.gateway_id? sensor.gateway_id: ''};
     entity.name       = {type: 'String', value: sensor.name? sensor.name: ''};
-    entity.owner      = {type: 'String', value: sensor.owner? sensor.owner: ''};
+    entity.owner      = {type: 'String', value: username};
     entity.domain     = {type: 'String', value: domain? domain: ''};
+    entity.visibility = {type: 'String', value: sensor.visibility? sensor.visibility: ''};
     entity.location   = getEntityLocation(sensor.location)
 
   if(sensor.measurements) {
@@ -366,7 +354,6 @@ module.exports = {
  postSensorOrion,         
  getSensorOrion,          
  deleteSensor,            
- putSensorOwner,          
  putSensorLocation,       
  putSensorName,           
  putSensorGatewayId,           
