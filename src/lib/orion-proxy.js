@@ -26,8 +26,7 @@ async function postSensorOrion(domain, sensor, kauth) {
 
 async function getSensorOrion(domain, sensorID, query) {
   let entity = await orionRequest('/v2/entities/' + sensorID, 'GET', domain, null);
-  let res = await authZ.getResourceByName(sensorID);
-  return getSensor(domain, sensorID, entity, res);
+  return getSensor(domain, sensorID, entity);
 }
 
 async function deleteSensor(domain, sensorID) {
@@ -175,7 +174,7 @@ function getSensors(domain, entities) {
   return sensors
 }
 
-function getSensor(domain, sensorID, entity, res) {
+function getSensor(domain, sensorID, entity) {
 
   var sensor = {
     id: entity.id
@@ -202,8 +201,8 @@ function getSensor(domain, sensorID, entity, res) {
   if (entity.domain) {
     sensor.domain = entity.domain.value;
   }
-  if (entity.user) {
-    sensor.user = entity.user.value;
+  if (entity.owner) {
+    sensor.owner = entity.owner.value;
   }
   if (entity.visibility) {
     sensor.visibility = entity.visibility.value;
