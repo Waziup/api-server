@@ -29,6 +29,7 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
    try {
      //perform request
      var resp = await axios(axiosConf);
+     log.debug("  result: " + JSON.stringify(resp.data));
      return resp.data;
    } catch (error) {
      if (error.response) {
@@ -39,8 +40,8 @@ async function keycloakRequest(realm, path, method, data, query, isAdmin, token,
        } else {
          error.response.data.description = error.response.data.error;
        }
-       throw(error);
      }
+       throw(error);
    }
 }
 
