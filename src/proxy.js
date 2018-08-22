@@ -11,7 +11,6 @@ const orionProxy    = require('./lib/orion-proxy.js');
 const elsProxy      = require('./lib/els-proxy.js');
 const socialsProxy  = require('./lib/social-proxy.js');
 const notifsProxy   = require('./lib/notif-proxy.js');
-const domainsProxy  = require('./lib/domain-proxy.js');
 const usersProxy    = require('./routes/users/user.route.js');
 const entitiesProxy = require('./routes/entities/entities.route.js');
 const authN   = require('./auth/authN.js');
@@ -30,26 +29,9 @@ function install(router, keycloak) {
   installUsers(   router, keycloak)
   installEntities(router, keycloak)
 
-  //This route should be last because it is shorter
-  installDomains( router, keycloak)
 
   //install error handler
   router.use(proxyError);
-}
-
-function installDomains(router, keycloak) {
- 
-  //protect endpoints
-  router.all(    '/domains/:domain*', proxy(req => authProtect(req.method, req.params.domain, req.params.domain, authZ.RESOURCE_DOMAINS, req.kauth))) // protect single domain
-  router.all(    '/domains',          proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_DOMAINS, authZ.RESOURCE_DOMAINS, req.kauth))) // generic protect domains
-
-  //routes to backend components
-  router.get(    '/domains',          proxy(req => domainsProxy.getDomains(), true));
-  router.post(   '/domains',          proxy(req => domainsProxy.postDomains(req.body)),
-                                      proxy(req => authZ.createDomainResource(req.body, req.kauth), true)); 
-  router.get(    '/domains/:domain',  proxy(req => domainsProxy.getDomain(req.params.domain), true));
-  router.delete( '/domains/:domain',  proxy(req => domainsProxy.deleteDomain(req.params.domain)),
-                                      proxy(req => authZ.deleteResource(req.params.domain), true)); 
 }
 
 function installSensors(router, keycloak) {

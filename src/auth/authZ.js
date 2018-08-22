@@ -36,7 +36,6 @@ const SCOPE_HISTORY_UPDATE       = 'history:update'
 const SCOPE_HISTORY_DELETE       = 'history:delete'
 
 const RESOURCE_USERS         = 'Users'
-const RESOURCE_DOMAINS       = 'Domains'
 const RESOURCE_HISTORY       = 'History'
 const RESOURCE_NOTIFICATIONS = 'Notifications'
 const RESOURCE_SOCIALS       = 'Socials'
@@ -112,13 +111,6 @@ async function createSensorResource(domain, sensor, kauth) {
                         [SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE, SCOPE_SENSORS_DATA_CREATE, SCOPE_SENSORS_DATA_VIEW], id, sensor.visibility) 
 }
 
-async function createDomainResource(domain, kauth) {
-
-  const guest = await users.findByName('guest')
-  const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
-  return createResource(domain.id, 'domain:' + domain.id, '/domains/' + domain.id, [SCOPE_DOMAINS_CREATE, SCOPE_DOMAINS_VIEW, SCOPE_DOMAINS_UPDATE, SCOPE_DOMAINS_DELETE], id) 
-}
-
 async function deleteResource(name) {
   const token = await authN.getClientAuthToken()
   const res = await getResourceByName(name)
@@ -156,13 +148,11 @@ module.exports = {
   authorize,
   getPermissions,
   createSensorResource,
-  createDomainResource,
   deleteResource,
   getResourceByName,
   getResources,
   setResourceVisibility,
   RESOURCE_USERS,
-  RESOURCE_DOMAINS,
   RESOURCE_HISTORY,
   RESOURCE_NOTIFICATIONS,
   RESOURCE_SOCIALS,
