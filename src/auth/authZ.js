@@ -18,10 +18,6 @@ const SCOPE_SENSORS_UPDATE       = 'sensors:update'
 const SCOPE_SENSORS_DELETE       = 'sensors:delete'
 const SCOPE_SENSORS_DATA_CREATE  = 'sensors-data:create'
 const SCOPE_SENSORS_DATA_VIEW    = 'sensors-data:view'
-const SCOPE_DOMAINS_CREATE       = 'domains:create'
-const SCOPE_DOMAINS_VIEW         = 'domains:view'
-const SCOPE_DOMAINS_UPDATE       = 'domains:update'
-const SCOPE_DOMAINS_DELETE       = 'domains:delete'
 const SCOPE_SOCIALS_CREATE       = 'socials:create'
 const SCOPE_SOCIALS_VIEW         = 'socials:view'
 const SCOPE_SOCIALS_UPDATE       = 'socials:update'
@@ -166,10 +162,6 @@ module.exports = {
   SCOPE_SENSORS_DELETE,      
   SCOPE_SENSORS_DATA_CREATE,      
   SCOPE_SENSORS_DATA_VIEW,        
-  SCOPE_DOMAINS_CREATE,      
-  SCOPE_DOMAINS_VIEW,        
-  SCOPE_DOMAINS_UPDATE,      
-  SCOPE_DOMAINS_DELETE,      
   SCOPE_SOCIALS_CREATE,      
   SCOPE_SOCIALS_VIEW,        
   SCOPE_SOCIALS_UPDATE,      
