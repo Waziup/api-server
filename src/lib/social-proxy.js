@@ -32,7 +32,8 @@ async function postSocialMsg(domain, socialMsg) {
   
     var msg = getMsg(user, socialMsg.channel, socialMsg.message);
     log.debug('msg' + JSON.stringify(msg));
-    await socialRequest('', 'POST', msg)
+    let res = await socialRequest('', 'POST', msg)
+    return res
   } else {
     throw('user ' + socialMsg.username + ' not found');
   }

@@ -121,41 +121,54 @@ function installHistory(router, keycloak) {
 function installSocials(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SOCIALS, authZ.RESOURCE_SOCIALS, req.kauth)))
+  //router.all(    '/domains/:domain/socials*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_SOCIALS, authZ.RESOURCE_SOCIALS, req.kauth)))
   
   //socials endpoint
-  router.get(    '/domains/:domain/socials',        proxy(req => socialsProxy.getSocialMsgs(     req.params.domain), true));
-  router.post(   '/domains/:domain/socials',        proxy(req => socialsProxy.postSocialMsg(     req.params.domain, req.body), true));
-  router.get(    '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.getSocialMsg(      req.params.domain, req.params.msgID), true));
-  router.delete( '/domains/:domain/socials/:msgID', proxy(req => socialsProxy.deleteSocialMsg(   req.params.domain, req.params.msgID), true));
-  router.post(   '/domains/:domain/socials/batch',  proxy(req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/socials',        proxy(req => authProtect(authZ.RESOURCE_SOCIALS,      authZ.SCOPE_SOCIALS_VIEW, req.kauth)),
+                                                    proxy(req => socialsProxy.getSocialMsgs(  req.params.domain), true));
+  router.post(   '/domains/:domain/socials',        proxy(req => authProtect(authZ.RESOURCE_SOCIALS,      authZ.SCOPE_SOCIALS_CREATE, req.kauth)),
+                                                    proxy(req => socialsProxy.postSocialMsg(  req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/socials/:msgID', proxy(req => authProtect(authZ.RESOURCE_SOCIALS,      authZ.SCOPE_SOCIALS_VIEW, req.kauth)),
+                                                    proxy(req => socialsProxy.getSocialMsg(   req.params.domain, req.params.msgID), true));
+  router.delete( '/domains/:domain/socials/:msgID', proxy(req => authProtect(authZ.RESOURCE_SOCIALS,      authZ.SCOPE_SOCIALS_DELETE, req.kauth)),
+                                                    proxy(req => socialsProxy.deleteSocialMsg(req.params.domain, req.params.msgID), true));
+  router.post(   '/domains/:domain/socials/batch',  proxy(req => authProtect(authZ.RESOURCE_SOCIALS,      authZ.SCOPE_SOCIALS_CREATE, req.kauth)),
+                                                    proxy(req => socialsProxy.postSocialMsgBatch(req.params.domain, req.body), true));
 }
 
 function installNotifs(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_NOTIFICATIONS, authZ.RESOURCE_NOTIFICATIONS, req.kauth)))
+  //router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.RESOURCE_NOTIFICATIONS, req.kauth)))
   
   //notifications endpoint
-  router.get(    '/domains/:domain/notifications',          proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
-  router.post(   '/domains/:domain/notifications',          proxy(req => notifsProxy.postNotifOrion(  req.params.domain, req.body), true));
-  router.get(    '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID), true));
-  router.delete( '/domains/:domain/notifications/:notifID', proxy(req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID), true));
+  router.get(    '/domains/:domain/notifications',          proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS,      authZ.SCOPE_NOTIFICATIONS_VIEW, req.kauth)),
+                                                            proxy(req => notifsProxy.getNotifsOrion(  req.params.domain), true));
+  router.post(   '/domains/:domain/notifications',          proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS,      authZ.SCOPE_NOTIFICATIONS_CREATE, req.kauth)),
+                                                            proxy(req => notifsProxy.postNotifOrion(  req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/notifications/:notifID', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS,      authZ.SCOPE_NOTIFICATIONS_VIEW, req.kauth)),
+                                                            proxy(req => notifsProxy.getNotifOrion(   req.params.domain, req.params.notifID), true));
+  router.delete( '/domains/:domain/notifications/:notifID', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS,      authZ.SCOPE_NOTIFICATIONS_DELETE, req.kauth)),
+                                                            proxy(req => notifsProxy.deleteNotifOrion(req.params.domain, req.params.notifID), true));
 
 }
 
 function installUsers(router, keycloak) {
 
   //protect endpoints
-  router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
+  //router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
   
   //users endpoints
-  router.get(    '/domains/:domain/users',          proxy(req => usersProxy.getUsers(   req.params.domain), true));
-  router.post(   '/domains/:domain/users',          proxy(req => usersProxy.createUser( req.params.domain, req.body), true));
-  router.get(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.getUser(    req.params.domain, req.params.userID), true));
-  router.delete( '/domains/:domain/users/:userID',  proxy(req => usersProxy.deleteUser( req.params.domain, req.params.userID), true));
-  router.put(    '/domains/:domain/users/:userID',  proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID, req.body), true));
-
+  router.get(    '/domains/:domain/users',          proxy(req => authProtect(authZ.RESOURCE_USERS,      authZ.SCOPE_USERS_VIEW, req.kauth)),
+                                                    proxy(req => usersProxy.getUsers(   req.params.domain), true));
+  router.post(   '/domains/:domain/users',          proxy(req => authProtect(authZ.RESOURCE_USERS,      authZ.SCOPE_USERS_CREATE, req.kauth)),
+                                                    proxy(req => usersProxy.createUser( req.params.domain, req.body), true));
+  router.get(    '/domains/:domain/users/:userID',  proxy(req => authProtect(authZ.RESOURCE_USERS,      authZ.SCOPE_USERS_VIEW, req.kauth)),
+                                                    proxy(req => usersProxy.getUser(    req.params.domain, req.params.userID), true));
+  router.delete( '/domains/:domain/users/:userID',  proxy(req => authProtect(authZ.RESOURCE_USERS,      authZ.SCOPE_USERS_DELETE, req.kauth)),
+                                                    proxy(req => usersProxy.deleteUser( req.params.domain, req.params.userID), true));
+  router.put(    '/domains/:domain/users/:userID',  proxy(req => authProtect(authZ.RESOURCE_USERS,      authZ.SCOPE_USERS_UPDATE, req.kauth)),
+                                                    proxy(req => usersProxy.putUser(    req.params.domain, req.params.userID, req.body), true));
 }
 
 function installAuth(router, keycloak) {
