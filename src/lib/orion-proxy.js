@@ -14,7 +14,7 @@ async function getSensorsOrion(domain, query, auth) {
   let entities = await orionRequest('/v2/entities', 'GET', domain, null, query);
   let perms = await authZ.getPermissions(auth, [authZ.SCOPE_SENSORS_VIEW])
   let sensors = await getSensors(domain, entities);
-  let sensorsFiltered = sensors.filter(s => perms.find(p => p.resource == s.id) != null)
+  let sensorsFiltered = sensors.filter(s => perms.findIndex(p => p.resource === s.id) != -1)
   return sensorsFiltered
 }
 
