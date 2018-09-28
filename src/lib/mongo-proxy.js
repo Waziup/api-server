@@ -172,7 +172,7 @@ function getMongoDocument(entityID, entityType, measID, datapoint) {
   };
   
   if(datapoint.timestamp)
-    doc.timestamp = datapoint.timestamp;
+    doc.timestamp = new Date(datapoint.timestamp);
   
   return doc;
 }
