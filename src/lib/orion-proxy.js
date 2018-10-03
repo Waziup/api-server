@@ -20,8 +20,8 @@ async function getSensorsOrion(domain, query, auth) {
 
 async function postSensorOrion(domain, sensor, kauth) {
   const username = kauth && kauth.grant ? kauth.grant.access_token.content.preferred_username : 'guest'
-  let resp = orionRequest('/v2/entities', 'POST', domain, getEntity(domain, sensor, username));
-  return resp;
+  let resp = await orionRequest('/v2/entities', 'POST', domain, getEntity(domain, sensor, username));
+  return resp.replace('/v2/entities/', '').replace('?type=SensingDevice', '');
 }
 
 async function getSensorOrion(domain, sensorID, query) {
@@ -60,7 +60,7 @@ async function getSensorMeasurements(domain, sensorID, query) {
 }
 
 async function postSensorMeasurement(domain, sensorID, meas) {
-  let resp = orionRequest('/v2/entities/' + sensorID + '/attrs', 'POST', domain, getMeasAttr(meas));
+  let resp = await orionRequest('/v2/entities/' + sensorID + '/attrs', 'POST', domain, getMeasAttr(meas));
   return resp;
 }
 
@@ -139,7 +139,11 @@ async function orionRequest(path, method, domain, data, query, contentType) {
     
    //perform request to Orion
    var resp = await axios(axiosConf);
-   return resp.data;
+   if(method === "POST") {
+     return resp.headers.location;
+   } else {
+     return resp.data;
+   }
 }
 
 //get the full metadata before modify it (Orion doesn't support PUT method on specific metadata fields)

@@ -18,11 +18,12 @@ async function getNotifsOrion(domain) {
 
 async function postNotifOrion(domain, notif) {
   var sub = getSub(domain, notif)
-  return orionProxy.orionRequest('/v2/subscriptions', 'POST', domain, sub);
+  var res = await orionProxy.orionRequest('/v2/subscriptions', 'POST', domain, sub);
+  return res.replace('/v2/subscriptions/','');
 }
 
 async function getNotifOrion(domain, notifID) {
-  var sub = orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'GET', domain, null);
+  var sub = await orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'GET', domain, null);
   return getNotif(domain, sub);
 }
 
