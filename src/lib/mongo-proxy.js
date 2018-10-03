@@ -63,7 +63,7 @@ async function getEntityMeasurementValues(domain, entityID, entityType, measID, 
  
   let res = docs.map(getMeasurement)
   if(format == 'csv') {
-    return "timestamp, date_received, value\n" + res.map(doc => doc.timestamp + "," + doc.date_received.toISOString() + "," + doc.value + "\n").join()
+    return "timestamp, date_received, value\n" + res.map(doc => doc.timestamp + "," + doc.date_received.toISOString() + "," + doc.value + "\n").join('')
   } else {
     return res
   }
