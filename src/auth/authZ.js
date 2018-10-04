@@ -91,7 +91,6 @@ async function createResource(name, type, uri, scopes, username, visibility) {
      owner: username,
      ownerManagedAccess: true
    }
-   console.log("Visibility:" + visibility)
    if(typeof visibility !== 'undefined') {
      res.attributes = { visibility: visibility}
    }
