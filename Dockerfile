@@ -1,10 +1,15 @@
-FROM node:alpine
+FROM node:10-alpine
 
 ENV NODE_ENV production
 
 WORKDIR /usr/src/app
 
 COPY package.json .
+
+# First install all dependencies
+# this makes further builds faster
+RUN yarn install
+
 COPY src src/
 COPY swagger swagger/
 
