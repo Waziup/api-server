@@ -1,16 +1,14 @@
-FROM node:9.4
+FROM node:alpine
 
-RUN mkdir /usr/src/app
-VOLUME ["/app"]
+ENV NODE_ENV production
+
 WORKDIR /usr/src/app
 
-# Install app dependencies
-COPY package.json /usr/src/app
+COPY package.json .
+COPY src src/
+COPY swagger swagger/
 
-RUN npm install
-
-# Bundle app source
-COPY . /usr/src/app
+RUN yarn install
 
 EXPOSE 4000
 HEALTHCHECK CMD curl --fail http://localhost:800/api/v1/domains/waziup/sensors || exit 1
