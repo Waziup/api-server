@@ -19,7 +19,8 @@ const log = require('./log.js');
 const bodyParser = require('body-parser');
 
 function install(router, keycloak) {
-  
+ 
+ 
   //install all routes
   installAuth(    router, keycloak)
   installSensors( router, keycloak)
@@ -36,47 +37,55 @@ function install(router, keycloak) {
 
 function installSensors(router, keycloak) {
 
-  //routes to sensors
-  router.get(    '/domains/:domain/sensors',                                               proxy(req => orionProxy.getSensorsOrion(req.params.domain, req.query, req.kauth), true));
-  router.post(   '/domains/:domain/sensors',                                               proxy(req => authProtect('',            authZ.SCOPE_SENSORS_CREATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.postSensorOrion(req.params.domain, req.body, req.kauth)), 
-                                                                                           proxy(req => authZ.createSensorResource(req.params.domain, req.body, req.kauth), true));
+  router.all('/sensors/*', function(req, res) {
+    // Process the data received in req.bodyi
+    console.log("path: " + JSON.stringify(req.originalUrl));
+    //var newPath = "/api/v1/" + req.originalUrl.split('/').slice(5);
+    console.log("new path: " + JSON.stringify(newPath));
+    res.redirect(newPath);
+  });
 
-  router.get(    '/domains/:domain/sensors/:sensorID',                                     proxy(req => authProtect(req.params.sensorID,authZ.SCOPE_SENSORS_VIEW, req.kauth)),
-                                                                                           proxy(req => orionProxy.getSensorOrion(      req.params.domain, req.params.sensorID, req.query), true))
-  router.delete( '/domains/:domain/sensors/:sensorID',                                     proxy(req => authProtect(req.params.sensorID,authZ.SCOPE_SENSORS_DELETE, req.kauth)),
-                                                                                           proxy(req => orionProxy.deleteSensor(        req.params.domain, req.params.sensorID)),
-                                                                                           proxy(req => mongoProxy.deleteEntityMongo(   req.params.domain, req.params.sensorID, "SensingDevice")),
-                                                                                           proxy(req => authZ.deleteResource(           req.params.sensorID), true));
+  //routes to sensors
+  router.get(    '/sensors',                                               proxy(req => orionProxy.getSensorsOrion(req.query, req.kauth), true));
+  router.post(   '/sensors',                                               proxy(req => authProtect('',            authZ.SCOPE_SENSORS_CREATE, req.kauth)),
+                                                                           proxy(req => orionProxy.postSensorOrion(req.body, req.kauth)), 
+                                                                           proxy(req => authZ.createSensorResource(req.body, req.kauth), true));
+
+  router.get(    '/sensors/:sensorID',                                     proxy(req => authProtect(req.params.sensorID,authZ.SCOPE_SENSORS_VIEW, req.kauth)),
+                                                                           proxy(req => orionProxy.getSensorOrion(      req.params.sensorID, req.query), true))
+  router.delete( '/sensors/:sensorID',                                     proxy(req => authProtect(req.params.sensorID,authZ.SCOPE_SENSORS_DELETE, req.kauth)),
+                                                                           proxy(req => orionProxy.deleteSensor(        req.params.sensorID)),
+                                                                           proxy(req => mongoProxy.deleteEntityMongo(   req.params.sensorID, "SensingDevice")),
+                                                                           proxy(req => authZ.deleteResource(           req.params.sensorID), true));
   
-  router.put(    '/domains/:domain/sensors/:sensorID/location',                            proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorLocation(    req.params.domain, req.params.sensorID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/name',                                proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorName(        req.params.domain, req.params.sensorID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/gateway_id',                          proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorGatewayId(   req.params.domain, req.params.sensorID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/visibility',                          proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorVisibility(  req.params.domain, req.params.sensorID, req.body)),
-                                                                                           proxy(req => authZ.setResourceVisibility(     req.params.sensorID, req.body), true));
+  router.put(    '/sensors/:sensorID/location',                            proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorLocation(    req.params.sensorID, req.body), true));
+  router.put(    '/sensors/:sensorID/name',                                proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorName(        req.params.sensorID, req.body), true));
+  router.put(    '/sensors/:sensorID/gateway_id',                          proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorGatewayId(   req.params.sensorID, req.body), true));
+  router.put(    '/sensors/:sensorID/visibility',                          proxy(req => authProtect(req.params.sensorID, authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorVisibility(  req.params.sensorID, req.body)),
+                                                                           proxy(req => authZ.setResourceVisibility(     req.params.sensorID, req.body), true));
 
   //routes to measurements
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements',                        proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_VIEW, req.kauth)),
-                                                                                           proxy(req => orionProxy.getSensorMeasurements(     req.params.domain, req.params.sensorID, req.query), true));
-  router.post(   '/domains/:domain/sensors/:sensorID/measurements',                        proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.postSensorMeasurement(     req.params.domain, req.params.sensorID, req.body), true));
-  router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID',                proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_VIEW, req.kauth)),
-                                                                                           proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID, req.query), true));
-  router.delete( '/domains/:domain/sensors/:sensorID/measurements/:measID',                proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.deleteSensorMeasurement(   req.params.domain, req.params.sensorID, req.params.measID)),
-                                                                                           proxy(req => mongoProxy.deleteEntityMeasMongo(     req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/name',           proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorMeasurementName(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/sensing_device', proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorMeasurementSD(    req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/quantity_kind',  proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorMeasurementQK(    req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
-  router.put(    '/domains/:domain/sensors/:sensorID/measurements/:measID/unit',           proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
-                                                                                           proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+  router.get(    '/sensors/:sensorID/measurements',                        proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_VIEW, req.kauth)),
+                                                                           proxy(req => orionProxy.getSensorMeasurements(     req.params.domain, req.params.sensorID, req.query), true));
+  router.post(   '/sensors/:sensorID/measurements',                        proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.postSensorMeasurement(     req.params.domain, req.params.sensorID, req.body), true));
+  router.get(    '/sensors/:sensorID/measurements/:measID',                proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_VIEW, req.kauth)),
+                                                                           proxy(req => orionProxy.getSensorMeasurement(      req.params.domain, req.params.sensorID, req.params.measID, req.query), true));
+  router.delete( '/sensors/:sensorID/measurements/:measID',                proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.deleteSensorMeasurement(   req.params.domain, req.params.sensorID, req.params.measID)),
+                                                                           proxy(req => mongoProxy.deleteEntityMeasMongo(     req.params.domain, req.params.sensorID, "SensingDevice", req.params.measID), true));
+  router.put(    '/sensors/:sensorID/measurements/:measID/name',           proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorMeasurementName(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+  router.put(    '/sensors/:sensorID/measurements/:measID/sensing_device', proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorMeasurementSD(    req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+  router.put(    '/sensors/:sensorID/measurements/:measID/quantity_kind',  proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorMeasurementQK(    req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
+  router.put(    '/sensors/:sensorID/measurements/:measID/unit',           proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_UPDATE, req.kauth)),
+                                                                           proxy(req => orionProxy.putSensorMeasurementUnit(  req.params.domain, req.params.sensorID, req.params.measID, req.body), true));
  
   //routes to sensor data
   router.get(    '/domains/:domain/sensors/:sensorID/measurements/:measID/values',         proxy(req => authProtect(req.params.sensorID,      authZ.SCOPE_SENSORS_DATA_VIEW, req.kauth)),
