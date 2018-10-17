@@ -15,12 +15,6 @@ produces:
 consumes:
   - application/json
 parameters:
-  domainParam:
-    name: domain
-    in: path
-    required: false
-    type: string
-    example: waziup
   sensorId:
     name: sensor_id
     in: path
@@ -114,6 +108,7 @@ definitions:
     type: object
     required:
       - id
+      - domain
     properties:
       id:
         type: string
@@ -232,121 +227,6 @@ definitions:
         description: time at which the measurement has been received on the Cloud
         example: '2016-06-08T18:20:27.873Z'
         readOnly: true
-  EntityType:
-    type: string
-    description: A type of an entity.
-    example: Room
-  Entity:
-    type: object
-    description: >-
-      An entity is a general object with type and name,
-      implementing different userdefined attributes.
-    required:
-      - id
-      - type
-    properties:
-      id:
-        type: string
-        description: Unique name (ID) of the entity.
-        example: Barn4
-      type:
-        $ref: '#/definitions/EntityType'
-  EntityWithAttr:
-    type: object
-    description: >-
-      An entity is a general object with type and name,
-      implementing different userdefined attributes.
-    required:
-      - id
-      - type
-    additionalProperties: true
-    properties:
-      id:
-        type: string
-        description: Unique name (ID) of the entity.
-        example: Barn4
-      type:
-        $ref: '#/definitions/EntityType'
-      attribute1:
-        type: array
-        description: An example attribute with string values.
-        items:
-          type: string
-          example: 'Text Content..'
-      attribute2:
-        type: array
-        description: An example attribute with number values.
-        items:
-          type: number
-          example: '27'
-      attributeN:
-        type: array
-        description: An example attribute with object values.
-        items:
-          type: object
-          properties:
-            latitude:
-              type: number
-              example: 51.412
-            longitude:
-              type: number
-              example: 12.564
-  EntityWithCurrentAttr:
-    type: object
-    description: >-
-      An entity is a general object with type and name,
-      implementing different userdefined attributes.
-    required:
-      - id
-      - type
-    additionalProperties: true
-    properties:
-      id:
-        type: string
-        description: Unique name (ID) of the entity.
-        example: Barn4
-      type:
-        $ref: '#/definitions/EntityType'
-      attribute1:
-        type: string
-        description: An example attribute with string values.
-        example: 'Text Content..'
-      attribute2:
-        type: number
-        description: An example attribute with number values.
-        example: '27'
-      attributeN:
-        type: object
-        description: An example attribute with object values.
-        properties:
-          latitude:
-            type: number
-            example: 51.412
-          longitude:
-            type: number
-            example: 12.564
-  EntityAttr:
-    anyOf:
-      - type: string
-      - type: number
-      - type: integer
-      - type: boolean
-      - type: object
-    description: An entity attribute value that could be any type.
-    example: {"value": "25.6","timestamp": "2016-06-08T18:20:27.873Z"}
-  HistoricalValue:
-    type: object
-    properties:
-      id:
-        type: string
-        description: UUID of the sensor
-        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
-      attribute_id:
-        type: string
-        description: UUID of the measurement
-        example: 0d710b12-27e8-433d-ab3a-e05b7127eeaa
-      datapoint:
-        $ref: '#/definitions/MeasurementValue'
   Error:
     type: object
     properties:
@@ -529,10 +409,8 @@ definitions:
       - sensors:view
       - sensors:update
       - sensors:delete
-      - domains:create
-      - domains:view
-      - domains:update
-      - domains:delete
+      - sensors-data:create
+      - sensors-data:view
       - socials:create
       - socials:view
       - socials:update
@@ -572,7 +450,6 @@ paths:
       tags:
         - Auth
       parameters:
-        - $ref: '#/parameters/domainParam'
         - name: credentials
           in: body
           description: auth credentials
@@ -603,7 +480,7 @@ paths:
             items:
               $ref: '#/definitions/Permission'
 
-  '/domains/{domain}/sensors':
+  /sensors:
     get:
       summary: Sensor data
       description: ''
@@ -614,7 +491,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - in: query
           name: q
           schema:
@@ -654,7 +530,6 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Sensor'
-        - $ref: '#/parameters/domainParam'
       responses:
         '201':
           description: Sensor created succesfully
@@ -666,7 +541,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}':
+  /sensors/{sensor_id}:
     get:
       summary: get sensor
       description: ''
@@ -677,7 +552,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
       responses:
         '200':
@@ -706,7 +580,6 @@ paths:
       tags:
         - Sensors
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
       security:
         - Bearer: []
@@ -721,7 +594,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/owner':
+  /sensors/{sensor_id}/owner:
     put:
       summary: insert owner
       tags:
@@ -731,7 +604,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -755,7 +627,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/location':
+  /sensors/{sensor_id}/location:
     put:
       summary: insert location
       tags:
@@ -765,7 +637,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -787,7 +658,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/name':
+  /sensors/{sensor_id}/name:
     put:
       summary: insert name
       tags:
@@ -797,7 +668,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -821,7 +691,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/gateway_id':
+  /sensors/{sensor_id}/gateway_id:
     put:
       summary: insert gateway id
       tags:
@@ -831,7 +701,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -855,7 +724,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/visibility':
+  /sensors/{sensor_id}/visibility:
     put:
       summary: insert sensor visibility (public or private)
       tags:
@@ -865,7 +734,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -887,7 +755,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements':
+  /sensors/{sensor_id}/measurements:
     get:
       summary: get measurements
       tags:
@@ -897,7 +765,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
       responses:
         '200':
@@ -923,7 +790,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - in: body
           name: body
@@ -945,7 +811,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}':
+  /sensors/{sensor_id}/measurements/{measurement_id}:
     get:
       summary: get measurement
       tags:
@@ -955,7 +821,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
       responses:
@@ -975,7 +840,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
       responses:
@@ -989,7 +853,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/name':
+  /sensors/{sensor_id}/measurements/{measurement_id}/name:
     put:
       summary: put measurement name
       tags:
@@ -999,7 +863,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - name: body
@@ -1020,7 +883,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/quantity_kind':
+  /sensors/{sensor_id}/measurements/{measurement_id}/quantity_kind:
     put:
       summary: put the quantity kind, from https://github.com/Waziup/waziup-js/blob/master/src/model/QuantityKinds.js 
       tags:
@@ -1030,7 +893,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - name: body
@@ -1051,7 +913,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/unit':
+  /sensors/{sensor_id}/measurements/{measurement_id}/unit:
     put:
       summary: put measurement unit
       tags:
@@ -1061,7 +923,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - name: body
@@ -1085,7 +946,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/sensing_device':
+  /sensors/{sensor_id}/measurements/{measurement_id}/sensing_device:
     put:
       summary: insert sensing device used to perform the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js
       tags:
@@ -1095,7 +956,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - in: body
@@ -1120,7 +980,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/domains/{domain}/sensors/{sensor_id}/measurements/{measurement_id}/values':
+  /sensors/{sensor_id}/measurements/{measurement_id}/values:
     get:
       summary: get measurement values
       tags:
@@ -1130,7 +990,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - $ref: '#/parameters/lastN'
@@ -1162,7 +1021,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/sensorId'
         - $ref: '#/parameters/measurementId'
         - in: body
@@ -1182,15 +1040,13 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-  /domains/{domain}/users/:
+  /users:
     get:
       tags:
         - Users
       summary: Get all users in a realm
       security:
         - Bearer: []
-      parameters:
-        - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: return users
@@ -1202,36 +1058,33 @@ paths:
           description: Not Found 
           schema:
             $ref: '#/definitions/Error'
-    post:
-      tags:
-        - Users
-      summary: Create a new user in a realm
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: '#/parameters/domainParam'
-        - name: user
-          in: body
-          description: user object
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-      responses:
-        '201':
-          description: return created user
-        '404':
-          description: Not Found
-          schema:
-            $ref: '#/definitions/Error'
-  /domains/{domain}/users/search/:
+#     post:
+#       tags:
+#         - Users
+#       summary: Create a new user in a realm
+#       security:
+#         - Bearer: []
+#       parameters:
+#         - name: user
+#           in: body
+#           description: user object
+#           required: true
+#           schema:
+#             $ref: '#/definitions/User'
+#       responses:
+#         '201':
+#           description: return created user
+#         '404':
+#           description: Not Found
+#           schema:
+#             $ref: '#/definitions/Error'
+  /users/search:
     get:
       tags:
         - Users
       summary: Search users with specific criteria
       security:
         - Bearer: []
-      parameters:
-        - $ref: '#/parameters/domainParam'
       responses:
         '200':
           description: return filtered users
@@ -1243,14 +1096,13 @@ paths:
           description: Something wrong happened
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/users/{userid}:
+  /users/{userid}:
     get:
       tags:
         - Users
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/UserId'
       responses:
         '200':
@@ -1261,57 +1113,54 @@ paths:
           description: Not found
           schema:
             $ref: '#/definitions/Error'
-    put:
-      tags:
-        - Users
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: '#/parameters/domainParam'
-        - $ref: '#/parameters/UserId'
-        - name: data
-          in: body
-          description: user data to update
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-      responses:
-        '200':
-          description: user updated
-        '404':
-          description: Not Found
-          schema:
-            $ref: '#/definitions/Error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      tags:
-        - Users
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: '#/parameters/domainParam'
-        - $ref: '#/parameters/UserId'        
-      responses:
-        '200':
-          description: User is successfuly deleted
-        '404':
-          description: Not found
-          schema:
-            $ref: '#/definitions/Error'
+#     put:
+#       tags:
+#         - Users
+#       security:
+#         - Bearer: []
+#       parameters:
+#         - $ref: '#/parameters/UserId'
+#         - name: data
+#           in: body
+#           description: user data to update
+#           required: true
+#           schema:
+#             $ref: '#/definitions/User'
+#       responses:
+#         '200':
+#           description: user updated
+#         '404':
+#           description: Not Found
+#           schema:
+#             $ref: '#/definitions/Error'
+#         default:
+#           description: Unexpected error
+#           schema:
+#             $ref: '#/definitions/Error'
+#     delete:
+#       tags:
+#         - Users
+#       security:
+#         - Bearer: []
+#       parameters:
+#         - $ref: '#/parameters/domainParam'
+#         - $ref: '#/parameters/UserId'        
+#       responses:
+#         '200':
+#           description: User is successfuly deleted
+#         '404':
+#           description: Not found
+#           schema:
+#             $ref: '#/definitions/Error'
 
 
-  /domains/{domain}/socials:
+  /socials:
     get:
       summary: Get all messages sent
       tags:
         - Socials
       produces:
       - "application/json"
-      parameters:
-        - $ref: '#/parameters/domainParam'
       security:
         - Bearer: []
       responses:
@@ -1338,7 +1187,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - name: data
           in: body
           description: social message
@@ -1356,7 +1204,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/socials/{msg_id}:
+  /socials/{msg_id}:
     get:
       summary: Get one message
       tags:
@@ -1364,7 +1212,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/MsgId'
       security:
         - Bearer: []
@@ -1390,7 +1237,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/MsgId'
       responses:
         '200':
@@ -1403,7 +1249,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/socials/batch:
+  /socials/batch:
     post:
       summary: post several message to social networks
       tags:
@@ -1413,7 +1259,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - name: data
           in: body
           description: social message
@@ -1433,15 +1278,13 @@ paths:
             $ref: '#/definitions/Error'
 
 
-  /domains/{domain}/notifications:
+  /notifications:
     get:
       summary: Get all notifications 
       tags:
         - Notifications
       produces:
       - "application/json"
-      parameters:
-        - $ref: '#/parameters/domainParam'
       security:
         - Bearer: []
       responses:
@@ -1470,7 +1313,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - name: data
           in: body
           description: notification
@@ -1488,7 +1330,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /domains/{domain}/notifications/{notif_id}:
+  /notifications/{notif_id}:
     get:
       summary: Get one notification
       tags:
@@ -1498,7 +1340,6 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/NotifId'
       responses:
         '200':
@@ -1520,7 +1361,6 @@ paths:
       consumes:
       - "application/json"
       parameters:
-        - $ref: '#/parameters/domainParam'
         - $ref: '#/parameters/NotifId'
       security:
         - Bearer: []

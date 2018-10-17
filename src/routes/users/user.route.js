@@ -10,30 +10,30 @@ async function postAuth(cred) {
     return auth.getUserAuthToken(cred);
 }
 
-async function getUserSearch(domain, search) {
-    return users.find(domain, search);
+async function getUserSearch(search) {
+    return users.find(search);
 }
 
-async function getUsers(domain) {
-    return users.find(domain);
+async function getUsers() {
+    return users.find();
 }
 
-async function getUser(domain, userid) {
-    return users.find(domain, { userId: userid });
+async function getUser(userid) {
+    return users.find({ userId: userid });
 }
 
-async function putUser(domain, userid, user) {
+async function putUser(userid, user) {
     if (userid === user.id)
-        return users.update(domain, user);
+        return users.update(user);
     else res.status(400).end();
 }
 
-async function createUser(domain, user) {
-    return users.create(domain, user);
+async function createUser(user) {
+    return users.create(user);
 }
 
-async function deleteUser(domain, userid) {
-    return users.remove(domain, userid);
+async function deleteUser(userid) {
+    return users.remove(userid);
 }
 
 module.exports = {

@@ -11,38 +11,38 @@ const log = require('../log.js');
 const WAZIUP_NOTIF = 'waziup_notif'
 
 
-async function getNotifsOrion(domain) {
-  var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', domain, null);
-  return getNotifs(domain, subs)
+async function getNotifsOrion() {
+  var subs = await orionProxy.orionRequest('/v2/subscriptions', 'GET', null);
+  return getNotifs(subs)
 }
 
-async function postNotifOrion(domain, notif) {
-  var sub = getSub(domain, notif)
-  var res = await orionProxy.orionRequest('/v2/subscriptions', 'POST', domain, sub);
+async function postNotifOrion(notif) {
+  var sub = getSub(notif)
+  var res = await orionProxy.orionRequest('/v2/subscriptions', 'POST', sub);
   return res.replace('/v2/subscriptions/','');
 }
 
-async function getNotifOrion(domain, notifID) {
-  var sub = await orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'GET', domain, null);
-  return getNotif(domain, sub);
+async function getNotifOrion(notifID) {
+  var sub = await orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'GET', null);
+  return getNotif(sub);
 }
 
-async function deleteNotifOrion(domain, notifID) {
-  return orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'DELETE', domain, null);
+async function deleteNotifOrion(notifID) {
+  return orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'DELETE', null);
 }
 
 // ## Helper functions ##
 
-function getNotifs(domain, subs) {
+function getNotifs(subs) {
   console.log("Nots:" + JSON.stringify(subs))
-  return subs.filter(isWaziupNotif).map(sub => getNotif(domain, sub))
+  return subs.filter(isWaziupNotif).map(sub => getNotif(sub))
 }
 
 function isWaziupNotif(sub) {
   return sub.notification.metadata && sub.notification.metadata == WAZIUP_NOTIF 
 }
 
-function getNotif(domain, sub) {
+function getNotif(sub) {
 
   var notif = {id: sub.id}
 
@@ -74,7 +74,7 @@ function getNotif(domain, sub) {
   return notif
 }
 
-function getSub(domain, notif) {
+function getSub(notif) {
 
   log.debug('Notif:' + JSON.stringify(notif))
   var sub = {
@@ -88,7 +88,7 @@ function getSub(domain, notif) {
     },
     notification: {
       httpCustom: {
-        url: config.httpUrl + '/api/v1/domains/' + domain + '/socials/batch',
+        url: config.httpUrl + '/api/v1/socials/batch',
         method: "POST",
         payload: URIEncodeForbiddens(JSON.stringify(notif.notification)),
         headers: {"Content-Type": "application/json", "accept": "application/json"}

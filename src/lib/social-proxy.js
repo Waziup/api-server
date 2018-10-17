@@ -8,24 +8,24 @@ const axios = require('axios');
 const log = require('../log.js');
 
 //get all messages
-async function getSocialMsgs(domain) {
+async function getSocialMsgs() {
   return socialRequest('', 'GET', null)
 }
 
 //get one message
-async function getSocialMsg(domain, msgID) {
+async function getSocialMsg(msgID) {
   return socialRequest(msgID, 'GET', null)
 }
 
 //delete one message
-async function deleteSocialMsg(domain, msgID) {
+async function deleteSocialMsg(msgID) {
   return socialRequest(msgID, 'DELETE', null)
 }
 
 //Post one social message
-async function postSocialMsg(domain, socialMsg) {
+async function postSocialMsg(socialMsg) {
 
-  var usrs = await users.getUserSearch(domain, {username : socialMsg.username})
+  var usrs = await users.getUserSearch({username : socialMsg.username})
   if(usrs.length != 0) {
     var user = usrs[0];
     log.debug('user:' + JSON.stringify(user));
@@ -40,13 +40,13 @@ async function postSocialMsg(domain, socialMsg) {
 }
 
 //Post a bunch of social messages
-async function postSocialMsgBatch(domain, socialMsgBatch) {
+async function postSocialMsgBatch(socialMsgBatch) {
   //Express is not always interpreting correctly payloads from Orion, so we parse it again.
   var batch = typeof socialMsgBatch === 'string'? JSON.parse(socialMsgBatch): socialMsgBatch
   for (let username of batch.usernames) {
     for (let channel of batch.channels) {
       try {
-        await postSocialMsg(domain, {username: username, channel: channel, message: batch.message})
+        await postSocialMsg({username: username, channel: channel, message: batch.message})
       } catch(err) {
         log.warn('Batch social media sending failed: ' + err);
       }

@@ -98,11 +98,11 @@ async function createResource(name, type, uri, scopes, username, visibility) {
    return keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set', 'POST', res, null, false, token, 'application/json')
 }
 
-async function createSensorResource(domain, sensor, kauth) {
+async function createSensorResource(sensor, kauth) {
 
-  const guest = await users.findByName(domain, 'guest')
+  const guest = await users.findByName('guest')
   const id = kauth && kauth.grant ? kauth.grant.access_token.content.sub : guest.id
-  return createResource(sensor.id, 'domain:' + domain, '/sensors/' + sensor.id, 
+  return createResource(sensor.id, 'sensor', '/sensors/' + sensor.id, 
                         [SCOPE_SENSORS_VIEW, SCOPE_SENSORS_UPDATE, SCOPE_SENSORS_DELETE, SCOPE_SENSORS_DATA_CREATE, SCOPE_SENSORS_DATA_VIEW], id, sensor.visibility) 
 }
 

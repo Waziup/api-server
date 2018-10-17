@@ -19,7 +19,7 @@ const log = require('../../log.js');
   @returns {Promise} A promise that will resolve with an Array of user objects or just the 1 user object if userId is used
   
  */
-async function find(domain, options) {
+async function find(options) {
     var token = await auth.getAdminAuthToken();
     options = options || {};
     var path;
@@ -41,9 +41,9 @@ async function find(domain, options) {
     }
 }
 
-async function findByName(domain, username) {
+async function findByName(username) {
 
-   const users = await find(domain, { username: username })
+   const users = await find({ username: username })
    return users[0]
 }
 

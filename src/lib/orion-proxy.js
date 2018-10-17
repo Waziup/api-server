@@ -283,7 +283,7 @@ function getEntity(sensor, username) {
     entity.gateway_id = {type: 'String', value: sensor.gateway_id? sensor.gateway_id: ''};
     entity.name       = {type: 'String', value: sensor.name? sensor.name: ''};
     entity.owner      = {type: 'String', value: username};
-    entity.domain     = {type: 'String', value: sensor.domain? sensor.domain: ''};
+    entity.domain     = {type: 'String', value: sensor.domain? sensor.domain: 'waziup'};
     entity.visibility = {type: 'String', value: sensor.visibility? sensor.visibility: ''};
     entity.location   = getEntityLocation(sensor.location)
 

@@ -51,6 +51,7 @@ const keycloak = new Keycloak({}, {
 app.use(keycloak.middleware());
 
 //install routes
+app.use('/api/v1/domains/:domain', router); //Keep compatibility with V1.0
 app.use('/api/v1', router);
 proxy.install(router, keycloak);
 
