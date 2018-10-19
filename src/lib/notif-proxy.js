@@ -49,7 +49,7 @@ function getNotif(sub) {
   if (sub.description) {
     notif.description = sub.description;
   }
-  notif.subject = {condition: {}} 
+  notif.condition = {} 
   if (sub.subject.entities) {
     notif.condition.sensors = sub.subject.entities.map(e => e.id);
   }
@@ -71,6 +71,12 @@ function getNotif(sub) {
   if (sub.status) {
     notif.status = sub.status;
   }
+  if (sub.notification.timesSent) {
+    notif.times_sent = sub.notification.timesSent;
+  }
+  if (sub.notification.lastNotification) {
+    notif.last_notification = sub.notification.lastNotification;
+  }
   return notif
 }
 
@@ -80,7 +86,7 @@ function getSub(notif) {
   var sub = {
     description: notif.description,
     subject: {
-      entities: [],
+      entities: notif.condition.sensors.map(sensor => {id: sensor}),
       condition: {
         attrs: notif.condition.measurements,
         expression: { q: notif.condition.expression }
@@ -96,10 +102,6 @@ function getSub(notif) {
       metadata: [WAZIUP_NOTIF]    
     },
     attrs: notif.condition.measurements
-  }
-  for(let sensor of notif.condition.sensors) {
-    
-    sub.subject.entities.push( {id: sensor })
   }
 
   if(notif.expires) {
