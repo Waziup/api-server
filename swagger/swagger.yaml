@@ -20,31 +20,13 @@ parameters:
     in: path
     required: true
     type: string
-    example: Sensor2-ea0541de1ab7132a1d45b85f9b2139f5
+    example: MySensor
   measurementId:
     name: measurement_id
     in: path
     required: true
     type: string
     example: TC1
-  entityType:
-    name: entity_type
-    in: path
-    required: true
-    type: string
-    example: Room
-  entityId:
-    name: entity_id
-    in: path
-    required: true
-    type: string
-    example: Barn4
-  entityAttr:
-    name: entity_attribute
-    in: path
-    required: true
-    type: string
-    example: Temperature
   MsgId:
     name: msg_id
     in: path
@@ -113,7 +95,7 @@ definitions:
       id:
         type: string
         description: Unique ID of the sensor node
-        example: Sensor2-ea0541de1ab7132a1d45b85f9b2139f5
+        example: MySensor
       gateway_id:
         type: string
         description: Unique ID of the gateway
@@ -323,56 +305,55 @@ definitions:
       last_notification:
         type: dateTime
         description: last notification send date 
-        example: '2017-10-13T14:51:22.12Z'
+        example: '2019-10-13T14:51:22.12Z'
         readOnly: true
       status:
         type: string
         schema:
           type: string
-          enum: [active, inactive]
+          enum: [active, inactive, expired, failed]
         description: Description of the notification 
         example: 'active'
 
   NotificationCondition:
     type: object
     required:
-      - entities 
+      - sensors 
       - condition
     properties:
       sensors:
         type: array
         items:
           type: string
-          example: 'Sensor1'
+          example: 'MySensor'
       measurements:
         type: array
         items:
           type: string 
-          example: 'SM1'
+          example: 'TC1'
       expression:
         type: string
-        example: 'SM1>40'
+        example: 'TC1<40'
   User:
     type: object
     properties:
       id:
         type: string
         example: "eb78eed6-d01a-4f69-b562-1f30002c08d9"
+        readOnly: true
       username:
         type: string
         example: "cdupont"
       createdTime:
         type: dateTime
         example: "2017-09-01T20:00:00.00Z"
+        readOnly: true
       firstName:
         type: string
         example: "Corentin"
       lastName:
         type: string
         example: "Dupont"
-      subservice:
-        type: string
-        example: "farm1"
       email:
         type: string
         example: "test@gmail.com"
@@ -387,10 +368,7 @@ definitions:
         example: "test1"
       twitter:
         type: string
-        example: "@Test1"
-      roles:
-        type: string
-        example: "admin"
+        example: "Test1"
   Domain:
     type: object
     properties:
