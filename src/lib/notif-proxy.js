@@ -86,7 +86,7 @@ function getSub(notif) {
   var sub = {
     description: notif.description,
     subject: {
-      entities: notif.condition.sensors.map(sensor => {id: sensor}),
+      entities: [], //notif.condition.sensors.map(sensor => {{id: sensor}}),
       condition: {
         attrs: notif.condition.measurements,
         expression: { q: notif.condition.expression }
@@ -103,7 +103,9 @@ function getSub(notif) {
     },
     attrs: notif.condition.measurements
   }
-
+  for(let sensor of notif.condition.sensors) {
+    sub.subject.entities.push( {id: sensor })
+  }
   if(notif.expires) {
     sub.expires = notif.expires
   }
