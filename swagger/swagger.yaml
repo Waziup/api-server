@@ -293,18 +293,19 @@ definitions:
   Notification:
     type: object
     required:
-      - subject 
+      - condition 
       - notification
     properties:
       id:
         type: string
         description: id of the notification (attributed by the server)
+        readOnly: true
       description:
         type: string 
         description: Description of the notification 
         example: 'Send text message'
-      subject:
-        $ref: '#/definitions/NotificationSubject'
+      condition:
+        $ref: '#/definitions/NotificationCondition'
       notification:
         $ref: '#/definitions/SocialMessageBatch'
       expires:
@@ -322,11 +323,20 @@ definitions:
       last_notification:
         type: dateTime
         description: last notification send date 
+        example: '2017-10-13T14:51:22.12Z'
         readOnly: true
   NotificationCondition:
     type: object
+    required:
+      - entities 
+      - condition
     properties:
-      attrs:
+      sensors:
+        type: array
+        items:
+          type: string
+          example: 'Sensor1'
+      measurements:
         type: array
         items:
           type: string 
@@ -334,19 +344,6 @@ definitions:
       expression:
         type: string
         example: 'SM1>40'
-  NotificationSubject:
-    type: object
-    required:
-      - entities 
-      - condition
-    properties:
-      entityNames:
-        type: array
-        items:
-          type: string
-          example: 'Sensor1'
-      condition:
-        $ref: '#/definitions/NotificationCondition'
   User:
     type: object
     properties:
@@ -1058,26 +1055,6 @@ paths:
           description: Not Found 
           schema:
             $ref: '#/definitions/Error'
-#     post:
-#       tags:
-#         - Users
-#       summary: Create a new user in a realm
-#       security:
-#         - Bearer: []
-#       parameters:
-#         - name: user
-#           in: body
-#           description: user object
-#           required: true
-#           schema:
-#             $ref: '#/definitions/User'
-#       responses:
-#         '201':
-#           description: return created user
-#         '404':
-#           description: Not Found
-#           schema:
-#             $ref: '#/definitions/Error'
   /users/search:
     get:
       tags:
@@ -1113,46 +1090,6 @@ paths:
           description: Not found
           schema:
             $ref: '#/definitions/Error'
-#     put:
-#       tags:
-#         - Users
-#       security:
-#         - Bearer: []
-#       parameters:
-#         - $ref: '#/parameters/UserId'
-#         - name: data
-#           in: body
-#           description: user data to update
-#           required: true
-#           schema:
-#             $ref: '#/definitions/User'
-#       responses:
-#         '200':
-#           description: user updated
-#         '404':
-#           description: Not Found
-#           schema:
-#             $ref: '#/definitions/Error'
-#         default:
-#           description: Unexpected error
-#           schema:
-#             $ref: '#/definitions/Error'
-#     delete:
-#       tags:
-#         - Users
-#       security:
-#         - Bearer: []
-#       parameters:
-#         - $ref: '#/parameters/domainParam'
-#         - $ref: '#/parameters/UserId'        
-#       responses:
-#         '200':
-#           description: User is successfuly deleted
-#         '404':
-#           description: Not found
-#           schema:
-#             $ref: '#/definitions/Error'
-
 
   /socials:
     get:

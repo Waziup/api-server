@@ -51,13 +51,13 @@ function getNotif(sub) {
   }
   notif.subject = {condition: {}} 
   if (sub.subject.entities) {
-    notif.subject.entityNames = sub.subject.entities.map(e => e.id);
+    notif.condition.sensors = sub.subject.entities.map(e => e.id);
   }
   if (sub.subject.condition && sub.subject.condition.attrs) {
-    notif.subject.condition.attrs = sub.subject.condition.attrs;
+    notif.condition.measurements = sub.subject.condition.attrs;
   }
   if (sub.subject.condition && sub.subject.condition.expression && sub.subject.condition.expression.q) {
-    notif.subject.condition.expression = sub.subject.condition.expression.q;
+    notif.condition.expression = sub.subject.condition.expression.q;
   }
   if (sub.notification.httpCustom && sub.notification.httpCustom.payload) {
     notif.notification= JSON.parse(decodeURIComponent(sub.notification.httpCustom.payload));
@@ -82,8 +82,8 @@ function getSub(notif) {
     subject: {
       entities: [],
       condition: {
-        attrs: notif.subject.condition.attrs,
-        expression: { q: notif.subject.condition.expression }
+        attrs: notif.condition.measurements,
+        expression: { q: notif.condition.expression }
       }
     },
     notification: {
@@ -95,11 +95,11 @@ function getSub(notif) {
       },
       metadata: [WAZIUP_NOTIF]    
     },
-    attrs: notif.subject.condition.attrs 
+    attrs: notif.condition.measurements
   }
-  for(let entityName of notif.subject.entityNames) {
+  for(let sensor of notif.condition.sensors) {
     
-    sub.subject.entities.push( {id: entityName })
+    sub.subject.entities.push( {id: sensor })
   }
 
   if(notif.expires) {
