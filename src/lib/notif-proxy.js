@@ -71,6 +71,12 @@ function getNotif(sub) {
   if (sub.status) {
     notif.status = sub.status;
   }
+  if (sub.times_sent) {
+    notif.times_sent = sub.times_sent;
+  }
+  if (sub.last_notification) {
+    notif.times_sent = sub.last_notification;
+  }
   return notif
 }
 

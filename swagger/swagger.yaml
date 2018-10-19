@@ -325,6 +325,14 @@ definitions:
         description: last notification send date 
         example: '2017-10-13T14:51:22.12Z'
         readOnly: true
+      status:
+        type: string
+        schema:
+          type: string
+          enum: [active, inactive]
+        description: Description of the notification 
+        example: 'active'
+
   NotificationCondition:
     type: object
     required:
