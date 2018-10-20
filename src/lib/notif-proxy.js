@@ -27,6 +27,10 @@ async function getNotifOrion(notifID) {
   return getNotif(sub);
 }
 
+async function putNotifStatusOrion(notifID, status) {
+  return orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'PATCH', {"status": status});
+}
+
 async function deleteNotifOrion(notifID) {
   return orionProxy.orionRequest('/v2/subscriptions/' + notifID, 'DELETE', null);
 }
@@ -127,9 +131,9 @@ function replaceAll(str, find, replace) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
 
-
 module.exports = {
   getNotifsOrion,
   postNotifOrion,
   getNotifOrion,
+  putNotifStatusOrion,
   deleteNotifOrion}

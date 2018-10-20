@@ -100,10 +100,11 @@ function installNotifs(router, keycloak) {
   //router.all(    '/domains/:domain/notifications*', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.RESOURCE_NOTIFICATIONS, req.kauth)))
   
   //notifications endpoint
-  router.get(    '/notifications',          proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_VIEW,   req.kauth)), proxy(req => notifsProxy.getNotifsOrion(), true));
-  router.post(   '/notifications',          proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_CREATE, req.kauth)), proxy(req => notifsProxy.postNotifOrion(req.body), true));
-  router.get(    '/notifications/:notifID', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_VIEW,   req.kauth)), proxy(req => notifsProxy.getNotifOrion(req.params.notifID), true));
-  router.delete( '/notifications/:notifID', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_DELETE, req.kauth)), proxy(req => notifsProxy.deleteNotifOrion(req.params.notifID), true));
+  router.get(    '/notifications',                 proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_VIEW,   req.kauth)), proxy(req => notifsProxy.getNotifsOrion(), true));
+  router.post(   '/notifications',                 proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_CREATE, req.kauth)), proxy(req => notifsProxy.postNotifOrion(req.body), true));
+  router.get(    '/notifications/:notifID',        proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_VIEW,   req.kauth)), proxy(req => notifsProxy.getNotifOrion(req.params.notifID), true));
+  router.put(    '/notifications/:notifID/status', proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_UPDATE, req.kauth)), proxy(req => notifsProxy.putNotifStatusOrion(req.params.notifID, req.body), true));
+  router.delete( '/notifications/:notifID',        proxy(req => authProtect(authZ.RESOURCE_NOTIFICATIONS, authZ.SCOPE_NOTIFICATIONS_DELETE, req.kauth)), proxy(req => notifsProxy.deleteNotifOrion(req.params.notifID), true));
 }
 
 function installUsers(router, keycloak) {

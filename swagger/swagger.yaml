@@ -293,7 +293,7 @@ definitions:
       expires:
         type: dateTime
         description: expiration date 
-        example: '2017-10-13T14:51:22.12Z'
+        example: '2030-10-13T14:51:22.12Z'
       throttling:
         type: number
         description: minimum interval between two messages in seconds
@@ -1290,6 +1290,36 @@ paths:
       responses:
         '200':
           description: deleted
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /notifications/{notif_id}/status:
+    put:
+      summary: Activate/Deactivate one notification
+      tags:
+        - Notifications
+      consumes:
+      - "text/plain"
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/NotifId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: string
+            enum: [active, inactive]
+            description: the new status of the notification
+            example: active
+      responses:
+        '200':
+          description: modified
         '404':
           description: Not Found
           schema:
