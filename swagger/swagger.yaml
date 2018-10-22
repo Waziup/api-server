@@ -245,7 +245,7 @@ definitions:
         example: 'cdupont'
       channel:
         type: string
-        example: 'facebook'
+        example: 'twitter'
       message:
         type: string
         example: 'Test message'
@@ -262,13 +262,13 @@ definitions:
         description: names of the destination users 
         items:
           type: string 
-        example: ['cdupont', 'arahim']
+        example: ['cdupont']
       channels:
         type: array
         description: channels where to send the messages 
         items:
           type: string 
-        example: ['facebook', 'sms']
+        example: ['twitter']
       message:
         type: string
         example: 'Test message'
