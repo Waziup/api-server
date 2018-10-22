@@ -125,7 +125,7 @@ async function getResourceByName(name) {
   const token = await authN.getClientAuthToken()
   let res = await keycloakProxy.keycloakRequest(config.keycloakRealm, 'authz/protection/resource_set?deep=true&name=' + name, 'GET', null, null, false, token, null)
   if(res.length>0) {
-    return res[0]
+    return res.find(r => r.name == name)
   } else {
     return null
   }
