@@ -85,6 +85,15 @@ parameters:
     description: "The final date and time until which the entries are desired. It is an optional parameter."
     example: '2019-01-31T23:59:59.999Z'
     required: false
+  format:
+    in: query
+    name: format
+    schema:
+      type: string
+      enum: ["csv", "json"]
+    description: "Format of the data downloaded. It is an optional parameter."
+    example: 'json'
+    required: false
 definitions:
   Sensor:
     type: object
