@@ -4,7 +4,7 @@ info:
   description: "This API allows you to access all Waziup services.
     In order to access protected services, first get a token with POST /auth/token.
     Then insert this token in the authorization key, specifying \"Bearer\" in front. For example \"Bearer eyJhbGc...\"."
-  version: 1.1.0
+  version: 2.0.0
 host: '127.0.0.1:8000'
 schemes:
   - http
@@ -15,18 +15,30 @@ produces:
 consumes:
   - application/json
 parameters:
+  deviceId:
+    name: device_id
+    in: path
+    required: true
+    type: string
+    example: MyDevice
   sensorId:
     name: sensor_id
     in: path
     required: true
     type: string
-    example: MySensor
-  measurementId:
-    name: measurement_id
+    example: TC1
+  actuatorId:
+    name: actuator_id
     in: path
     required: true
     type: string
-    example: TC1
+    example: LED1
+  gatewayId:
+    name: gateway_id
+    in: path
+    required: true
+    type: string
+    example: GW1
   MsgId:
     name: msg_id
     in: path
@@ -86,7 +98,7 @@ parameters:
     example: '2019-01-31T23:59:59.999Z'
     required: false
 definitions:
-  Sensor:
+  Device:
     type: object
     required:
       - id
@@ -94,25 +106,29 @@ definitions:
     properties:
       id:
         type: string
-        description: Unique ID of the sensor node
-        example: MySensor
+        description: Unique ID of the device
+        example: MyDevice
       gateway_id:
         type: string
         description: Unique ID of the gateway
         example: ea0541de1ab7132a1d45b85f9b2139f5
       name:
         type: string
-        description: name of the sensor node
+        description: name of the device
         example: "My weather station"
       owner:
         type: string
-        description: owner of the sensor node
+        description: owner of the device
         readOnly: true
         example: cdupont
-      measurements:
+      sensors:
         type: array
         items:
-          $ref: '#/definitions/Measurement'
+          $ref: '#/definitions/Sensor'
+      actuators:
+        type: array
+        items:
+          $ref: '#/definitions/Actuator'
       location:
         $ref: '#/definitions/Location'
       domain:
@@ -159,18 +175,18 @@ definitions:
     enum:
       - public
       - private
-  Measurement:
+  Sensor:
     type: object
     required:
       - id
     properties:
       id:
         type: string
-        description: ID of the measurement
+        description: ID of the sensor
         example: TC1
       name:
         type: string
-        description: name of the measurement
+        description: name of the sensor
         example: My garden temperature
       sensing_device:
         type: string
@@ -185,18 +201,20 @@ definitions:
         description: unit of the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/Units.js
         example: DegreeCelsius
       last_value:
-        $ref: '#/definitions/MeasurementValue'
+        $ref: '#/definitions/SensorValue'
         description: last value received by the platform
-  MeasurementValue:
+      calibration:
+        $ref: '#/definitions/LinearCalibration'
+        description: calibration measurements 
+  SensorValue:
     type: object
     required:
       - value
-    readOnly: true
     properties:
       value:
-        type: number
+        type: number # generalize?
         format: float
-        description: "value of the measurement. It can be a string (e.g. \"abc\"), a number (e.g. 25.6), an array (e.g. [12, 13]), a boolean (e.g. true), a JSON structure (e.g. {\"test\": 24})"
+        description: "value of the sensor measurement. It can be a string (e.g. \"abc\"), a number (e.g. 25.6), an array (e.g. [12, 13]), a boolean (e.g. true), a JSON structure (e.g. {\"test\": 24})"
         example: '25.6'
       timestamp:
         type: string
@@ -209,6 +227,112 @@ definitions:
         description: time at which the measurement has been received on the Cloud
         example: '2016-06-08T18:20:27.873Z'
         readOnly: true
+  SensorData:
+    type: object
+    required:
+      - value
+    readOnly: true
+    properties:
+      deviceId:
+        in: body
+        required: true
+        type: string
+        example: MyDevice
+      sensorId:
+        in: body
+        required: true
+        type: string
+        example: TC1
+      datapoint:
+        $ref: '#/definitions/SensorValue'
+        required: true
+        description: last value received by the platform
+  LinearCalibration:
+    type: object
+    properties:
+      valueMin:
+        $ref: '#/definitions/LinearCalibrationValue'
+        required: true
+        description: calibration measurement with minimum values for the sensor
+      valueMax:
+        $ref: '#/definitions/LinearCalibrationValue'
+        required: true
+        description: calibration measurement with maximum values for the sensor
+  LinearCalibrationValue:
+    type: object
+    properties:
+      sensorValue:
+        in: body
+        required: true
+        type: string
+        example: 900
+      realValue:
+        in: body
+        required: true
+        type: string
+        example: 100
+  Actuator:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        description: ID of the actuator
+        example: LED1
+      name:
+        type: string
+        description: name of the actuator
+        example: My lamp
+      actuating_device:
+        type: string
+        description: actuating platform used 
+        example: Lamp
+      control_type:
+        type: string
+        description: the type of the control value. It must be a string with one of the following values: "string", "number", "object", "array", "boolean", "null".
+        enum: [string, number, object, array, boolean, null]
+        example: number
+      value:
+        type: string
+        description: the value of the actuation 
+        example: 50
+  Gateway:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        description: ID of the gateway
+        example: GW1
+      name:
+        type: string
+        description: name of the gateway
+        example: My office gateway
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/GatewayServices'
+        description: the services of the gateway
+  GatewayServices:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        description: ID of the gateway service
+        example: HTTP
+      status:
+        type: string
+        description: status of the gateway service
+        enum: [active, inactive]
+        example: active
+      port:
+        type: number
+        description: the tunnel port of the gateway service if active
+        example: active
   Error:
     type: object
     properties:
@@ -388,10 +512,10 @@ definitions:
   Scope:
     type: string
     enum:
-      - sensors:create
-      - sensors:view
-      - sensors:update
-      - sensors:delete
+      - devices:create
+      - devices:view
+      - devices:update
+      - devices:delete
       - sensors-data:create
       - sensors-data:view
       - socials:create
@@ -427,6 +551,7 @@ securityDefinitions:
 
 
 paths:
+  #Authentication
   /auth/token:
     post:
       summary: Get the access token for subsequent calls
@@ -463,12 +588,13 @@ paths:
             items:
               $ref: '#/definitions/Permission'
 
-  /sensors:
+  #Devices
+  /devices:
     get:
-      summary: Sensor data
+      summary: Get all devices
       description: ''
       tags:
-        - Sensors
+        - Devices
       produces:
         - application/json
       security:
@@ -499,10 +625,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: Create sensors
-      description: Endpoint to create sensing devices.
+      summary: Create devices
+      description: Endpoint to create devices.
       tags:
-        - Sensors
+        - Devices
       consumes:
         - application/json
       security:
@@ -512,10 +638,10 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/Sensor'
+            $ref: '#/definitions/Device'
       responses:
         '201':
-          description: Sensor created succesfully
+          description: Device created succesfully
         '422':
           description: Unprocessable entity
           schema:
@@ -524,23 +650,23 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}:
+  /devices/{device_id}:
     get:
-      summary: get sensor
+      summary: get device
       description: ''
       tags:
-        - Sensors
+        - Devices
       produces:
         - application/json
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
       responses:
         '200':
           description: ''
           schema:
-            $ref: '#/definitions/Sensor'
+            $ref: '#/definitions/Device'
         '400':
           description: Bad request
           schema:
@@ -558,12 +684,12 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Delete sensor
+      summary: Delete device
       description: ''
       tags:
-        - Sensors
+        - Devices
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
       security:
         - Bearer: []
       responses:
@@ -577,50 +703,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/owner:
-    put:
-      summary: insert owner
-      tags:
-        - Sensors
-      consumes:
-        - text/plain
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: '#/parameters/sensorId'
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: string
-            description: the owner of the sensor
-            example: cdupont
-      responses:
-        '200':
-          description: Updated
-        '400':
-          description: Bad request
-          schema:
-            $ref: '#/definitions/Error'
-        '404':
-          description: Not found
-          schema:
-            $ref: '#/definitions/Error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/location:
+  /devices/{device_id}/location:
     put:
       summary: insert location
       tags:
-        - Sensors
+        - Devices
       consumes:
         - application/json
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
         - in: body
           name: body
           required: true
@@ -641,24 +734,24 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/name:
+  /devices/{device_id}/name:
     put:
       summary: insert name
       tags:
-        - Sensors
+        - Devices
       consumes:
         - text/plain
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
         - in: body
           name: body
           required: true
           schema:
             type: string
-            description: the owner of the sensor
-            example: Sensor1
+            description: the owner of the device
+            example: Device1
       responses:
         '200':
           description: Updated
@@ -674,17 +767,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/gateway_id:
+  /devices/{device_id}/gateway_id:
     put:
       summary: insert gateway id
       tags:
-        - Sensors
+        - Devices
       consumes:
         - text/plain
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
         - in: body
           name: body
           required: true
@@ -707,17 +800,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/visibility:
+  /devices/{device_id}/visibility:
     put:
-      summary: insert sensor visibility (public or private)
+      summary: insert device visibility (public or private)
       tags:
-        - Sensors
+        - Devices
       consumes:
         - text/plain
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
         - in: body
           name: body
           required: true
@@ -738,9 +831,11 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements:
+
+  # Sensors
+  /devices/{device_id}/sensors:
     get:
-      summary: get measurements
+      summary: get sensors
       tags:
         - Sensors
       produces:
@@ -748,14 +843,14 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
+        - $ref: '#/parameters/deviceId'
       responses:
         '200':
           description: ''
           schema:
             type: array
             items:
-              $ref: '#/definitions/Measurement'
+              $ref: '#/definitions/Sensor'
         '404':
           description: Not Found
           schema:
@@ -765,7 +860,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: insert new measurement
+      summary: insert new sensor
       tags:
         - Sensors
       consumes:
@@ -778,10 +873,10 @@ paths:
           name: body
           required: true
           schema:
-            $ref: '#/definitions/Measurement'
+            $ref: '#/definitions/Sensor'
       responses:
         '200':
-          description: Measurement created/updated succesfully
+          description: Sensor created/updated succesfully
         '404':
           description: Not Found
           schema:
@@ -794,9 +889,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}:
+  /devices/{device_id}/sensors/{sensor_id}:
     get:
-      summary: get measurement
+      summary: get sensor
       tags:
         - Sensors
       produces:
@@ -804,27 +899,27 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
       responses:
         '200':
           description: ''
           schema:
-            $ref: '#/definitions/Measurement'
+            $ref: '#/definitions/Sensor'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Delete measurement
+      summary: Delete sensor
       description: ''
       tags:
         - Sensors
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
       responses:
         '200':
           description: deleted
@@ -836,9 +931,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}/name:
+  /devices/{device_id}/sensors/{sensor_id}/name:
     put:
-      summary: put measurement name
+      summary: put sensor name
       tags:
         - Sensors
       consumes:
@@ -846,14 +941,14 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
         - name: body
           in: body
           required: true
           schema:
             type: string
-            description: the measurement name
+            description: the sensor name
             example: TC1
       responses:
         '200':
@@ -866,7 +961,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}/quantity_kind:
+  /devices/{device_id}/sensors/{sensor_id}/quantity_kind:
     put:
       summary: put the quantity kind, from https://github.com/Waziup/waziup-js/blob/master/src/model/QuantityKinds.js 
       tags:
@@ -876,8 +971,8 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
         - name: body
           in: body
           required: true
@@ -896,9 +991,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}/unit:
+  /devices/{device_id}/sensors/{sensor_id}/unit:
     put:
-      summary: put measurement unit
+      summary: put sensing unit
       tags:
         - Sensors
       consumes:
@@ -906,14 +1001,14 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
         - name: body
           in: body
           required: true
           schema:
             type: string
-            description: the measurement unit
+            description: the sensing unit
             example: °C
             enum:
             - test1
@@ -929,7 +1024,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}/sensing_device:
+  /devices/{device_id}/sensors/{sensor_id}/sensing_device:
     put:
       summary: insert sensing device used to perform the measurement, from https://github.com/Waziup/waziup-js/blob/master/src/model/SensingDevices.js
       tags:
@@ -939,8 +1034,8 @@ paths:
       security:
         - Bearer: []
       parameters:
+        - $ref: '#/parameters/deviceId'
         - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
         - in: body
           name: body
           required: true
@@ -963,30 +1058,266 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /sensors/{sensor_id}/measurements/{measurement_id}/values:
+
+  # Actuators
+  /devices/{device_id}/actuators:
     get:
-      summary: get measurement values
+      summary: get actuators
       tags:
-        - Sensors
+        - Actuators
       produces:
         - application/json
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
-        - $ref: '#/parameters/lastN'
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/offset'
-        - $ref: '#/parameters/dateFrom'
-        - $ref: '#/parameters/dateTo'
+        - $ref: '#/parameters/deviceId'
       responses:
         '200':
           description: ''
           schema:
             type: array
             items:
-              $ref: '#/definitions/MeasurementValue'
+              $ref: '#/definitions/Actuator'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: insert new actuator
+      tags:
+        - Actuators
+      consumes:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/actuatorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Actuator'
+      responses:
+        '200':
+          description: Actuator created/updated succesfully
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}/actuators/{actuator_id}:
+    get:
+      summary: get actuator
+      tags:
+        - Actuators
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Actuator'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete actuator
+      description: ''
+      tags:
+        - Actuators
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+      responses:
+        '200':
+          description: deleted
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}/actuators/{actuator_id}/name:
+    put:
+      summary: put actuator name
+      tags:
+        - Actuators
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the device name
+            example: LED1
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}/actuators/{actuator_id}/actuating_device:
+    put:
+      summary: put the actuating device 
+      tags:
+        - Actuators
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the actuating device
+            example: Lamp
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}/actuators/{actuator_id}/control_type:
+    put:
+      summary: put the control type
+      tags:
+        - Actuators
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the control type
+            example: number
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}/actuators/{actuator_id}/value:
+    put:
+      summary: put the actuator value
+      tags:
+        - Actuators
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/actuatorId'
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+            description: the actuator value
+            example: 50
+      responses:
+        '200':
+          description: Replaced
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  # Data
+  /sensor-data:
+    get:
+      summary: get sensor values
+      tags:
+        - Sensor-data
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          type: string
+          example: MyDevice
+        - name: sensorId
+          in: query
+          required: true
+          type: string
+          example: TC1
+        - $ref: '#/parameters/lastN'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/dateFrom'
+        - $ref: '#/parameters/dateTo'
+        - $ref: '#/parameters/format'
+        - name: calib
+          in: query
+          type: string
+          example: true
+          description: indicate if the values provided must be calibrated by the server. Default is false (get raw values).
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SensorData'
         '404':
           description: Not Found
           schema:
@@ -998,24 +1329,127 @@ paths:
     post:
       summary: Create new datapoint
       tags:
-        - Sensors
+        - Sensor-data
       consumes:
         - application/json
       security:
         - Bearer: []
       parameters:
-        - $ref: '#/parameters/sensorId'
-        - $ref: '#/parameters/measurementId'
         - in: body
           name: body
           required: true
           schema:
-            $ref: '#/definitions/MeasurementValue'
+            $ref: '#/definitions/SensorData'
       responses:
         '201':
           description: Datapoint created succesfully
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  #Gateways
+  /gateways:
+    get:
+      summary: Get all gateway
+      description: ''
+      tags:
+        - Gateways
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Gateway'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create gateway
+      description: ''
+      tags:
+        - Gateways
+      consumes:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Gateway'
+      responses:
+        '201':
+          description: Gatway created succesfully
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /gateways/{gateway_id}:
+    get:
+      summary: get gateway
+      description: ''
+      tags:
+        - Gateways
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/gatewayId'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Gateway'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete gateway
+      description: ''
+      tags:
+        - Gateways
+      parameters:
+        - $ref: '#/parameters/gatewayId'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
           schema:
             $ref: '#/definitions/Error'
         default:
