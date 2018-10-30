@@ -493,6 +493,15 @@ definitions:
       twitter:
         type: string
         example: "Test1"
+      smsCredit:
+        type: number
+        example: 50
+      callsCredit:
+        type: number
+        example: 50
+      ussdCredit:
+        type: number
+        example: 50
   Domain:
     type: object
     properties:
@@ -1456,7 +1465,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-
+  # Users
   /users:
     get:
       tags:
@@ -1511,6 +1520,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+  # Socials
   /socials:
     get:
       summary: Get all messages sent
@@ -1634,7 +1644,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-
+  #Notifications
   /notifications:
     get:
       summary: Get all notifications 
