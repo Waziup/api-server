@@ -39,6 +39,12 @@ parameters:
     required: true
     type: string
     example: GW1
+  projectId:
+    name: project_id
+    in: path
+    required: true
+    type: string
+    example: Project1
   MsgId:
     name: msg_id
     in: path
@@ -96,6 +102,15 @@ parameters:
       type: string
     description: "The final date and time until which the entries are desired. It is an optional parameter."
     example: '2019-01-31T23:59:59.999Z'
+    required: false
+  format:  
+    in: query
+    name: format
+    schema:
+      type: string
+      enum: ["csv", "json"]
+    description: "The format of the data retrieved: either csv or json. It is an optional parameter."
+    example: 'json'
     required: false
 definitions:
   Device:
@@ -310,20 +325,27 @@ definitions:
         type: string
         description: name of the gateway
         example: My office gateway
-      services:
-        type: array
-        items:
-          $ref: '#/definitions/GatewayServices'
-        description: the services of the gateway
-  GatewayServices:
+      date_created:
+        type: string
+        format: datetime
+        readOnly: true
+        description: creation date of the gateway
+        example: '2016-06-08T18:20:27.873Z'
+      date_updated:
+        type: string
+        format: datetime
+        readOnly: true
+        description: last update date of the gateway
+        example: '2016-06-08T18:20:27.873Z'
+      connection:
+        $ref: '#/definitions/GatewayConnection'
+        description: the connection status of the gateway
+  GatewayConnection:
     type: object
     required:
-      - id
+      - status
+      - port
     properties:
-      id:
-        type: string
-        description: ID of the gateway service
-        example: HTTP
       status:
         type: string
         description: status of the gateway service
@@ -332,7 +354,45 @@ definitions:
       port:
         type: number
         description: the tunnel port of the gateway service if active
-        example: active
+        example: 9882
+  Project:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        readOnly: true
+        description: ID of the project
+        example: Project1
+      name:
+        type: string
+        description: name of the project
+        example: My project
+      date_created:
+        type: string
+        format: datetime
+        readOnly: true
+        description: creation date of the sensor node
+        example: '2016-06-08T18:20:27.873Z'
+      date_updated:
+        type: string
+        format: datetime
+        readOnly: true
+        description: last update date of the sensor node
+        example: '2016-06-08T18:20:27.873Z'
+      devices:
+        type: array
+        description: ids of the devices in the project 
+        items:
+          type: string 
+        example: ['MyDevice']
+      gateways:
+        type: array
+        description: ids of the gateways in the project 
+        items:
+          type: string 
+        example: ['GW1']
   Error:
     type: object
     properties:
@@ -1067,6 +1127,38 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /devices/{device_id}/sensors/{sensor_id}/calibration:
+    put:
+      summary: insert a calibration for the sensor
+      tags:
+        - Sensors
+      consumes:
+        - text/plain
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/deviceId'
+        - $ref: '#/parameters/sensorId'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LinearCalibration'
+      responses:
+        '200':
+          description: Updated
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
   # Actuators
   /devices/{device_id}/actuators:
@@ -1363,7 +1455,7 @@ paths:
   #Gateways
   /gateways:
     get:
-      summary: Get all gateway
+      summary: Get all gateways
       description: ''
       tags:
         - Gateways
@@ -1387,7 +1479,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
-      summary: Create gateway
+      summary: Create a gateway
       description: ''
       tags:
         - Gateways
@@ -1414,7 +1506,7 @@ paths:
             $ref: '#/definitions/Error'
   /gateways/{gateway_id}:
     get:
-      summary: get gateway
+      summary: get a gateway
       description: ''
       tags:
         - Gateways
@@ -1446,7 +1538,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      summary: Delete gateway
+      summary: Delete a gateway
       description: ''
       tags:
         - Gateways
@@ -1461,6 +1553,182 @@ paths:
           description: Not found
           schema:
             $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /gateways/{gateway_id}/connection:
+    put:
+      tags:
+        - Gateways
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/gatewayId'
+        - name: data
+          in: body
+          description: status of the gateway connection
+          required: true
+          schema:
+            $ref: '#/definitions/GatewayConnection'
+      responses:
+        '200':
+          description: status updated
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  #Projects
+  /projects:
+    get:
+      summary: Get all projects
+      description: ''
+      tags:
+        - Projects
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a project
+      description: ''
+      tags:
+        - Projects
+      consumes:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+      responses:
+        '201':
+          description: Project created succesfully
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /projects/{project_id}:
+    get:
+      summary: get a project
+      description: ''
+      tags:
+        - Projects
+      produces:
+        - application/json
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Project'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete a project
+      description: ''
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/parameters/projectId'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /projects/{project_id}/devices:
+    put:
+      tags:
+        - Projects
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/projectId'
+        - name: data
+          in: body
+          description: set the devices in this project
+          required: true
+          schema:
+            type: array
+            items:
+              type: string 
+      responses:
+        '200':
+          description: devices list updated
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /projects/{project_id}/gateways:
+    put:
+      tags:
+        - Projects
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/projectId'
+        - name: data
+          in: body
+          description: set the gateways in this project
+          required: true
+          schema:
+            type: array
+            items:
+              type: string 
+      responses:
+        '200':
+          description: devices list updated
         default:
           description: Unexpected error
           schema:
@@ -1515,6 +1783,64 @@ paths:
           description: Return the user with the specified id
           schema:
             $ref: '#/definitions/User'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      security:
+        - Bearer: []
+      parameters:
+        - name: user
+          in: body
+          description: user object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: return created user
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/UserId'
+        - name: data
+          in: body
+          description: user data to update
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: user updated
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/parameters/UserId'        
+      responses:
+        '200':
+          description: User is successfuly deleted
         '404':
           description: Not found
           schema:
