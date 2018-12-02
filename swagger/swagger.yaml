@@ -1039,6 +1039,9 @@ paths:
       summary: Get all users in a realm
       security:
         - Bearer: []
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
       responses:
         '200':
           description: return users
@@ -1048,24 +1051,6 @@ paths:
               $ref: '#/definitions/User'
         '404':
           description: Not Found 
-          schema:
-            $ref: '#/definitions/Error'
-  /users/search:
-    get:
-      tags:
-        - Users
-      summary: Search users with specific criteria
-      security:
-        - Bearer: []
-      responses:
-        '200':
-          description: return filtered users
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-        '404':
-          description: Something wrong happened
           schema:
             $ref: '#/definitions/Error'
   /users/{userid}:

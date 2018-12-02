@@ -14,8 +14,16 @@ async function getUserSearch(search) {
     return users.find(search);
 }
 
-async function getUsers() {
-    return users.find();
+async function getUsers(q) {
+  let query = {}
+  if (q.limit) {
+    query.max = q.limit;
+  }
+  if (q.offset) {
+    query.first = q.offset;
+  }
+  
+  return users.find(query);
 }
 
 async function getUser(userid) {

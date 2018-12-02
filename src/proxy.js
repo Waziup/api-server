@@ -113,7 +113,7 @@ function installUsers(router, keycloak) {
   //router.all(    '/domains/:domain/users*', proxy(req => authProtect(req.method, req.params.domain, authZ.RESOURCE_USERS, authZ.RESOURCE_USERS, req.kauth)))
   
   //users endpoints
-  router.get(    '/users',          proxy(req => authProtect(authZ.RESOURCE_USERS, authZ.SCOPE_USERS_VIEW,   req.kauth)), proxy(req => usersProxy.getUsers(), true));
+  router.get(    '/users',          proxy(req => authProtect(authZ.RESOURCE_USERS, authZ.SCOPE_USERS_VIEW,   req.kauth)), proxy(req => usersProxy.getUsers(req.query), true));
   router.post(   '/users',          proxy(req => authProtect(authZ.RESOURCE_USERS, authZ.SCOPE_USERS_CREATE, req.kauth)), proxy(req => usersProxy.createUser(req.body), true));
   router.get(    '/users/:userID',  proxy(req => authProtect(authZ.RESOURCE_USERS, authZ.SCOPE_USERS_VIEW,   req.kauth)), proxy(req => usersProxy.getUser(req.params.userID), true));
   router.delete( '/users/:userID',  proxy(req => authProtect(authZ.RESOURCE_USERS, authZ.SCOPE_USERS_DELETE, req.kauth)), proxy(req => usersProxy.deleteUser(req.params.userID), true));
